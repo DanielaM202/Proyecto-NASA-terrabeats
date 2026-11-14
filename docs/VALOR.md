@@ -39,9 +39,9 @@ Lo que hace que tenga sentido:
 ## 5. Cómo sabremos que funciona (prueba de impacto)
 Pedimos a una persona con los ojos vendados, o mejor, a una persona ciega, que escuche una historia y responda:
 1. ¿Dónde están los bosques más altos? *(Amazonía, Congo, sudeste asiático)*
-2. ¿Qué país ganó luz y cuál la perdió? *(India / Ucrania)*
-3. ¿Dónde caen más rayos? *(África central, sobre tierra y en los trópicos)*
-4. ¿Qué le pasa al CO₂ a lo largo del día? *(Sube y baja: "respira")*
+2. ¿Qué país se ve con luces nuevas y dónde se apagaron luces? *(India / este y sur de Ucrania)*
+3. ¿Dónde se ven más rayos? *(sobre los continentes de los trópicos; casi nada sobre los océanos)*
+4. ¿Qué le pasa al CO₂ a lo largo del día? *(Late: las plantas lo absorben de día y lo liberan de noche)*
 
 **Meta: 3 de 4 respuestas correctas.** El resultado y una frase de la persona que lo probó van en la entrega (persona C).
 

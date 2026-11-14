@@ -1,3 +1,5 @@
+> ⚠️ **Documento histórico (primera versión).** El producto actual está descrito en [`VALOR.md`](VALOR.md) y [`SUBMISSION.md`](SUBMISSION.md).
+
 # TerraBeats — Definición del producto
 
 > Reto: **The Earth Information Jukebox** · NASA Space Apps Challenge 2026 · Sede Cajamarca

@@ -2,6 +2,7 @@
 
 > Copy each section into the matching field of the project page. Replace the `<…>` links.
 > Field names can differ slightly in this year's form; match them by meaning.
+> Before submitting, fill in the two `TODO` items: the user-test result and the voice tool actually used.
 
 ---
 
@@ -11,92 +12,83 @@
 
 ## High-Level Project Summary
 
-TerraBeats is a bilingual (English/Spanish), accessible web jukebox that turns NASA Earth Information Center visualizations into music in real time. Users choose one of four EIC visuals: night lights, lightning from the ISS, global CO₂ or GEDI forest height. As the NASA video plays, TerraBeats reads every frame with computer vision. It classifies pixels using each visualization's own colour scale and maps what it finds to pitch, volume, stereo position, tempo and instrument, always snapped to musical scales. Blind and low-vision users can explore any point of the image with the keyboard and hear it. They can also listen to spoken descriptions of what is happening and feel lightning through phone vibration. Earth science becomes something you can hear, not only see.
+NASA's Earth Information Center tells the story of our changing planet through images, so people who are blind or have low vision are left out. TerraBeats is an accessible, bilingual (English/Spanish) web jukebox that turns four EIC visualizations into **interactive sound documentaries**. As the NASA video plays, TerraBeats reads every frame with computer vision and generates the sound live: a note for forest height, percussion for lightning, a chord that tightens with carbon dioxide, chimes for city lights. A narrator gives each sound a meaning, a place and a time, asks the listener a question, and answers it from the data on screen at that moment. Then the listener explores the image alone with the keyboard. It is audio description for Earth science data.
 
 ## Links
 
 - **Live demo:** `<https://terrabeats.vercel.app>`
-- **Repository:** `<https://github.com/…/terrabeats>`
-- **Demo video:** `<https://youtu.be/…>`
+- **Repository:** https://github.com/DanielaM202/Proyecto-NASA-terrabeats
+- **30-second video:** `<https://youtu.be/…>`
 
 ## Project Details
 
 ### What it does
 
-- **Jukebox with four tracks**, each one an EIC visualization from NASA's Scientific Visualization Studio:
-  1. *Change in Night Lights 2012–2023* (SVS 5313)
-  2. *Lightning Events Detected from the ISS 2017–2023* (SVS 5011)
-  3. *DYAMOND Global Carbon Dioxide* (SVS 5196)
-  4. *GEDI Forest Height* (SVS 4950)
-- **Real-time sonification:** the sound is generated live from the frame on screen. It is not a pre-recorded soundtrack, so pausing, seeking or changing the speed changes the music.
-- **Explore mode:** a cursor driven by the arrow keys or the pointer plays the value of the pixel under it and announces it as text, for example *"top left: value high"*.
-- **Spoken descriptions** on demand (key D) or automatic narration. Example: *"Lightning activity high: 40 new flashes, concentrated toward the bottom / the right."*
-- **Haptic feedback:** the phone vibrates with lightning.
-- **Record audio:** download the generated soundscape of any track, which lets the tool also produce a curated playlist.
-- **Fully bilingual interface** (English/Spanish), switched with the L key or a button.
+Each of the four tracks is a guided **sound story** built on one question:
+
+| Track | NASA visualization | Question | What you hear |
+|---|---|---|---|
+| Forests | GEDI Forest Height (SVS 4950) | Where are the tallest forests NASA measured? | A note per slice of the globe: pitch = canopy height (0–50 m). Birds = tall forest. Waves = ocean |
+| Night lights | Change in Night Lights 2012–2023 (SVS 5313) | How did humanity's light change? | Chimes for lit regions; rising sparkles = new lights; falling notes = lights out |
+| Lightning | Lightning Events Detected from the ISS (SVS 5011) | Where and when does lightning strike? | A percussive hit for new lightning, placed left/right where it appears; thunder grows with activity |
+| CO₂ | DYAMOND Global Carbon Dioxide (SVS 5196) | Where does CO₂ come from and how does it move? | A chord that goes from calm to tense and a heartbeat that speeds up |
+
+Every story follows the same structure:
+
+1. **The question**, spoken.
+2. **An audio legend:** each sound is played alone and named ("this is a two-metre shrub… this is a forty-five-metre tree").
+3. **A narrated tour** synchronized with the video: the narrator says where and when we are at the exact moment it appears, and the music lowers while the voice speaks.
+4. **An interactive question** (Forests, Lightning, CO₂): the listener answers with the left/right arrow keys, and the answer is computed from the frame on screen.
+5. **Live remarks** generated from the current data ("A burst of new lightning on your right!").
+6. **A closing fact from NASA**, then **free exploration**: the arrow keys move a cursor, each point sounds and its value is spoken.
+
+### Designed for people who cannot see
+
+- Everything works with the keyboard: Space, Esc, 1–4, arrows, H (spoken help), F (jump to the highest value), R (repeat the last sentence), D (describe now), L (language).
+- A spoken welcome on first contact and a spoken menu when changing track.
+- One narrator at a time: voices never overlap, and the music ducks under the voice.
+- Explore mode speaks each value aloud, so it works without a screen reader; it is also compatible with screen readers. A low bump marks the edge of the image, and the phone vibrates with the value.
+- Switching language changes the voice immediately, mid-story.
 
 ### How it works
 
-1. **Frames:** the original SVS videos were re-encoded at web resolution and hosted with the app, so the browser can read their pixels. Every 80 ms the current frame is drawn onto a small canvas (256×72 or 160×90).
-2. **Computer vision:** each pixel is classified with a rule calibrated on the official colour scale of its visualization:
-   - Night lights: warm light; in the change phase, purple = more light and orange = less light.
-   - Lightning: yellow flashes.
-   - CO₂: grey/tan = low, orange/red = high.
-   - Forest height: brown/dark green = short, bright green/white = tall; blue = ocean.
-3. **Features per frame:**
-   - coverage, intensity and a calibrated activity level;
-   - centroid (where the activity is);
-   - a 16-column profile with each column's mean value and peak row;
-   - ocean share and light gain/loss;
-   - lightning flashes that appeared since the previous frame.
-4. **Sound (Tone.js / Web Audio):**
-   - **Night lights:** a playhead sweeps west → east; FM chimes play where cities shine. Pitch = latitude (north = high), loudness = brightness and stereo = longitude. Rising sparkles mark gained light and falling tones mark lost light.
-   - **Lightning:** every cluster of new flashes is a percussive hit, panned to its position, with higher pitch further north. A thunder rumble and kick drum follow total activity.
-   - **CO₂:** a sustained chord moves from consonant to dissonant (detuning, a tritone, an opening filter) as high-CO₂ areas grow. A heartbeat speeds up from 56 to 120 beats per minute.
-   - **Forest height:** plucked strings sweep the globe, with taller forest = higher note. A pad grows with vegetated land and a wave sound grows with the ocean.
-   - All notes are quantized to pentatonic or modal scales, and a reverb and limiter keep the result musical, not noisy.
+1. **Frames:** web-sized copies of the SVS videos are hosted with the app (NASA's servers do not allow cross-origin pixel reading). Every 80 ms the current frame is drawn onto a 160×90 canvas.
+2. **Computer vision:** each pixel is classified using the visualization's own colour scale. For GEDI we sampled the "Height Above Ground 0–50 m" colour bar drawn inside the video and match each vegetation pixel to it, tolerating the globe's shading. On-screen labels, dates and colour bars are masked out.
+3. **Features per frame:** coverage, intensity, a calibrated level, centroid, a 16-column profile, tall-forest share, ocean share, light gained/lost, and what changed since the previous frame.
+4. **Sound (Tone.js / Web Audio):** the features drive synthesizers in real time. Notes are quantized to musical scales, and each track uses only a few sounds, each with one meaning.
+5. **Narration:** a script with cue times per track; scripted lines are pre-rendered audio files, while quiz answers and live remarks are generated at runtime from the data.
+
+### Scientific integrity
+
+- **Every narrated fact comes from NASA's SVS page of that visualization or from what the frame itself shows.** Examples: LIS detects lightning in tropical and mid-latitude regions; CO₂ emissions over China and South Asia come mostly from power plants, industry and vehicles, and from fires in Africa and South America; the map pulses with the day-night cycle of fires and photosynthesis; night lights data is Black Marble from Suomi NPP VIIRS.
+- **We do not invent numbers.** The only physical unit we speak is GEDI height in metres, read from the official colour bar and always stated as approximate. CO₂ and lightning are described in relative terms ("high", "more on the left"), because the SVS colour bar for CO₂ has no numeric labels.
+- **Limits:** values come from the colours of the visualization, not from the original science data; globe lighting adds error to height estimates; quiz percentages are shares of what is visible in the frame. The EIC night-lights video shows the world map twice, so we use one map so that left/right is true geography. The lightning animation is trimmed and played at 2× speed.
 
 ### Benefits and intended impact
 
-- **Accessibility:** it opens NASA's visual Earth science to blind and low-vision people, through sound, speech, keyboard exploration and touch.
-- **Engagement:** sound reveals patterns that are easy to miss visually, such as the rhythm of storm seasons or how fast a region lights up. It also creates an emotional connection: rising CO₂ literally sounds like tension.
-- **Education:** in classrooms and museums, students hear the data while seeing it. The bilingual interface reaches Spanish-speaking communities such as ours in Cajamarca, Peru.
-- **Open and extensible:** adding a new EIC visualization only needs a video, a colour classifier and a sound profile.
+- **Accessibility:** it opens NASA's visual Earth science to blind and low-vision people, who can listen, answer and explore on their own.
+- **Learning you can check:** after one story, a listener should be able to answer "Where are the tallest forests?" or "Which country gained light and where did lights go out?" without seeing the screen.
+  - `TODO: add the result of our test (N people, blindfolded or blind; X of 4 questions answered correctly) and one quote.`
+- **Reusable:** adding another EIC visualization needs only a video, its colour bar and a script with cue times.
+- **Reach:** runs in any browser with no installation, in English and Spanish, from Cajamarca, Peru.
 
 ### Tools, languages and software
 
 JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), HTML Canvas, Web Speech API, Vibration API, MediaRecorder, ffmpeg (video preparation), Git/GitHub, Vercel.
 
-### Creativity
-
-Instead of a direct pixel-to-frequency translation, each dataset gets its own musical character that matches its meaning:
-
-- city lights are chimes;
-- lightning is percussion;
-- CO₂ is tension and a heartbeat;
-- forests are plucked strings and ocean waves.
-
-Data controls the music, while the scales and instruments keep it pleasant to listen to.
-
-### Factors we considered
-
-- **CORS:** NASA servers do not allow cross-origin pixel reading, so we host web-sized copies of the videos with the app.
-- **Performance:** frames are analysed at low resolution 12 times per second.
-- **Browser audio policies:** sound starts only after the user presses Play.
-- **Honesty about data:** the mapping uses the visualization's colours, so values are relative (low → high), not absolute physical units.
-- **Two languages**, so local users and international judges can both use it.
-
 ## Use of Artificial Intelligence
 
-We used an AI coding assistant (Anthropic's Claude) to help write and debug code and documentation. All sonification design decisions, testing and the final review were done by our team. No AI-generated images, video or audio are used. All visuals are NASA SVS visualizations, and all sound is synthesized live by our code.
+- **Code and documentation:** we used an AI coding assistant (Anthropic's Claude) to help write and debug code and documents. The team directed the design, tested by ear and reviewed the result.
+- **Narrator voice:** the scripted narration is synthetic speech. `TODO: state the tool actually used in the submitted version — "AI text-to-speech (ElevenLabs)" or "Microsoft Windows text-to-speech voices".` The script itself was written and fact-checked by the team against NASA's SVS pages. Quiz answers, live remarks and explore values use the browser's built-in speech synthesis.
+- **No AI-generated images, video or music.** All visuals are NASA SVS visualizations and all sonification is synthesized live by our code from the pixels.
 
 ## NASA Data
 
 - Earth Information Center (EIC) Content Database — https://svs.gsfc.nasa.gov/gallery/earth-information-center/
-- Change in Night Lights between 2012 and 2023 – EIC Version — https://svs.gsfc.nasa.gov/5313/
-- Lightning Events Detected from the ISS 2017–2023 — https://svs.gsfc.nasa.gov/5011/
-- DYAMOND Global Carbon Dioxide — https://svs.gsfc.nasa.gov/5196/
 - GEDI Forest Height — https://svs.gsfc.nasa.gov/4950/
+- Change in Night Lights between 2012 and 2023 – EIC Version (Black Marble, Suomi NPP VIIRS) — https://svs.gsfc.nasa.gov/5313/
+- Lightning Events Detected from the ISS 2017–2023 (LIS) — https://svs.gsfc.nasa.gov/5011/
+- DYAMOND Global Carbon Dioxide (GEOS model) — https://svs.gsfc.nasa.gov/5196/
 - Data Sonification: Caldwell 73 (conceptual reference) — https://svs.gsfc.nasa.gov/13786/
 
 ## References
