@@ -174,7 +174,7 @@ export default function App() {
         const u = new SpeechSynthesisUtterance(text);
         // Pick an installed voice for the language; if none exists, use the
         // default voice rather than staying silent.
-        const match = window.speechSynthesis.getVoices().find((vo) => vo.lang.toLowerCase().startsWith(lang));
+        const match = window.speechSynthesis.getVoices().find((vo) => vo.lang.toLowerCase().startsWith(langRef.current));
         if (match) {
           u.voice = match;
           u.lang = match.lang;
@@ -200,7 +200,7 @@ export default function App() {
         engine.setDucked(true);
         window.speechSynthesis.speak(u);
       }),
-    [voice, lang, hush],
+    [voice, hush],
   );
 
   // ---------- audio engine ----------
@@ -391,18 +391,18 @@ export default function App() {
       await speak(text);
     };
     setLegendIdx(-2); // intro
-    await say(t.legendIntro(viz.title[lang]));
+    await say(STRINGS[langRef.current].legendIntro(viz.title[langRef.current]));
     for (let k = 0; k < items.length; k++) {
       if (!live()) return;
       setLegendIdx(k);
-      await say(items[k][lang]);
+      await say(items[k][langRef.current]);
       if (!live()) return;
       await engine.demo(items[k].key);
     }
     if (!live()) return;
     setLegendIdx(-1);
-    await say(t.legendEnd);
-  }, [ensureEngine, pause, speak, t, lang]);
+    await say(STRINGS[langRef.current].legendEnd);
+  }, [ensureEngine, pause, speak]);
 
   const toggleLegend = useCallback(() => (legendIdx !== -1 ? stopLegend() : playLegend()), [legendIdx, stopLegend, playLegend]);
 
@@ -426,13 +426,15 @@ export default function App() {
       new Promise((resolve) => {
         if (run !== storyRunRef.current) return resolve();
         const engine = engineRef.current;
-        const text = line[lang];
+        // Read the language at call time: switching language mid-story takes effect at once.
+        const L = langRef.current;
+        const text = line[L];
         lastLineRef.current = line;
         setCaption(text);
         // Single narrator: cut anything still talking.
         hush();
         voiceBusyRef.current = true;
-        const audio = new Audio(`/narration/${lang}/${line.id}.mp3`);
+        const audio = new Audio(`/narration/${L}/${line.id}.mp3`);
         narrRef.current = audio;
         let finished = false;
         const done = () => {
@@ -451,8 +453,9 @@ export default function App() {
         audio.onended = done;
         // Fallback to the synthetic voice; detach first so speak() does not end this line early.
         let fellBack = false;
-        const fallback = () => {
-          if (fellBack) return;
+        const fallback = (err) => {
+          // "Interrupted by pause" is not a broken file: it means another line took over.
+          if (fellBack || err?.name === 'AbortError' || narrRef.current !== audio) return;
           fellBack = true;
           if (pendingVoiceRef.current === done) pendingVoiceRef.current = null;
           speak(text).then(done);
@@ -461,7 +464,7 @@ export default function App() {
         engine.setDucked(true);
         audio.play().catch(fallback);
       }),
-    [lang, speak, hush],
+    [speak, hush],
   );
 
   const restoreVideo = useCallback(() => {
@@ -538,7 +541,7 @@ export default function App() {
       if (performance.now() - lastSpokeRef.current < 3000) return;
       const rate = v.playbackRate || 1;
       if ((nextCueT - v.currentTime) / rate < 3.2) return; // a scripted line is coming
-      const r = liveRemark(lang, vizRef.current.id, featuresRef.current);
+      const r = liveRemark(langRef.current, vizRef.current.id, featuresRef.current);
       if (!r || r.key === lastRemark) return;
       lastRemark = r.key;
       setLiveLine(r.text);
@@ -561,7 +564,7 @@ export default function App() {
       setQuiz(cue);
       await playLine(cue, run);
       if (!live()) break;
-      setCaption(`${cue[lang]} — ${t.quizHint}`);
+      setCaption(`${cue[langRef.current]} — ${STRINGS[langRef.current].quizHint}`);
       const ans = await new Promise((resolve) => {
         quizRef.current = resolve;
         setTimeout(() => resolve(null), 12000);
@@ -579,7 +582,7 @@ export default function App() {
       const sum = L + R;
       const side = L >= R ? 'left' : 'right';
       const pct = sum > 0.001 ? Math.round((Math.max(L, R) / sum) * 100) : null;
-      const answer = t.quizAnswer(ans, side, pct, cue.quiz.measure[lang]);
+      const answer = STRINGS[langRef.current].quizAnswer(ans, side, pct, cue.quiz.measure[langRef.current]);
       setCaption(answer);
       await speak(answer);
       if (!live()) break;
@@ -607,7 +610,29 @@ export default function App() {
     cursorRef.current = { x: 0.5, y: 0.5, visible: true };
     setExplore(true);
     setTimeout(() => overlayRef.current?.focus(), 50);
-  }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak, lang, t]);
+  }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak]);
+
+  // Language switch while something is being narrated: replay the same line in
+  // the new language (the story keeps going from where it was).
+  const prevLangRef = useRef(lang);
+  useEffect(() => {
+    if (prevLangRef.current === lang) return;
+    prevLangRef.current = lang;
+    const line = lastLineRef.current;
+    const swap = (a) => {
+      if (!a || a.paused || a.ended || !line) return false;
+      a.src = `/narration/${lang}/${line.id}.mp3`;
+      a.play().catch(() => {});
+      return true;
+    };
+    if (swap(narrRef.current)) {
+      setCaption(line[lang]);
+      return;
+    }
+    if (swap(menuAudioRef.current)) return;
+    // A live sentence in the old language: stop it (the next one uses the new language).
+    if ('speechSynthesis' in window && window.speechSynthesis.speaking) window.speechSynthesis.cancel();
+  }, [lang]);
 
   const toggleStoryPause = useCallback(() => {
     const v = videoRef.current;
@@ -778,10 +803,11 @@ export default function App() {
       return;
     }
     hush();
-    const a = new Audio(`/narration/${lang}/${line.id}.mp3`);
+    const L = langRef.current;
+    const a = new Audio(`/narration/${L}/${line.id}.mp3`);
     menuAudioRef.current = a;
-    a.play().catch(() => speak(line[lang]));
-  }, [lang, speak, hush]);
+    a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(line[L]));
+  }, [speak, hush]);
 
   // Plays a stand-alone narration clip (welcome, help) on the single narrator.
   const playClip = useCallback(
@@ -800,7 +826,7 @@ export default function App() {
       setAnnouncement(line[langRef.current]);
       const a = new Audio(`/narration/${langRef.current}/${id}.mp3`);
       menuAudioRef.current = a;
-      a.play().catch(() => speak(line[langRef.current]));
+      a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(line[langRef.current]));
     },
     [hush, speak, toggleStoryPause],
   );
