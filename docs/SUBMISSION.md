@@ -43,6 +43,10 @@ Every story follows the same structure:
 5. **Live remarks** generated from the current data ("A burst of new lightning on your right!").
 6. **A closing fact from NASA**, then **free exploration**: the arrow keys move a cursor, each point sounds and its value is spoken.
 
+### Curated playlist (the challenge's alternative deliverable)
+
+Each story also exists as a **downloadable audio episode** of about two minutes, in English and Spanish: narration and live sonification recorded together, with no screen needed. Each episode is shown with a short explanation of its creative process. People can play them offline or share them, for example on WhatsApp, with someone who cannot see. Anyone can record a fresh episode from the app ("Record episode now"): it plays the full story in episode mode, without pauses for questions, and captures voice and music together.
+
 ### Designed for people who cannot see
 
 - Everything works with the keyboard: Space, Esc, 1–5, arrows, H (spoken help), F (jump to the highest value), R (repeat the last sentence), D (describe now), L (language).

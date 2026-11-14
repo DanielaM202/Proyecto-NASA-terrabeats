@@ -25,6 +25,7 @@ Audio description for Earth science data. Each track is a guided **sound story**
 - Spoken welcome, spoken track menu, one narrator at a time, music ducking under the voice.
 - Explore mode speaks each value, bumps at the image edge and vibrates on phones.
 - English and Spanish, switchable mid-story.
+- **Playlist:** each story as a downloadable audio episode (MP3, EN/ES) with its creative process; new episodes can be recorded from the app.
 
 ## Data honesty
 

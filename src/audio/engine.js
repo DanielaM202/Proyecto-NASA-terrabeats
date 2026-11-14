@@ -53,6 +53,9 @@ export class SonificationEngine {
     this.dry = new Tone.Volume(0).connect(this.duck);
     this.recorder = new Tone.Recorder();
     this.limiter.connect(this.recorder);
+    // Narration bus: pre-rendered voice clips are routed here so a recording
+    // captures voice and music together (not affected by the music volume).
+    this.voiceBus = new Tone.Gain(1).connect(this.limiter);
     this.probe = new Tone.Synth({
       oscillator: { type: 'sine' },
       envelope: { attack: 0.01, decay: 0.3, sustain: 0.2, release: 0.4 },
@@ -598,6 +601,22 @@ export class SonificationEngine {
     if (!this.ready) return;
     this.probePan.pan.rampTo(0, 0.02);
     this.probe.triggerAttackRelease('G1', '32n', undefined, 0.5);
+  }
+
+  /** Route an <audio> narration element through the graph (same-origin files only). */
+  attachMedia(el) {
+    if (!this.ready || el.__routed) return;
+    try {
+      const src = Tone.getContext().rawContext.createMediaElementSource(el);
+      Tone.connect(src, this.voiceBus);
+      el.__routed = true;
+    } catch {
+      /* element already routed or not allowed: it still plays normally */
+    }
+  }
+
+  get isRecording() {
+    return this.recorder?.state === 'started';
   }
 
   startRecording() {

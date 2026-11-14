@@ -34,6 +34,15 @@ export const STRINGS = {
         : `Casi. Escucha otra vez: el ${pct} % ${measure} está a la ${s}.`;
     },
     why: 'Por qué',
+    playlist: 'Playlist: episodios sonoros',
+    playlistIntro:
+      'Cada historia también existe como un episodio de audio de unos dos minutos: narración y sonificación juntas, sin pantalla. Se puede descargar, escuchar sin conexión o compartir, por ejemplo por WhatsApp, con alguien que no ve. Debajo de cada uno explicamos el proceso creativo.',
+    process: 'Proceso creativo',
+    episode: 'Episodio',
+    downloadEpisode: 'Descargar episodio',
+    noEpisode: 'Episodio aún no grabado.',
+    recordEpisode: 'Grabar episodio ahora',
+    recordingEpisode: 'Grabando episodio… (la historia suena completa)',
     help: 'Ayuda hablada',
     moreOptions: 'Más opciones (volumen, velocidad, voz, grabar)',
     phases: ['Leyenda', 'Recorrido', 'Cierre', 'Explora tú'],
@@ -171,6 +180,15 @@ export const STRINGS = {
         : `Close. Listen again: ${pct}% of ${measure} is on the ${side}.`;
     },
     why: 'Why',
+    playlist: 'Playlist: sound episodes',
+    playlistIntro:
+      'Each story also exists as an audio episode of about two minutes: narration and sonification together, no screen needed. It can be downloaded, played offline or shared, for example on WhatsApp, with someone who cannot see. Under each one we explain the creative process.',
+    process: 'Creative process',
+    episode: 'Episode',
+    downloadEpisode: 'Download episode',
+    noEpisode: 'Episode not recorded yet.',
+    recordEpisode: 'Record episode now',
+    recordingEpisode: 'Recording episode… (the full story plays)',
     help: 'Spoken help',
     moreOptions: 'More options (volume, speed, voice, record)',
     phases: ['Legend', 'Tour', 'Wrap-up', 'Your turn'],

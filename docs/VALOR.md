@@ -35,6 +35,7 @@ Lo que hace que tenga sentido:
 - **Además es compatible con lectores** (NVDA, TalkBack): etiquetas, regiones vivas y navegación con teclado.
 - **Exploración:** cada punto suena y dice su valor, *"bosque de unos 32 metros"*. Un golpe grave avisa del borde de la imagen y el móvil **vibra** según el valor.
 - **Bilingüe**, español e inglés, con la voz en ambos idiomas.
+- **Playlist de episodios descargables:** cada historia en MP3, para escuchar sin pantalla o mandar por WhatsApp a quien no ve.
 
 ## 5. Cómo sabremos que funciona (prueba de impacto)
 Pedimos a una persona con los ojos vendados, o mejor, a una persona ciega, que escuche una historia y responda:

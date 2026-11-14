@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VISUALIZATIONS } from './data/visualizations.js';
 import { LEGENDS, WHY } from './data/legends.js';
 import { EXTRA_LINES, STORIES } from './data/stories.js';
+import { PLAYLIST } from './data/playlist.js';
 import { analysisSize, COLUMNS, extractFeatures, oceanRegion, pixelKind, pixelValue } from './analysis/features.js';
 import { SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
@@ -106,6 +107,8 @@ export default function App() {
   const startedOnceRef = useRef(false);
   const exploreSpeakTimer = useRef(null);
   const quizBoxRef = useRef(null);
+  const episodeRef = useRef(false);
+  const startStoryRef = useRef(() => {}); // recording a playlist episode (story without pauses)
   const interactedRef = useRef(false);
 
   vizRef.current = viz;
@@ -426,6 +429,8 @@ export default function App() {
   const [caption, setCaption] = useState('');
   const [quiz, setQuiz] = useState(null); // active question (for the on-screen buttons)
   const [liveLine, setLiveLine] = useState('');
+  const [episodeFor, setEpisodeFor] = useState(null); // track id being recorded as an episode
+  const [episodes, setEpisodes] = useState({}); // `${id}-${lang}` → blob URL of a fresh recording
   const storyRunRef = useRef(0);
   const narrRef = useRef(null);
   const storyPausedRef = useRef(false);
@@ -447,6 +452,7 @@ export default function App() {
         hush();
         voiceBusyRef.current = true;
         const audio = new Audio(`/narration/${L}/${line.id}.mp3`);
+        engine.attachMedia(audio);
         narrRef.current = audio;
         let finished = false;
         const done = () => {
@@ -490,6 +496,11 @@ export default function App() {
     storyRunRef.current++;
     quizRef.current?.(null);
     hush();
+    if (episodeRef.current) {
+      episodeRef.current = false;
+      engineRef.current.stopRecording(); // unfinished episode: discard
+      setEpisodeFor(null);
+    }
     quizRef.current = null;
     setQuiz(null);
     setStoryPhase('idle');
@@ -510,11 +521,13 @@ export default function App() {
       }, 100);
     });
 
-  const startStory = useCallback(async () => {
+  const startStory = useCallback(async (opts) => {
     const story = STORIES[vizRef.current.id];
     if (!story) return;
     stopLegend();
     stopStory();
+    // Episode mode (playlist): the same story, recorded, with no waiting for answers.
+    const episode = opts?.episode === true;
     const run = ++storyRunRef.current;
     const live = () => run === storyRunRef.current;
     if (playingRef.current) pause();
@@ -524,6 +537,12 @@ export default function App() {
     if (!live()) return;
     engine.setViz(vizRef.current.id); // fresh instruments: no leftover demo notes
     startedOnceRef.current = true;
+    if (episode) {
+      episodeRef.current = true;
+      setEpisodeFor(vizRef.current.id);
+      if (engine.isRecording) await engine.stopRecording();
+      engine.startRecording();
+    }
     const v = videoRef.current;
     v.loop = false;
     v.currentTime = 0;
@@ -549,7 +568,7 @@ export default function App() {
     let lastRemark = '';
     const remarkTimer = setInterval(() => {
       if (!live()) return clearInterval(remarkTimer);
-      if (storyPausedRef.current || quizRef.current || voiceBusyRef.current) return;
+      if (episode || storyPausedRef.current || quizRef.current || voiceBusyRef.current) return;
       if (performance.now() - lastSpokeRef.current < 3000) return;
       const rate = v.playbackRate || 1;
       if ((nextCueT - v.currentTime) / rate < 3.2) return; // a scripted line is coming
@@ -566,6 +585,7 @@ export default function App() {
       await waitFor(() => v.currentTime >= cue.t, run);
       if (!live()) break;
       nextCueT = story.cues[k + 1]?.t ?? Infinity;
+      if (cue.quiz && episode) continue;
       if (!cue.quiz) {
         await playLine(cue, run);
         continue;
@@ -622,6 +642,20 @@ export default function App() {
       await waitFor(() => !storyPausedRef.current, run);
     }
     if (!live()) return;
+    if (episode) {
+      await new Promise((r) => setTimeout(r, 800)); // let the last reverb fade
+      const blob = await engine.stopRecording();
+      episodeRef.current = false;
+      setEpisodeFor(null);
+      if (blob) {
+        const key = `${vizRef.current.id}-${langRef.current}`;
+        setEpisodes((e) => ({ ...e, [key]: URL.createObjectURL(blob) }));
+      }
+      setStoryPhase('idle');
+      setCaption('');
+      restoreVideo();
+      return;
+    }
     setStoryPhase('idle');
     setCaption('');
     restoreVideo();
@@ -629,6 +663,8 @@ export default function App() {
     setExplore(true);
     setTimeout(() => overlayRef.current?.focus(), 50);
   }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak, hush]);
+
+  startStoryRef.current = startStory;
 
   useEffect(() => {
     if (quiz) quizBoxRef.current?.focus();
@@ -1395,6 +1431,62 @@ export default function App() {
               </div>
             ))}
           </dl>
+        </section>
+
+        <section aria-labelledby="playlist" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-3">
+          <h2 id="playlist" className="mb-2 text-xl font-bold">
+            🎧 {t.playlist}
+          </h2>
+          <p className="mb-4 max-w-3xl text-slate-300">{t.playlistIntro}</p>
+          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => {
+              const p = PLAYLIST[v.id];
+              const fresh = episodes[`${v.id}-${lang}`];
+              const file = p.files?.includes(lang) ? `/playlist/${v.id}-${lang}.mp3` : null;
+              const src = fresh || file;
+              const busy = episodeFor === v.id;
+              return (
+                <li key={v.id} className="flex flex-col rounded-xl border border-slate-700 bg-slate-950/60 p-3">
+                  <img src={v.poster} alt="" className="h-28 w-full rounded object-cover" loading="lazy" />
+                  <h3 className="mt-2 font-bold">{v.title[lang]}</h3>
+                  <p className="text-sm text-emerald-200">{STORIES[v.id].question[lang]}</p>
+                  <p className="mt-2 flex-1 text-sm text-slate-300">
+                    <span className="font-semibold text-slate-200">{t.process}: </span>
+                    {p.process[lang]}
+                  </p>
+                  {src ? (
+                    <>
+                      <audio controls preload="none" src={src} className="mt-3 w-full" aria-label={`${t.episode}: ${v.title[lang]}`} />
+                      <a
+                        href={src}
+                        download={`terrabeats-${v.id}-${lang}.${fresh ? 'webm' : 'mp3'}`}
+                        className="mt-2 text-sm text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                      >
+                        ⬇ {t.downloadEpisode}
+                      </a>
+                    </>
+                  ) : (
+                    <p className="mt-3 text-sm text-slate-400">{t.noEpisode}</p>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!!episodeFor}
+                    onClick={() => {
+                      setVizIndex(VISUALIZATIONS.findIndex((x) => x.id === v.id));
+                      // start once the track has switched (instruments and video are rebuilt)
+                      setTimeout(() => startStoryRef.current({ episode: true }), 600);
+                      document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className={`mt-3 rounded-lg border px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 disabled:opacity-50 ${
+                      busy ? 'border-red-400 bg-red-500/30 text-red-100' : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
+                    }`}
+                  >
+                    {busy ? `● ${t.recordingEpisode}` : `● ${t.recordEpisode}`}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
         </section>
 
         <section aria-labelledby="how" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-3">

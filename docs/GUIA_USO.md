@@ -56,6 +56,11 @@
 | Escuchar la leyenda | G | Reproduce solo la leyenda de sonidos de la pista |
 | Lista de pistas | 1–5 | Cambia de pista: detiene todo lo anterior y anuncia la nueva |
 
+## Playlist (episodios sonoros)
+- Cada pista tiene un **episodio de audio** de unos dos minutos (narración y sonificación juntas), en español e inglés, con su **proceso creativo** explicado.
+- **Reproducir / Descargar episodio:** se escucha en la página o se descarga en MP3 para oírlo sin pantalla o compartirlo.
+- **Grabar episodio ahora:** reproduce la historia completa sin pausas para preguntas y graba voz y música juntas. Al terminar aparece el enlace de descarga (formato WebM).
+
 ## Paneles informativos
 - **Barras bajo el video:** lo que "lee" el cabezal en cada franja de la imagen.
 - **Datos en vivo:** nivel, cobertura, intensidad y zona de mayor actividad.
