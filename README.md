@@ -14,20 +14,21 @@ Audio description for Earth science data. Each track is a guided **sound story**
 | # | Visualization | Question | Sound |
 |---|---|---|---|
 | 1 | [GEDI Forest Height](https://svs.gsfc.nasa.gov/4950/) | Where are the tallest forests NASA measured? | Note pitch = canopy height (0–50 m); birds = tall forest; waves = ocean |
-| 2 | [Night Lights 2012–2023](https://svs.gsfc.nasa.gov/5313/) | How did humanity's light change? | Chimes for lit regions; sparkles = new lights; falling notes = lights out |
-| 3 | [Lightning from the ISS 2017–2023](https://svs.gsfc.nasa.gov/5011/) | Where and when does lightning strike? | A hit for new lightning, panned to where it appears |
-| 4 | [DYAMOND Global CO₂](https://svs.gsfc.nasa.gov/5196/) | Where does CO₂ come from and how does it move? | Chord from calm to tense; heartbeat speeds up |
+| 2 | [Ocean Currents and Temperature](https://svs.gsfc.nasa.gov/3912/) | Where does the sea keep its heat, and how do currents move it? | Note = water temperature per latitude band (0–32 °C); ice chimes = polar water; running water = current motion |
+| 3 | [Night Lights 2012–2023](https://svs.gsfc.nasa.gov/5313/) | How did humanity's light change? | Chimes for lit regions; sparkles = new lights; falling notes = lights out |
+| 4 | [Lightning from the ISS 2017–2023](https://svs.gsfc.nasa.gov/5011/) | Where and when does lightning strike? | A hit for new lightning, panned to where it appears |
+| 5 | [DYAMOND Global CO₂](https://svs.gsfc.nasa.gov/5196/) | Where does CO₂ come from and how does it move? | Chord from calm to tense; heartbeat speeds up |
 
 ## Accessibility
 
-- Keyboard: **Space** story / pause · **Esc** stop · **1–4** tracks · **← →** answer questions · **H** spoken help · **E** explore · **Arrows** move the explore cursor · **F** highest value · **R** repeat · **D** describe now · **G** audio legend · **P** free mode · **L** language.
+- Keyboard: **Space** story / pause · **Esc** stop · **1–5** tracks · **← →** answer questions · **H** spoken help · **E** explore · **Arrows** move the explore cursor · **F** highest value · **R** repeat · **D** describe now · **G** audio legend · **P** free mode · **L** language.
 - Spoken welcome, spoken track menu, one narrator at a time, music ducking under the voice.
 - Explore mode speaks each value, bumps at the image edge and vibrates on phones.
 - English and Spanish, switchable mid-story.
 
 ## Data honesty
 
-Narrated facts come from NASA's SVS page of each visualization. Values are derived from the **colours** of the visualization, not from the original science data: heights are approximate, CO₂ and lightning are relative. See [`docs/SUBMISSION.md`](docs/SUBMISSION.md) → *Scientific integrity*.
+Narrated facts come from NASA's SVS page of each visualization. Values are derived from the **colours** of the visualization, not from the original science data: forest heights (metres) and sea temperatures (°C) are read from each official colour bar and are approximate; CO₂ and lightning are relative. See [`docs/SUBMISSION.md`](docs/SUBMISSION.md) → *Scientific integrity*.
 
 ## Narration
 

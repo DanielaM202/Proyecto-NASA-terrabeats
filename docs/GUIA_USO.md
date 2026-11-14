@@ -2,7 +2,7 @@
 
 ## Recorrido típico (2 minutos)
 1. Abres la web. Con la primera tecla o clic suena la **bienvenida**.
-2. Eliges una pista (**1–4** o clic). Una voz dice cuál es y qué pregunta responde.
+2. Eliges una pista (**1–5** o clic). Una voz dice cuál es y qué pregunta responde.
 3. Pulsas **Espacio** (o "Escuchar la historia"). La historia tiene 4 partes, visibles en la barra de progreso:
    1. **Leyenda:** cada sonido se presenta solo y con su nombre.
    2. **Recorrido:** el video avanza, la voz nombra lugares y momentos, y la música baja mientras habla. Las marcas blancas de la barra son frases del guion; la amarilla es la pregunta.
@@ -10,13 +10,14 @@
    4. **Explora tú:** la imagen queda congelada y el cursor activo.
 4. En la **pregunta**, respondes con **← / →** (o los botones amarillos), incluso mientras todavía se escucha. La respuesta se calcula con los datos de ese fotograma.
 
-## Las 4 pistas
+## Las 5 pistas
 | Tecla | Pista | Pregunta | Sonidos |
 |---|---|---|---|
 | 1 | Bosques (GEDI) | ¿Dónde están los bosques más altos que midió la NASA? | Nota = altura (0–50 m) · pájaros = bosque alto · olas = océano |
-| 2 | Luces nocturnas | ¿Cómo cambió la luz de la humanidad entre 2012 y 2023? | Campanillas = regiones iluminadas · brillo que sube = luces nuevas · nota que cae = luces apagadas |
-| 3 | Rayos (EEI) | ¿Dónde y cuándo caen los rayos? | Golpe = rayos nuevos, a izquierda o derecha · trueno = actividad total |
-| 4 | CO₂ (DYAMOND) | ¿De dónde sale el CO₂ y cómo se mueve? | Acorde tranquilo → tenso · latido que se acelera |
+| 2 | Océanos (ECCO2) | ¿Dónde guarda el mar su calor y cómo lo mueven las corrientes? | Nota = temperatura del agua por franja de latitud (0–32 °C), de polo a polo · cristales = agua polar · agua que corre = movimiento de las corrientes |
+| 3 | Luces nocturnas | ¿Cómo cambió la luz de la humanidad entre 2012 y 2023? | Campanillas = regiones iluminadas · brillo que sube = luces nuevas · nota que cae = luces apagadas |
+| 4 | Rayos (EEI) | ¿Dónde y cuándo caen los rayos? | Golpe = rayos nuevos, a izquierda o derecha · trueno = actividad total |
+| 5 | CO₂ (DYAMOND) | ¿De dónde sale el CO₂ y cómo se mueve? | Acorde tranquilo → tenso · latido que se acelera |
 
 ## Botones y teclas
 ### Historia
@@ -53,11 +54,12 @@
 |---|---|---|
 | Español / English | L | Cambia el idioma al instante, también a mitad de historia |
 | Escuchar la leyenda | G | Reproduce solo la leyenda de sonidos de la pista |
-| Lista de pistas | 1–4 | Cambia de pista: detiene todo lo anterior y anuncia la nueva |
+| Lista de pistas | 1–5 | Cambia de pista: detiene todo lo anterior y anuncia la nueva |
 
 ## Paneles informativos
 - **Barras bajo el video:** lo que "lee" el cabezal en cada franja de la imagen.
 - **Datos en vivo:** nivel, cobertura, intensidad y zona de mayor actividad.
-- **Leyenda auditiva:** la lista de sonidos de la pista y su significado.
+- **Leyenda auditiva:** la lista de sonidos de la pista, su significado y el **porqué** de cada elección.
+- **En Océanos**, el modo explorar dice el océano real y la temperatura: *"océano Pacífico norte: unos 15 grados"*.
 - **Sobre esta visualización:** descripción y enlace a la página de la NASA.
 - **Cómo funciona:** el proceso técnico y la nota de honestidad con los datos.

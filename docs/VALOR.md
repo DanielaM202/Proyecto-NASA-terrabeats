@@ -29,7 +29,7 @@ Lo que hace que tenga sentido:
 - **Pregunta interactiva** en Bosques, Rayos y CO₂ (← / →): la persona escucha y decide, y la respuesta se calcula **con los datos de ese fotograma**.
 - **Comentarios en vivo** generados con los datos del momento (*"¡Ráfaga de 64 rayos a tu derecha!"*).
 - **Explorar con voz:** al detener el cursor, una voz dice el valor (*"centro: bosque de unos 32 metros"*), aunque no haya lector de pantalla.
-- **Todo se maneja con teclado:** Espacio, Esc, 1–4, H, E, F, R, G, D y L.
+- **Todo se maneja con teclado:** Espacio, Esc, 1–5, H, E, F, R, G, D y L.
 - **Menú sonoro:** al cambiar de pista, una voz dice cuál es y qué pregunta responde.
 - **La narración es audio grabado:** suena igual en cualquier navegador, sin depender de un lector de pantalla.
 - **Además es compatible con lectores** (NVDA, TalkBack): etiquetas, regiones vivas y navegación con teclado.
