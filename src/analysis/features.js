@@ -77,8 +77,8 @@ export function gediMeters(r, g, b) {
 const inMask = (masks, x, y) => masks.some((m) => x >= m[0] && y >= m[1] && x <= m[2] && y <= m[3]);
 
 const isOcean = (r, g, b) => b > r + 25 && b >= g - 10 && b > 50;
-const isGain = (r, g, b) => b > 70 && b - g > 30 && r - g > 5; // purple: more light
-const isLoss = (r, g, b) => r > 100 && r - b > 60 && r - g > 30; // orange: less light
+const isGain = (r, g, b) => b > 50 && b - g > 20 && r - g > 3; // purple: new lights
+const isLoss = (r, g, b) => r > 60 && r - b > 35 && r - g > 18 && g > b + 6; // orange: lights out
 
 /**
  * @param {ImageData} img
@@ -205,5 +205,6 @@ export function pixelKind(vizId, r, g, b) {
 
 /** Downsampled analysis size for each aspect ratio. */
 export function analysisSize(viz) {
-  return viz.flatMap ? { w: 256, h: 72 } : { w: 160, h: 90 };
+  // Night lights are tiny points: analyse at higher resolution so they are not blurred away.
+  return viz.id === 'night-lights' ? { w: 320, h: 180 } : { w: 160, h: 90 };
 }

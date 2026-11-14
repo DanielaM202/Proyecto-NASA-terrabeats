@@ -95,6 +95,7 @@ export default function App() {
   const hapticsRef = useRef(haptics);
   const exploreRef = useRef(explore);
   const stopStoryRef = useRef(() => {});
+  const pauseRef = useRef(() => {});
   const lastLineRef = useRef(null);
   const menuAudioRef = useRef(null);
   const voiceBusyRef = useRef(false); // one narrator at a time
@@ -104,6 +105,7 @@ export default function App() {
   const hushRef = useRef(() => {});
   const startedOnceRef = useRef(false);
   const exploreSpeakTimer = useRef(null);
+  const quizBoxRef = useRef(null);
   const interactedRef = useRef(false);
 
   vizRef.current = viz;
@@ -248,6 +250,7 @@ export default function App() {
     setPlaying(false);
   }, []);
 
+  pauseRef.current = pause;
   const togglePlay = useCallback(() => (playingRef.current ? pause() : play()), [play, pause]);
 
   const restart = () => {
@@ -263,6 +266,7 @@ export default function App() {
     setUi(null);
     stopLegend();
     stopStoryRef.current();
+    if (playingRef.current) pauseRef.current();
     const engine = engineRef.current;
     if (engine.ready) engine.setViz(viz.id);
     // Audio menu (needs a previous user gesture so the browser allows sound).
@@ -562,13 +566,19 @@ export default function App() {
       // so the listener can hear left/right before answering.
       if (!cue.quiz.keepPlaying) v.pause();
       setQuiz(cue);
-      await playLine(cue, run);
-      if (!live()) break;
-      setCaption(`${cue[langRef.current]} — ${STRINGS[langRef.current].quizHint}`);
-      const ans = await new Promise((resolve) => {
-        quizRef.current = resolve;
-        setTimeout(() => resolve(null), 12000);
+      // The answer can arrive at any time, even while the question is still being read.
+      let answered = false;
+      const answerP = new Promise((resolve) => {
+        quizRef.current = (a) => {
+          answered = true;
+          resolve(a);
+        };
       });
+      await Promise.race([playLine(cue, run), answerP]);
+      if (!live()) break;
+      if (answered) hush();
+      else setCaption(`${cue[langRef.current]} — ${STRINGS[langRef.current].quizHint}`);
+      const ans = await Promise.race([answerP, new Promise((resolve) => setTimeout(() => resolve(null), 12000))]);
       quizRef.current = null;
       setQuiz(null);
       if (!live()) break;
@@ -610,7 +620,11 @@ export default function App() {
     cursorRef.current = { x: 0.5, y: 0.5, visible: true };
     setExplore(true);
     setTimeout(() => overlayRef.current?.focus(), 50);
-  }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak]);
+  }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak, hush]);
+
+  useEffect(() => {
+    if (quiz) quizBoxRef.current?.focus();
+  }, [quiz]);
 
   // Language switch while something is being narrated: replay the same line in
   // the new language (the story keeps going from where it was).
@@ -907,6 +921,8 @@ export default function App() {
   }, [vizIndex]);
 
   const story = STORIES[viz.id];
+  const vEl = videoRef.current;
+  const storyProgress = storyPhase === 'tour' && vEl?.duration ? vEl.currentTime / vEl.duration : storyPhase === 'outro' ? 1 : 0;
   const level = ui ? levelValue(viz.id, ui) : 0;
   const position = useMemo(() => (ui && ui.coverage > 0.0005 ? regionName(t, ui.cx, ui.cy) : '—'), [ui, t]);
 
@@ -993,6 +1009,35 @@ export default function App() {
                 )}
               </div>
               <p className="mt-2 text-sm text-emerald-100/80">{t.storyHint}</p>
+              {storyPhase !== 'idle' && (
+                <div className="mt-3" aria-hidden="true">
+                  <ol className="flex gap-1 text-xs font-semibold">
+                    {t.phases.map((name, k) => {
+                      const active = ['intro', 'tour', 'outro'].indexOf(storyPhase) === k;
+                      return (
+                        <li
+                          key={name}
+                          className={`flex-1 rounded px-2 py-1 text-center ${
+                            active ? 'bg-emerald-400 text-slate-950' : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {k + 1}. {name}
+                        </li>
+                      );
+                    })}
+                  </ol>
+                  <div className="relative mt-2 h-2 rounded bg-slate-800">
+                    <div className="h-2 rounded bg-emerald-400 transition-[width]" style={{ width: `${storyProgress * 100}%` }} />
+                    {story.cues.map((c) => (
+                      <span
+                        key={c.id}
+                        className={`absolute top-[-3px] h-3.5 w-1 rounded ${c.quiz ? 'bg-yellow-300' : 'bg-white/70'}`}
+                        style={{ left: `${(c.t / (videoRef.current?.duration || 60)) * 100}%` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
               {caption && (
                 <p className="mt-3 rounded-lg bg-black/40 p-3 text-lg leading-snug text-white">
                   <span aria-hidden="true">🎙 </span>
@@ -1000,7 +1045,13 @@ export default function App() {
                 </p>
               )}
               {quiz && (
-                <div className="mt-3 flex gap-3" role="group" aria-label={t.quizHint}>
+                <div
+                  ref={quizBoxRef}
+                  tabIndex={-1}
+                  role="application"
+                  aria-label={`${quiz[lang]} ${t.quizHint}`}
+                  className="mt-3 flex gap-3 rounded-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
+                >
                   {['left', 'right'].map((sd) => (
                     <button
                       key={sd}
@@ -1083,10 +1134,52 @@ export default function App() {
             >
               {playing ? `❚❚ ${t.pause}` : `▶ ${story ? t.freePlay : t.play}`}
             </button>
+            <Toggle checked={explore} onChange={toggleExplore}>
+              {t.explore} (E)
+            </Toggle>
+            <button
+              type="button"
+              onClick={describeNow}
+              aria-keyshortcuts="D"
+              className="rounded-lg border border-sky-500 bg-sky-500/20 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              🗣 {t.describe} (D)
+            </button>
+            <button
+              type="button"
+              onClick={findMax}
+              aria-keyshortcuts="F"
+              className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-3 py-2 text-sm font-medium text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ⌖ {t.findMax} (F)
+            </button>
+            <button
+              type="button"
+              onClick={repeatLast}
+              aria-keyshortcuts="R"
+              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ↺ {t.repeat} (R)
+            </button>
+            <button
+              type="button"
+              onClick={() => playClip('help')}
+              aria-keyshortcuts="H"
+              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ? {t.help} (H)
+            </button>
+          </div>
+
+          <details className="mt-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
+              ⚙ {t.moreOptions}
+            </summary>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={restart}
-              className="rounded-lg border border-slate-600 bg-slate-800 px-4 py-3 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
               ⟲ {t.restart}
             </button>
@@ -1116,36 +1209,6 @@ export default function App() {
                 ))}
               </select>
             </label>
-          </div>
-
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Toggle checked={explore} onChange={toggleExplore}>
-              {t.explore} (E)
-            </Toggle>
-            <button
-              type="button"
-              onClick={describeNow}
-              aria-keyshortcuts="D"
-              className="rounded-lg border border-sky-500 bg-sky-500/20 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-            >
-              🗣 {t.describe} (D)
-            </button>
-            <button
-              type="button"
-              onClick={findMax}
-              aria-keyshortcuts="F"
-              className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-3 py-2 text-sm font-medium text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-            >
-              ⌖ {t.findMax} (F)
-            </button>
-            <button
-              type="button"
-              onClick={repeatLast}
-              aria-keyshortcuts="R"
-              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-            >
-              ↺ {t.repeat} (R)
-            </button>
             <Toggle checked={autoNarrate} onChange={setAutoNarrate}>
               {t.autoNarrate}
             </Toggle>
@@ -1173,16 +1236,21 @@ export default function App() {
                 ⬇ {t.download}
               </a>
             )}
-          </div>
+            </div>
+          </details>
 
           {/* Live text: visible and announced to screen readers */}
           <div className="mt-4 space-y-2">
-            <p role="status" aria-live="polite" className="min-h-[1.5rem] rounded-lg bg-slate-900 p-3 text-slate-100">
+            <p
+              role={voice ? undefined : 'status'}
+              aria-live={voice ? 'off' : 'polite'}
+              className="min-h-[1.5rem] rounded-lg bg-slate-900 p-3 text-slate-100"
+            >
               {recording && <span className="mr-2 text-red-300">{t.recording}</span>}
               {announcement}
             </p>
             {explore && (
-              <p aria-live="assertive" className="rounded-lg border border-yellow-300/50 bg-slate-900 p-3 text-yellow-100">
+              <p aria-live={voice ? 'off' : 'assertive'} className="rounded-lg border border-yellow-300/50 bg-slate-900 p-3 text-yellow-100">
                 {probeText || t.exploreHelp}
               </p>
             )}

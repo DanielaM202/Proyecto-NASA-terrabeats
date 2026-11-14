@@ -13,18 +13,18 @@ export const STORIES = {
     // Spoken when the track is selected (audio menu for people who cannot see).
     menu: {
       id: 'forest-menu',
-      es: 'Bosques. ¿Dónde crecen los árboles más altos del planeta? Pulsa espacio para escuchar la historia.',
-      en: 'Forests. Where do the tallest trees on Earth grow? Press space to hear the story.',
+      es: 'Bosques. ¿Dónde están los bosques más altos que midió la NASA? Pulsa espacio para escuchar la historia.',
+      en: 'Forests. Where are the tallest forests NASA measured? Press space to hear the story.',
     },
     question: {
-      es: '¿Dónde crecen los árboles más altos del planeta?',
-      en: 'Where do the tallest trees on Earth grow?',
+      es: '¿Dónde están los bosques más altos que midió la NASA?',
+      en: 'Where are the tallest forests NASA measured?',
     },
     intro: [
       {
         id: 'forest-intro-1',
-        es: '¿Dónde crecen los árboles más altos del planeta? Vamos a escucharlo dando una vuelta completa a la Tierra.',
-        en: 'Where do the tallest trees on Earth grow? Let’s listen as we travel once around the planet.',
+        es: '¿Dónde están los bosques más altos que midió la NASA? Vamos a escucharlo dando una vuelta completa a la Tierra.',
+        en: 'Where are the tallest forests NASA measured? Let’s listen as we travel once around the Earth.',
       },
       {
         id: 'forest-intro-2',
@@ -40,8 +40,8 @@ export const STORIES = {
       },
       {
         id: 'forest-intro-4',
-        es: 'Los pájaros solo cantan donde el bosque supera los treinta metros.',
-        en: 'Birds only sing where the forest is taller than thirty metres.',
+        es: 'Los pájaros solo cantan donde el bosque supera, aproximadamente, los treinta metros.',
+        en: 'Birds only sing where the forest is taller than about thirty metres.',
         demo: 'birds',
       },
       {
@@ -73,15 +73,15 @@ export const STORIES = {
       {
         id: 'forest-cue-congo',
         t: 19.3,
-        es: 'En el centro, la selva del Congo: notas agudas y pájaros. Árboles de más de treinta metros.',
-        en: 'In the middle, the Congo rainforest: high notes and birds. Trees over thirty metres tall.',
+        es: 'En el centro, la selva del Congo: notas agudas y pájaros. Es bosque alto.',
+        en: 'In the middle, the Congo rainforest: high notes and birds. This is tall forest.',
       },
       {
         id: 'forest-quiz',
-        t: 24.3,
-        quiz: { metric: 'high', measure: { es: 'los bosques de más de treinta metros', en: 'the forest over thirty metres' } },
-        es: 'Pregunta. Escucha los pájaros. ¿Hay más bosque alto a la izquierda, en Sudamérica, o a la derecha, en África?',
-        en: 'Question. Listen to the birds. Is there more tall forest on the left, in South America, or on the right, in Africa?',
+        t: 24.6,
+        quiz: { metric: 'high', measure: { es: 'del bosque alto visible', en: 'the tall forest in view' } },
+        es: 'Pregunta. Escucha los pájaros. ¿Se ve más bosque alto a la izquierda, en Sudamérica, o a la derecha, en África?',
+        en: 'Question. Listen to the birds. Is there more tall forest in view on the left, in South America, or on the right, in Africa?',
       },
       {
         id: 'forest-cue-amazon',
@@ -111,13 +111,13 @@ export const STORIES = {
     outro: [
       {
         id: 'forest-outro-1',
-        es: 'Lo que escuchaste: los árboles más altos crecen en el trópico, en la Amazonía, el Congo y el sudeste asiático. Los desiertos suenan graves y los océanos solo traen olas.',
-        en: 'What you heard: the tallest trees grow in the tropics, in the Amazon, the Congo and Southeast Asia. Deserts sound low and oceans only bring waves.',
+        es: 'Lo que escuchaste: en esta vuelta, los bosques más altos sonaron en la Amazonía, el Congo y el sudeste asiático. Los desiertos sonaron graves y los océanos solo trajeron olas.',
+        en: 'What you heard: on this trip, the tallest forests sounded in the Amazon, the Congo and Southeast Asia. Deserts sounded low and oceans only brought waves.',
       },
       {
         id: 'forest-outro-2',
-        es: 'Estas alturas las midió GEDI, un láser de la NASA en la Estación Espacial Internacional. Conocer la altura de los bosques ayuda a calcular cuánto carbono guardan.',
-        en: 'These heights were measured by GEDI, a NASA laser on the International Space Station. Knowing how tall forests are helps estimate how much carbon they store.',
+        es: 'Estas alturas las midió GEDI, un láser de la NASA en la Estación Espacial Internacional, entre 2019 y 2020. Conocer la estructura de los bosques ayuda a entender el ciclo del carbono, la biodiversidad y los hábitats.',
+        en: 'These heights were measured by GEDI, a NASA laser on the International Space Station, between 2019 and 2020. Knowing the structure of forests helps us understand the carbon cycle, biodiversity and habitats.',
       },
       {
         id: 'forest-outro-3',
@@ -183,38 +183,37 @@ export const STORIES = {
       {
         id: 'night-cue-asia',
         t: 17,
-        es: 'Escucha los brillos hacia la derecha: gran parte del crecimiento está en Asia y África.',
-        en: 'Listen to the sparkles on the right: much of the growth is in Asia and Africa.',
+        es: 'Escucha dónde suenan los brillos que suben: son los lugares con luces nuevas.',
+        en: 'Listen to where the rising sparkles play: those are the places with new lights.',
       },
       {
         id: 'night-cue-zoom',
         t: 26,
-        es: 'Cuatro lugares de cerca: Europa occidental, el río Nilo, Ucrania y la India.',
-        en: 'Four places up close: Western Europe, the Nile River, Ukraine and India.',
+        es: 'Ahora, dos lugares de cerca: Ucrania, arriba a la izquierda, y la India, abajo a la derecha.',
+        en: 'Now, two places up close: Ukraine, at the top left, and India, at the bottom right.',
       },
       {
         id: 'night-cue-india',
         t: 31.5,
-        es: 'Año tras año, la India se ilumina: cada vez más campanillas.',
-        en: 'Year after year, India lights up: more and more chimes.',
-      },
-      {
-        id: 'night-cue-result',
-        t: 38.5,
-        es: 'El resultado: la India en morado, ganó luz. En Ucrania, con la guerra desde 2022, muchas luces se apagaron.',
-        en: 'The result: India in purple, it gained light. In Ukraine, with the war since 2022, many lights went out.',
+        es: 'Año tras año, de 2012 a 2023. Escucha cómo cambian las campanillas de la India.',
+        en: 'Year after year, from 2012 to 2023. Listen to how India’s chimes change.',
       },
     ],
     outro: [
       {
+        id: 'night-cue-result',
+        es: 'El resultado. La India aparece casi toda en morado: luces nuevas. En Ucrania hay manchas naranjas: luces que se apagaron, sobre todo en el este y el sur.',
+        en: 'The result. India appears almost entirely purple: new lights. In Ukraine there are orange patches: lights that went out, mostly in the east and south.',
+      },
+      {
         id: 'night-outro-1',
-        es: 'Lo que escuchaste: la luz nocturna cuenta la historia humana. Crece con las ciudades y la electricidad, y se apaga con las crisis y los conflictos.',
-        en: 'What you heard: night light tells the human story. It grows with cities and electricity, and goes out with crises and conflict.',
+        es: 'Lo que escuchaste: según la NASA, las luces nocturnas muestran el crecimiento de las ciudades, el desarrollo de la infraestructura y los cambios en la vida de las comunidades.',
+        en: 'What you heard: according to NASA, night lights show urban growth, infrastructure development and changes in the life of communities.',
       },
       {
         id: 'night-outro-2',
-        es: 'Estas imágenes son del satélite Suomi NPP, que fotografía la Tierra de noche. Ahora explora tú con las flechas.',
-        en: 'These images come from the Suomi NPP satellite, which photographs Earth at night. Now explore on your own with the arrow keys.',
+        es: 'Estos datos son de Black Marble, de la NASA, con el sensor VIIRS del satélite Suomi NPP. Ahora explora tú con las flechas.',
+        en: 'This data comes from NASA’s Black Marble, using the VIIRS sensor on the Suomi NPP satellite. Now explore on your own with the arrow keys.',
       },
     ],
     exploreAt: 41,
@@ -236,13 +235,13 @@ export const STORIES = {
     intro: [
       {
         id: 'light-intro-1',
-        es: '¿Dónde y cuándo caen los rayos del planeta? Desde la Estación Espacial, un sensor de la NASA contó cada rayo durante seis años.',
-        en: 'Where and when does lightning strike on our planet? From the Space Station, a NASA sensor counted every flash for six years.',
+        es: '¿Dónde y cuándo caen los rayos del planeta? Desde la Estación Espacial, el sensor LIS de la NASA detectó rayos en los trópicos y las latitudes medias entre 2017 y 2023.',
+        en: 'Where and when does lightning strike on our planet? From the Space Station, NASA’s LIS sensor detected lightning in the tropics and mid-latitudes between 2017 and 2023.',
       },
       {
         id: 'light-intro-2',
-        es: 'Cada golpe es un grupo de rayos nuevos. Suena a la izquierda o a la derecha según dónde cae, y más agudo si cae más al norte.',
-        en: 'Each hit is a group of new flashes. It sounds left or right depending on where it strikes, and higher if it is further north.',
+        es: 'Cada golpe significa rayos nuevos en la imagen. Suena a la izquierda o a la derecha según dónde aparecen, y más agudo si aparecen más arriba.',
+        en: 'Each hit means new lightning in the image. It sounds left or right depending on where it appears, and higher if it appears further up.',
         demo: 'drops',
       },
       {
@@ -262,39 +261,39 @@ export const STORIES = {
       {
         id: 'light-cue-africa',
         t: 12.5,
-        es: 'Ahora vemos diez días de rayos a la vez. África central suena sin parar.',
-        en: 'Now we see ten days of lightning at once. Central Africa never stops.',
+        es: 'Ahora cada imagen reúne diez días de rayos. Escucha África central: una de las zonas más activas.',
+        en: 'Now each image gathers ten days of lightning. Listen to Central Africa: one of the most active areas.',
       },
       {
         id: 'light-cue-summer',
-        t: 21,
-        es: 'Llega el verano del norte: las tormentas suben a Norteamérica.',
-        en: 'Northern summer arrives: the storms move up into North America.',
+        t: 22,
+        es: 'Los rayos cambian con las estaciones: ahora las tormentas suenan sobre Norteamérica.',
+        en: 'Lightning changes with the seasons: now the storms sound over North America.',
       },
       {
         id: 'light-cue-pacific',
         t: 32,
-        es: 'Sobre el océano Pacífico casi no hay rayos. Escucha el silencio.',
-        en: 'Over the Pacific Ocean there is almost no lightning. Listen to the silence.',
+        es: 'Sobre el océano Pacífico se ven muy pocos rayos. Escucha el silencio.',
+        en: 'Over the Pacific Ocean very little lightning is seen. Listen to the silence.',
       },
       {
         id: 'light-cue-asia',
         t: 42,
-        es: 'Asia y Australia: las tormentas siguen al Sol de una estación a otra.',
-        en: 'Asia and Australia: the storms follow the Sun from season to season.',
+        es: 'Asia y Australia: la actividad se mueve de una estación a otra.',
+        en: 'Asia and Australia: the activity moves from one season to the next.',
       },
       {
         id: 'light-cue-africa2',
-        t: 56,
-        es: 'De nuevo África, el corazón eléctrico del planeta.',
-        en: 'Africa again, the electric heart of the planet.',
+        t: 55.5,
+        es: 'De nuevo África: vuelve la percusión intensa.',
+        en: 'Africa again: the intense percussion returns.',
       },
       {
         id: 'light-quiz',
         t: 60.5,
-        quiz: { metric: 'columns', keepPlaying: true, measure: { es: 'los rayos', en: 'the lightning' } },
-        es: 'Pregunta. Escucha los golpes. ¿Caen más rayos a la izquierda o a la derecha?',
-        en: 'Question. Listen to the hits. Is there more lightning on the left or on the right?',
+        quiz: { metric: 'columns', keepPlaying: true, measure: { es: 'de la actividad de rayos visible', en: 'the lightning activity in view' } },
+        es: 'Pregunta. Escucha los golpes. ¿Hay más rayos a la izquierda o a la derecha de la imagen?',
+        en: 'Question. Listen to the hits. Is there more lightning on the left or on the right of the image?',
       },
       {
         id: 'light-cue-samerica',
@@ -306,13 +305,13 @@ export const STORIES = {
     outro: [
       {
         id: 'light-outro-1',
-        es: 'Lo que escuchaste: los rayos se concentran sobre la tierra caliente de los trópicos, sobre todo en África, y casi desaparecen sobre los océanos.',
-        en: 'What you heard: lightning concentrates over the warm land of the tropics, especially Africa, and almost disappears over the oceans.',
+        es: 'Lo que escuchaste: en esta visualización los rayos se concentran sobre los continentes de los trópicos y casi no aparecen sobre los océanos, y su distribución cambia con las estaciones.',
+        en: 'What you heard: in this visualization lightning concentrates over tropical continents and hardly appears over the oceans, and its distribution changes with the seasons.',
       },
       {
         id: 'light-outro-2',
-        es: 'Estos datos son del sensor LIS de la NASA, entre 2017 y 2023. Ahora explora tú con las flechas.',
-        en: 'This data comes from NASA’s LIS sensor, from 2017 to 2023. Now explore on your own with the arrow keys.',
+        es: 'Son datos con control de calidad del sensor LIS de la NASA, de 2017 a 2023. Ahora explora tú con las flechas.',
+        en: 'This is quality-controlled data from NASA’s LIS sensor, from 2017 to 2023. Now explore on your own with the arrow keys.',
       },
     ],
     exploreAt: 58,
@@ -360,45 +359,45 @@ export const STORIES = {
       {
         id: 'co2-cue-asia',
         t: 0.3,
-        es: 'Enero de 2020, sobre Asia. Las zonas naranjas sobre China son emisiones de industria y ciudades.',
-        en: 'January 2020, over Asia. The orange areas over China are emissions from industry and cities.',
+        es: 'Enero de 2020, sobre Asia. Según la NASA, en China y el sur de Asia la mayoría de las emisiones viene de centrales eléctricas, industrias y vehículos.',
+        en: 'January 2020, over Asia. According to NASA, in China and South Asia most emissions come from power plants, industry and vehicles.',
       },
       {
         id: 'co2-cue-africa',
-        t: 12,
-        es: 'Febrero, África. Escucha cómo el acorde se tensa y se relaja: el dióxido de carbono sube y baja cada día.',
-        en: 'February, Africa. Listen to the chord tighten and relax: carbon dioxide rises and falls every day.',
+        t: 11.7,
+        es: 'Febrero, África. Escucha cómo el acorde se tensa y se relaja: el mapa late con el día y la noche.',
+        en: 'February, Africa. Listen to the chord tighten and relax: the map pulses with day and night.',
       },
       {
         id: 'co2-quiz',
         t: 17.6,
-        quiz: { metric: 'columns', measure: { es: 'el dióxido de carbono', en: 'the carbon dioxide' } },
-        es: 'Pregunta. Escucha la tensión. ¿Dónde está el dióxido de carbono más alto, a la izquierda o a la derecha?',
-        en: 'Question. Listen to the tension. Where is the highest carbon dioxide, on the left or on the right?',
+        quiz: { metric: 'columns', measure: { es: 'de las zonas coloreadas de dióxido de carbono', en: 'the coloured carbon dioxide areas' } },
+        es: 'Pregunta. Escucha la tensión. ¿Dónde se ve más dióxido de carbono, a la izquierda o a la derecha de la imagen?',
+        en: 'Question. Listen to the tension. Where do you find more carbon dioxide, on the left or on the right of the image?',
       },
       {
         id: 'co2-cue-fires',
         t: 21,
-        es: 'Los focos rojos al sur del Sahara coinciden con la temporada de incendios en las sabanas.',
-        en: 'The red hot spots south of the Sahara match the fire season in the savannas.',
+        es: 'Según la NASA, en África y Sudamérica gran parte de las emisiones viene de incendios, que crecen de día y se apagan de noche.',
+        en: 'According to NASA, in Africa and South America much of the emissions come from fires, which flare up by day and die down at night.',
       },
       {
         id: 'co2-cue-samerica',
         t: 28,
-        es: 'Marzo, Sudamérica. Los vientos llevan el gas de un continente a otro.',
-        en: 'March, South America. The winds carry the gas from one continent to another.',
+        es: 'Marzo, Sudamérica. Los vientos reparten el gas por continentes y océanos.',
+        en: 'March, South America. The winds spread the gas across continents and oceans.',
       },
     ],
     outro: [
       {
         id: 'co2-outro-1',
-        es: 'Lo que escuchaste: el dióxido de carbono no se queda donde se emite. Respira con el día y la noche, y los vientos lo reparten por todo el planeta.',
-        en: 'What you heard: carbon dioxide does not stay where it is emitted. It breathes with day and night, and the winds spread it around the planet.',
+        es: 'Lo que escuchaste: el dióxido de carbono no se queda donde se emite. Late con el día y la noche, porque las plantas lo absorben de día y lo liberan de noche, y los vientos lo reparten por el planeta.',
+        en: 'What you heard: carbon dioxide does not stay where it is emitted. It pulses with day and night, because plants absorb it by day and release it at night, and the winds spread it around the planet.',
       },
       {
         id: 'co2-outro-2',
-        es: 'Es el gas que más contribuye al calentamiento global. Ahora explora tú con las flechas.',
-        en: 'It is the gas that contributes most to global warming. Now explore on your own with the arrow keys.',
+        es: 'Según la NASA, es la principal causa del aumento de la temperatura de la Tierra: pasó de unas 278 partes por millón en 1750 a 427 en 2024. Ahora explora tú con las flechas.',
+        en: 'According to NASA, it is the primary reason for Earth’s rising temperatures: it went from about 278 parts per million in 1750 to 427 in 2024. Now explore on your own with the arrow keys.',
       },
     ],
     exploreAt: 16,
@@ -415,8 +414,8 @@ export const EXTRA_LINES = [
   },
   {
     id: 'help',
-    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener. Uno a cuatro: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. Al final puedes explorar la imagen con las flechas: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. L cambia el idioma.',
-    en: 'Help. Space: listen to or pause the story. Escape: stop. One to four: change story. In the questions, answer with the left or right arrow. At the end you can explore the image with the arrow keys: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. L changes the language.',
+    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener. Uno a cuatro: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. Al final puedes explorar la imagen con las flechas: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. L cambia el idioma. Si usas un lector de pantalla como NVDA, todos los controles son botones: recórrelos con Tabulador y actívalos con Enter, o activa el modo foco para usar las teclas.',
+    en: 'Help. Space: listen to or pause the story. Escape: stop. One to four: change story. In the questions, answer with the left or right arrow. At the end you can explore the image with the arrow keys: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. L changes the language. If you use a screen reader such as NVDA, every control is a button: move with Tab and activate with Enter, or switch to focus mode to use the keys.',
   },
 ];
 

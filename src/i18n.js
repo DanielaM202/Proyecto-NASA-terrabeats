@@ -26,13 +26,16 @@ export const STRINGS = {
     right: 'Derecha',
     quizAnswer: (ans, side, pct, measure) => {
       const s = side === 'left' ? 'izquierda' : 'derecha';
-      if (pct == null) return `En este momento casi no hay ${measure} en la imagen.`;
-      if (pct < 56) return `Muy parejo: ${measure} está repartido casi por igual a ambos lados.`;
-      if (!ans) return `Te lo digo: el ${pct} % de ${measure} está a la ${s}.`;
+      if (pct == null) return 'En este momento casi no hay señal en la imagen.';
+      if (pct < 56) return 'Muy parejo: está repartido casi por igual entre los dos lados.';
+      if (!ans) return `Te lo digo: el ${pct} % ${measure} está a la ${s}.`;
       return ans === side
-        ? `¡Correcto! El ${pct} % de ${measure} está a la ${s}.`
-        : `Casi. Escucha otra vez: el ${pct} % de ${measure} está a la ${s}.`;
+        ? `¡Correcto! El ${pct} % ${measure} está a la ${s}.`
+        : `Casi. Escucha otra vez: el ${pct} % ${measure} está a la ${s}.`;
     },
+    help: 'Ayuda hablada',
+    moreOptions: 'Más opciones (volumen, velocidad, voz, grabar)',
+    phases: ['Leyenda', 'Recorrido', 'Cierre', 'Explora tú'],
     findMax: 'Buscar el valor más alto',
     foundMax: (what) => `Valor más alto en esta imagen: ${what}`,
     repeat: 'Repetir la última frase',
@@ -51,7 +54,7 @@ export const STRINGS = {
     legendIntro: (title) => `Leyenda auditiva de ${title}. Escucharás cada sonido por separado.`,
     legendEnd: 'Fin de la leyenda. Pulsa espacio para escuchar la pista completa.',
     autoNarrate: 'Narración automática',
-    voice: 'Voz integrada',
+    voice: 'Voz integrada (apágala si usas lector de pantalla)',
     haptics: 'Vibración (móvil)',
     record: 'Grabar audio',
     stopRecord: 'Detener grabación',
@@ -67,7 +70,8 @@ export const STRINGS = {
       'Visión por computadora: cada píxel se clasifica según la escala de colores oficial de la visualización (luz, rayo, CO₂, altura del bosque).',
       'Rasgos: se calculan cobertura, intensidad, posición (centroide), un perfil de 16 columnas y los cambios entre fotogramas.',
       'Sonido: los rasgos controlan sintetizadores en tiempo real (Tone.js). Las notas se ajustan a escalas musicales para que el resultado sea agradable.',
-      'Accesibilidad: descripciones habladas, modo explorar con teclado, atajos, vibración y textos para lectores de pantalla.',
+      'Accesibilidad: historia narrada, preguntas, modo explorar con teclado y voz, atajos, vibración y textos para lectores de pantalla.',
+      'Honestidad con los datos: los valores salen de los colores de la visualización, no de los datos científicos originales. Son aproximados y relativos; los hechos narrados provienen de las páginas de la NASA de cada visualización.',
     ],
     shortcuts: 'Atajos de teclado',
     shortcutList: [
@@ -107,10 +111,10 @@ export const STRINGS = {
             ? ' Predominan zonas que ganaron luz (morado).'
             : ' Predominan zonas que perdieron luz (naranja).'
           : ''),
-      lightning: (l, where, f) => `Actividad de rayos ${l}: ${f.flashes.length} rayos nuevos, concentrados hacia ${where}.`,
+      lightning: (l, where) => `Actividad de rayos ${l} en la imagen, concentrada hacia ${where}.`,
       co2: (l, where) => `Concentración de CO₂ ${l}; las zonas más altas están hacia ${where}.`,
       'forest-height': (l, where, f, whereHigh) =>
-        `Vegetación en el ${Math.round(f.coverage * 100)}% de la vista, con una altura media de unos ${Math.round(f.meanMeters)} metros. ` +
+        `Vegetación en el ${Math.round(f.coverage * 100)}% de la vista, con una altura media aproximada de ${Math.round(f.meanMeters)} metros según la escala de color. ` +
         (whereHigh ? `Los bosques de más de 30 metros están hacia ${whereHigh}.` : 'No se ven bosques de más de 30 metros.') +
         ` Océano: ${Math.round(f.ocean * 100)}% de la vista.`,
     },
@@ -151,13 +155,16 @@ export const STRINGS = {
     left: 'Left',
     right: 'Right',
     quizAnswer: (ans, side, pct, measure) => {
-      if (pct == null) return `Right now there is almost no ${measure} in the image.`;
-      if (pct < 56) return `Very even: ${measure} is split almost equally between both sides.`;
+      if (pct == null) return 'Right now there is almost no signal in the image.';
+      if (pct < 56) return 'Very even: it is split almost equally between both sides.';
       if (!ans) return `Here is the answer: ${pct}% of ${measure} is on the ${side}.`;
       return ans === side
         ? `Correct! ${pct}% of ${measure} is on the ${side}.`
         : `Close. Listen again: ${pct}% of ${measure} is on the ${side}.`;
     },
+    help: 'Spoken help',
+    moreOptions: 'More options (volume, speed, voice, record)',
+    phases: ['Legend', 'Tour', 'Wrap-up', 'Your turn'],
     findMax: 'Find the highest value',
     foundMax: (what) => `Highest value in this image: ${what}`,
     repeat: 'Repeat the last sentence',
@@ -176,7 +183,7 @@ export const STRINGS = {
     legendIntro: (title) => `Audio legend for ${title}. You will hear each sound on its own.`,
     legendEnd: 'End of the legend. Press space to listen to the full track.',
     autoNarrate: 'Auto narration',
-    voice: 'Built-in voice',
+    voice: 'Built-in voice (turn off with a screen reader)',
     haptics: 'Vibration (mobile)',
     record: 'Record audio',
     stopRecord: 'Stop recording',
@@ -192,7 +199,8 @@ export const STRINGS = {
       'Computer vision: each pixel is classified using the official colour scale of the visualization (light, lightning, CO₂, forest height).',
       'Features: coverage, intensity, position (centroid), a 16‑column profile and frame-to-frame changes are computed.',
       'Sound: the features drive synthesizers in real time (Tone.js). Notes are snapped to musical scales so the result stays pleasant.',
-      'Accessibility: spoken descriptions, keyboard explore mode, shortcuts, vibration and screen-reader text.',
+      'Accessibility: narrated story, questions, keyboard and voice explore mode, shortcuts, vibration and screen-reader text.',
+      'Data honesty: values come from the colours of the visualization, not from the original science data. They are approximate and relative; the narrated facts come from NASA’s page for each visualization.',
     ],
     shortcuts: 'Keyboard shortcuts',
     shortcutList: [
@@ -232,10 +240,10 @@ export const STRINGS = {
             ? ' Most changing areas gained light (purple).'
             : ' Most changing areas lost light (orange).'
           : ''),
-      lightning: (l, where, f) => `Lightning activity ${l}: ${f.flashes.length} new flashes, concentrated toward ${where}.`,
+      lightning: (l, where) => `Lightning activity in the image is ${l}, concentrated toward ${where}.`,
       co2: (l, where) => `CO₂ concentration ${l}; the highest areas are toward ${where}.`,
       'forest-height': (l, where, f, whereHigh) =>
-        `Vegetation covers ${Math.round(f.coverage * 100)}% of the view, with an average height of about ${Math.round(f.meanMeters)} metres. ` +
+        `Vegetation covers ${Math.round(f.coverage * 100)}% of the view, with an approximate average height of ${Math.round(f.meanMeters)} metres from the colour scale. ` +
         (whereHigh ? `Forests taller than 30 metres are toward ${whereHigh}.` : 'No forests taller than 30 metres are in view.') +
         ` Ocean: ${Math.round(f.ocean * 100)}% of the view.`,
     },
@@ -324,7 +332,7 @@ export function liveRemark(lang, vizId, f) {
       if (n >= 40) {
         const x = f.flashes.reduce((a, b) => a + b.x, 0) / n;
         const sd = sideOf(x);
-        return { key: `burst-${sd}`, text: es ? `¡Ráfaga de ${n} rayos ${S[sd]}!` : `A burst of ${n} flashes ${S[sd]}!` };
+        return { key: `burst-${sd}`, text: es ? `¡Ráfaga de rayos nuevos ${S[sd]}!` : `A burst of new lightning ${S[sd]}!` };
       }
       if (f.level < 0.04) return { key: 'quiet', text: es ? 'Casi no hay rayos en esta zona.' : 'Almost no lightning in this area.' };
       return null;

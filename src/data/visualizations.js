@@ -45,10 +45,12 @@ export const VISUALIZATIONS = [
     svsUrl: 'https://svs.gsfc.nasa.gov/5313/',
     video: '/media/night-lights.mp4',
     poster: '/media/night-lights.jpg',
-    aspect: '32 / 9',
+    // The EIC version shows the world map twice side by side; we use one map
+    // (the half with the Ukraine and India close-ups) so left/right is geography.
+    aspect: '16 / 9',
     flatMap: true,
     // On-screen year label and colour bar (x0, y0, x1, y1 as fractions).
-    masks: [[0.47, 0.44, 0.59, 0.64]],
+    masks: [[0, 0.44, 0.18, 0.66]],
     title: {
       es: 'Luces nocturnas 2012–2023',
       en: 'Night Lights 2012–2023',
@@ -58,8 +60,8 @@ export const VISUALIZATIONS = [
       en: 'Cities growing and dimming, seen from space.',
     },
     description: {
-      es: 'Mapa plano del mundo de noche. Primero muestra los promedios anuales de luz artificial de 2012 a 2023; luego revela el cambio: el morado indica zonas con más luz y el naranja zonas con menos luz. Termina con acercamientos a India, Ucrania, Europa Occidental y el Mediterráneo oriental.',
-      en: 'A flat world map at night. It first shows yearly averages of artificial light from 2012 to 2023, then reveals the change: purple marks places with more light and orange places with less light. It ends with close-ups of India, Ukraine, Western Europe and the Eastern Mediterranean.',
+      es: 'Mapa plano del mundo de noche. Primero muestra los promedios anuales de luz artificial de 2012 a 2023; luego revela el cambio: el morado indica zonas con más luz y el naranja zonas con menos luz. Termina con acercamientos a Ucrania y la India (la versión completa del EIC incluye también Europa occidental y el Mediterráneo oriental).',
+      en: 'A flat world map at night. It first shows yearly averages of artificial light from 2012 to 2023, then reveals the change: purple marks places with more light and orange places with less light. It ends with close-ups of Ukraine and India (the full EIC version also includes Western Europe and the Eastern Mediterranean).',
     },
     legend: {
       es: [

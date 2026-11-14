@@ -259,7 +259,7 @@ export class SonificationEngine {
         chimes.inst.triggerAttackRelease(pick(scale, 1 - f.peaks[i]), '8n', time, 0.25 + v * 0.75);
       }
       if (f.gain > 0.0003 && i % 2 === 0) rise(time, pan);
-      if (f.loss > 0.0003 && i % 4 === 2) fall(time, pan, (i / 4) | 0);
+      if (f.loss > 0.0001 && i % 4 === 2) fall(time, pan, (i / 4) | 0);
     }, '16n');
 
     this.demos = {
