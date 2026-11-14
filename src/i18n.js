@@ -33,6 +33,7 @@ export const STRINGS = {
         ? `¡Correcto! El ${pct} % ${measure} está a la ${s}.`
         : `Casi. Escucha otra vez: el ${pct} % ${measure} está a la ${s}.`;
     },
+    why: 'Por qué',
     help: 'Ayuda hablada',
     moreOptions: 'Más opciones (volumen, velocidad, voz, grabar)',
     phases: ['Leyenda', 'Recorrido', 'Cierre', 'Explora tú'],
@@ -66,6 +67,7 @@ export const STRINGS = {
     source: 'Fuente: NASA Scientific Visualization Studio',
     howItWorks: 'Cómo funciona',
     howSteps: [
+      'Método: partimos del enfoque de la sonificación Caldwell 73 de la NASA, donde las coordenadas espaciales se traducen en tono y la luminosidad en volumen. Aquí, un cabezal recorre cada fotograma.',
       'Fotogramas: el video de la NASA se reproduce y cada ~80 ms se copia un fotograma reducido a un lienzo (canvas).',
       'Visión por computadora: cada píxel se clasifica según la escala de colores oficial de la visualización (luz, rayo, CO₂, altura del bosque).',
       'Rasgos: se calculan cobertura, intensidad, posición (centroide), un perfil de 16 columnas y los cambios entre fotogramas.',
@@ -78,7 +80,7 @@ export const STRINGS = {
       ['Espacio', 'Escuchar la historia / pausar'],
       ['P', 'Modo libre (sin narración)'],
       ['Esc', 'Detener historia o leyenda'],
-      ['1 – 4', 'Cambiar de pista'],
+      ['1 – 5', 'Cambiar de pista'],
       ['G', 'Escuchar / detener la leyenda auditiva'],
       ['E', 'Activar / desactivar modo explorar'],
       ['Flechas', 'Mover el cursor en modo explorar'],
@@ -113,6 +115,8 @@ export const STRINGS = {
           : ''),
       lightning: (l, where) => `Actividad de rayos ${l} en la imagen, concentrada hacia ${where}.`,
       co2: (l, where) => `Concentración de CO₂ ${l}; las zonas más altas están hacia ${where}.`,
+      ocean: (l, where, f) =>
+        `Temperatura media del agua visible: unos ${Math.round(f.meanTemp)} grados. La franja más caliente está a unos ${Math.abs(Math.round(f.warmLat))} grados ${f.warmLat >= 0 ? 'al norte' : 'al sur'} del ecuador. ${Math.round(f.high * 100)} % del agua supera los 27 grados.`,
       'forest-height': (l, where, f, whereHigh) =>
         `Vegetación en el ${Math.round(f.coverage * 100)}% de la vista, con una altura media aproximada de ${Math.round(f.meanMeters)} metros según la escala de color. ` +
         (whereHigh ? `Los bosques de más de 30 metros están hacia ${whereHigh}.` : 'No se ven bosques de más de 30 metros.') +
@@ -120,6 +124,10 @@ export const STRINGS = {
     },
     probe: {
       forest: (m) => `bosque de unos ${m} metros`,
+      sea: (place, c) => `${place}: unos ${c} grados`,
+      land: 'tierra firme',
+      oceans: { pacific: 'océano Pacífico', atlantic: 'océano Atlántico', indian: 'océano Índico', arctic: 'océano Ártico', southern: 'océano Antártico' },
+      bands: { north: 'norte', south: 'sur', equatorial: 'ecuatorial' },
       none: 'sin señal',
       ocean: 'océano',
       gain: 'ganó luz',
@@ -162,6 +170,7 @@ export const STRINGS = {
         ? `Correct! ${pct}% of ${measure} is on the ${side}.`
         : `Close. Listen again: ${pct}% of ${measure} is on the ${side}.`;
     },
+    why: 'Why',
     help: 'Spoken help',
     moreOptions: 'More options (volume, speed, voice, record)',
     phases: ['Legend', 'Tour', 'Wrap-up', 'Your turn'],
@@ -195,6 +204,7 @@ export const STRINGS = {
     source: 'Source: NASA Scientific Visualization Studio',
     howItWorks: 'How it works',
     howSteps: [
+      'Method: we build on the approach of NASA’s Caldwell 73 sonification, where spatial coordinates are translated into pitch and luminosity into volume. Here, a playhead sweeps each frame.',
       'Frames: the NASA video plays and every ~80 ms a downsampled frame is copied to a canvas.',
       'Computer vision: each pixel is classified using the official colour scale of the visualization (light, lightning, CO₂, forest height).',
       'Features: coverage, intensity, position (centroid), a 16‑column profile and frame-to-frame changes are computed.',
@@ -207,7 +217,7 @@ export const STRINGS = {
       ['Space', 'Listen to the story / pause'],
       ['P', 'Free mode (no narration)'],
       ['Esc', 'Stop story or legend'],
-      ['1 – 4', 'Switch track'],
+      ['1 – 5', 'Switch track'],
       ['G', 'Play / stop the audio legend'],
       ['E', 'Toggle explore mode'],
       ['Arrows', 'Move the cursor in explore mode'],
@@ -242,6 +252,8 @@ export const STRINGS = {
           : ''),
       lightning: (l, where) => `Lightning activity in the image is ${l}, concentrated toward ${where}.`,
       co2: (l, where) => `CO₂ concentration ${l}; the highest areas are toward ${where}.`,
+      ocean: (l, where, f) =>
+        `Average temperature of the visible water: about ${Math.round(f.meanTemp)} degrees. The warmest band is about ${Math.abs(Math.round(f.warmLat))} degrees ${f.warmLat >= 0 ? 'north' : 'south'} of the equator. ${Math.round(f.high * 100)}% of the water is above 27 degrees.`,
       'forest-height': (l, where, f, whereHigh) =>
         `Vegetation covers ${Math.round(f.coverage * 100)}% of the view, with an approximate average height of ${Math.round(f.meanMeters)} metres from the colour scale. ` +
         (whereHigh ? `Forests taller than 30 metres are toward ${whereHigh}.` : 'No forests taller than 30 metres are in view.') +
@@ -249,6 +261,10 @@ export const STRINGS = {
     },
     probe: {
       forest: (m) => `forest about ${m} metres tall`,
+      sea: (place, c) => `${place}: about ${c} degrees`,
+      land: 'land',
+      oceans: { pacific: 'Pacific Ocean', atlantic: 'Atlantic Ocean', indian: 'Indian Ocean', arctic: 'Arctic Ocean', southern: 'Southern Ocean' },
+      bands: { north: 'north', south: 'south', equatorial: 'equatorial' },
       none: 'no signal',
       ocean: 'ocean',
       gain: 'gained light',
@@ -336,6 +352,16 @@ export function liveRemark(lang, vizId, f) {
       }
       if (f.level < 0.04) return { key: 'quiet', text: es ? 'Casi no hay rayos en esta zona.' : 'Almost no lightning in this area.' };
       return null;
+    }
+    case 'ocean': {
+      const lat = Math.round(f.warmLat);
+      const side = lat >= 0 ? (es ? 'al norte' : 'north') : es ? 'al sur' : 'south';
+      return {
+        key: `warm-${lat}`,
+        text: es
+          ? `Ahora la franja más caliente está a unos ${Math.abs(lat)} grados ${side} del ecuador.`
+          : `Right now the warmest band is about ${Math.abs(lat)} degrees ${side} of the equator.`,
+      };
     }
     case 'co2': {
       if (f.level > 0.55) {

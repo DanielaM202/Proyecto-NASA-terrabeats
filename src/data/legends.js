@@ -30,6 +30,33 @@ export const LEGENDS = {
       en: 'Waves: ocean in view.',
     },
   ],
+  ocean: [
+    {
+      key: 'sweep',
+      es: 'El cabezal baja del polo norte al polo sur. Cada nota es la temperatura del agua en esa franja: fría y grave en los polos, cálida y aguda en el ecuador.',
+      en: 'The playhead goes down from the North Pole to the South Pole. Each note is the water temperature of that band: cold and low at the poles, warm and high at the equator.',
+    },
+    {
+      key: 'cold',
+      es: 'Nota grave: agua a un grado, casi congelada.',
+      en: 'Low note: water at one degree, almost frozen.',
+    },
+    {
+      key: 'warm',
+      es: 'Nota aguda: agua a treinta grados.',
+      en: 'High note: water at thirty degrees.',
+    },
+    {
+      key: 'ice',
+      es: 'Cristales de hielo: agua polar, a cinco grados o menos.',
+      en: 'Ice crystals: polar water, at five degrees or less.',
+    },
+    {
+      key: 'flow',
+      es: 'Agua que corre: cuanto más se mueven las corrientes, más fuerte suena.',
+      en: 'Running water: the more the currents move, the louder it sounds.',
+    },
+  ],
   'night-lights': [
     {
       key: 'chimes',
@@ -86,4 +113,54 @@ export const LEGENDS = {
       en: 'Heartbeat: it speeds up as concentration rises.',
     },
   ],
+};
+
+// The "why" behind each artistic choice (the challenge asks teams to share it).
+// Shown under each legend item.
+export const WHY = {
+  'forest-height': {
+    ruler: {
+      es: 'Altura real se vuelve altura musical: es la relación más directa que existe entre un dato y un sonido.',
+      en: 'Real height becomes musical height: the most direct link there is between a number and a sound.',
+    },
+    low: { es: 'Lo bajo suena grave, como lo esperamos de forma natural.', en: 'Short sounds low, as we naturally expect.' },
+    high: { es: 'Lo alto suena agudo: el oído "mira hacia arriba".', en: 'Tall sounds high: the ear "looks up".' },
+    birds: {
+      es: 'Un sonido que cualquiera reconoce sin explicación: donde el dosel es alto, hay vida.',
+      en: 'A sound anyone recognises without explanation: where the canopy is tall, there is life.',
+    },
+    waves: { es: 'El océano no tiene bosque: en vez de silencio, le dimos su propio sonido.', en: 'The ocean has no forest: instead of silence, we gave it its own sound.' },
+  },
+  ocean: {
+    sweep: {
+      es: 'El calor del mar depende de la latitud, por eso recorremos de polo a polo y no de oeste a este.',
+      en: 'Ocean heat depends on latitude, so we sweep from pole to pole and not from west to east.',
+    },
+    cold: { es: 'Frío = grave y oscuro.', en: 'Cold = low and dark.' },
+    warm: { es: 'Cálido = agudo y brillante.', en: 'Warm = high and bright.' },
+    ice: { es: 'El hielo tintinea: un icono sonoro del agua polar.', en: 'Ice tinkles: a sound icon for polar water.' },
+    flow: { es: 'El movimiento de las corrientes se oye como agua que corre, sin traducción.', en: 'The motion of the currents is heard as running water, no translation needed.' },
+  },
+  'night-lights': {
+    chimes: {
+      es: 'Cada ciudad es un punto de luz; una campanilla es un punto de sonido.',
+      en: 'Each city is a point of light; a chime is a point of sound.',
+    },
+    gain: { es: 'Lo que crece, sube.', en: 'What grows, rises.' },
+    loss: { es: 'Lo que se apaga, cae.', en: 'What goes out, falls.' },
+    pad: { es: 'Un fondo que se llena como se llena de luz el planeta.', en: 'A background that fills up as the planet fills with light.' },
+  },
+  lightning: {
+    drops: { es: 'Un rayo es un instante: por eso es percusión y no una nota larga.', en: 'Lightning is an instant: that is why it is percussion and not a long note.' },
+    crack: { es: 'Muchos rayos juntos suenan como el chasquido de una descarga.', en: 'Many flashes together sound like the crack of a discharge.' },
+    rumble: { es: 'El trueno acompaña a la tormenta: crece con ella.', en: 'Thunder follows the storm: it grows with it.' },
+  },
+  co2: {
+    calm: { es: 'Una atmósfera en equilibrio suena en armonía.', en: 'An atmosphere in balance sounds in harmony.' },
+    tense: {
+      es: 'No usamos una alarma: la tensión musical transmite la urgencia sin asustar.',
+      en: 'We do not use an alarm: musical tension conveys urgency without scaring.',
+    },
+    heart: { es: 'El planeta como un cuerpo vivo: su pulso se acelera con el dióxido de carbono.', en: 'The planet as a living body: its pulse speeds up with carbon dioxide.' },
+  },
 };

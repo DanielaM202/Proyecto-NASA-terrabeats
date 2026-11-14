@@ -11,11 +11,13 @@ const SCALES = {
   'night-lights': ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5', 'C6', 'D6', 'E6'],
   lightning: ['A2', 'C3', 'D3', 'E3', 'G3', 'A3', 'C4', 'D4', 'E4', 'G4', 'A4', 'C5'],
   co2: ['A3', 'B3', 'C4', 'E4', 'F4', 'A4', 'B4', 'C5', 'E5', 'F5', 'A5'],
+  // C major pentatonic: index = sea surface temperature / 32 °C.
+  ocean: ['C3', 'D3', 'E3', 'G3', 'A3', 'C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5', 'C6'],
   // D major pentatonic over 3 octaves: index = height / 50 m.
   'forest-height': ['D3', 'E3', 'F#3', 'A3', 'B3', 'D4', 'E4', 'F#4', 'A4', 'B4', 'D5', 'E5', 'F#5', 'A5', 'B5', 'D6'],
 };
 
-const BPM = { 'night-lights': 96, lightning: 84, co2: 60, 'forest-height': 84 };
+const BPM = { 'night-lights': 96, lightning: 84, co2: 60, 'forest-height': 84, ocean: 80 };
 
 const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (scale, v) => scale[Math.round(clamp01(v) * (scale.length - 1))];
@@ -84,6 +86,7 @@ export class SonificationEngine {
       lightning: () => this.buildLightning(),
       co2: () => this.buildCO2(),
       'forest-height': () => this.buildForest(),
+      ocean: () => this.buildOcean(),
     };
     builders[id]();
     this.transport.bpm.value = BPM[id];
@@ -195,6 +198,79 @@ export class SonificationEngine {
       ruler: (t) => {
         [0, 10, 20, 30, 40, 50].forEach((m, k) => pluck.inst.triggerAttackRelease(note(m), '8n', t + 0.2 + k * 0.5, 0.8));
         return 3.5;
+      },
+    };
+  }
+
+  // =====================================================================
+  // OCEAN (ECCO2 currents coloured by temperature) — three sounds:
+  //   mallet note = water temperature of one latitude band (0–32 °C, low → high)
+  //   ice chime   = polar water (≤ 5 °C)
+  //   flowing water = how much the currents are moving
+  // The playhead sweeps from the North Pole to the South Pole.
+  // =====================================================================
+  buildOcean() {
+    const scale = SCALES.ocean;
+    const note = (celsius) => pick(scale, celsius / 32);
+
+    const mallet = this.panned(
+      new Tone.PolySynth(Tone.FMSynth, {
+        harmonicity: 2,
+        modulationIndex: 2.5,
+        envelope: { attack: 0.005, decay: 0.7, sustain: 0.08, release: 1.1 },
+        modulationEnvelope: { attack: 0.005, decay: 0.25, sustain: 0, release: 0.3 },
+        volume: -9,
+      }),
+    );
+    const ice = this.panned(
+      new Tone.PolySynth(Tone.Synth, {
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.002, decay: 0.35, sustain: 0, release: 0.5 },
+        volume: -18,
+      }),
+    );
+    const iceChime = (time, pan) => {
+      ice.pan.pan.setValueAtTime(pan, time);
+      ['E7', 'B6', 'G#7'].forEach((n, k) => ice.inst.triggerAttackRelease(n, '32n', time + k * 0.05, 0.5));
+    };
+
+    // Flowing water: noise through a moving band-pass, louder when currents move more.
+    const flowVol = this.track(new Tone.Volume(SILENT).connect(this.dry));
+    const flowFilter = this.track(new Tone.Filter({ type: 'bandpass', frequency: 900, Q: 1.4 }).connect(flowVol));
+    this.source(new Tone.Noise('pink')).connect(flowFilter);
+    this.source(new Tone.LFO({ frequency: 0.35, min: 500, max: 1900 })).connect(flowFilter.frequency);
+
+    this.voices = {};
+    this.levels = (f) => flowVol.volume.rampTo(dbFrom(f.motion * 1.6, -44, -17), 0.5);
+    this.silence = () => flowVol.volume.rampTo(SILENT, 0.6);
+
+    this.transport.scheduleRepeat((time) => {
+      const f = this.features;
+      const i = this.advance(time);
+      if (!f) return;
+      if (f.columns[i] < 0.12) return; // band with almost no ocean (land or no data)
+      const celsius = f.colMean[i] * 32;
+      const pan = f.peaks[i] * 2 - 1; // where the warmest water of this band is
+      mallet.pan.pan.setValueAtTime(pan, time);
+      mallet.inst.triggerAttackRelease(note(celsius), '8n', time, 0.35 + f.columns[i] * 0.6);
+      if (celsius <= 5) iceChime(time + 0.06, 0);
+    }, '16n');
+
+    const hold = (vol, db, secs) => {
+      vol.volume.cancelScheduledValues(Tone.now());
+      vol.volume.rampTo(db, 0.4);
+      this.later(() => vol.volume.rampTo(SILENT, 0.8), secs * 1000);
+    };
+    const repeat = (celsius, t) => [0, 0.5, 1].forEach((d) => mallet.inst.triggerAttackRelease(note(celsius), '8n', t + 0.15 + d, 0.85));
+    this.demos = {
+      cold: (t) => (repeat(1, t), 1.9),
+      warm: (t) => (repeat(30, t), 1.9),
+      ice: (t) => (iceChime(t + 0.2, -0.4), iceChime(t + 1, 0.4), 2),
+      flow: () => (hold(flowVol, -17, 3.5), 4),
+      sweep: (t) => {
+        // What one pole-to-pole sweep sounds like: cold, warm at the equator, cold again.
+        [1, 6, 14, 22, 28, 30, 27, 20, 12, 5, 1].forEach((c, k) => mallet.inst.triggerAttackRelease(note(c), '8n', t + 0.2 + k * 0.28, 0.8));
+        return 3.6;
       },
     };
   }
@@ -506,7 +582,9 @@ export class SonificationEngine {
     if (!this.ready) return;
     const scale = SCALES[this.vizId] || SCALES['night-lights'];
     this.probePan.pan.rampTo(Math.max(-1, Math.min(1, pan)), 0.02);
-    if (kind === 'ocean') {
+    if (kind === 'land') {
+      this.probe.triggerAttackRelease('C2', '32n', undefined, 0.12);
+    } else if (kind === 'ocean') {
       this.probe.triggerAttackRelease('D2', '16n', undefined, 0.25);
     } else if (value <= 0) {
       this.probe.triggerAttackRelease('C2', '32n', undefined, 0.08);

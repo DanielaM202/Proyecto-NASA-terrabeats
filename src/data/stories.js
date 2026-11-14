@@ -131,6 +131,104 @@ export const STORIES = {
   },
 
   // ---------------------------------------------------------------------------
+  // SVS 3912 — ECCO2 model (NASA/JPL + MIT), March 2007 – March 2008.
+  ocean: {
+    menu: {
+      id: 'ocean-menu',
+      es: 'Océanos. ¿Dónde guarda el mar su calor y cómo lo mueven las corrientes? Pulsa espacio para escuchar la historia.',
+      en: 'Oceans. Where does the sea keep its heat, and how do the currents move it? Press space to hear the story.',
+    },
+    question: {
+      es: '¿Dónde guarda el mar su calor y cómo lo mueven las corrientes?',
+      en: 'Where does the sea keep its heat, and how do the currents move it?',
+    },
+    intro: [
+      {
+        id: 'ocean-intro-1',
+        es: '¿Dónde guarda el mar su calor y cómo lo mueven las corrientes? Vamos a escuchar un año entero del océano, de marzo de 2007 a marzo de 2008.',
+        en: 'Where does the sea keep its heat, and how do the currents move it? Let’s listen to a whole year of the ocean, from March 2007 to March 2008.',
+      },
+      {
+        id: 'ocean-intro-2',
+        es: 'Cada nota es la temperatura del agua. Así suena el agua a un grado, casi congelada.',
+        en: 'Each note is the temperature of the water. This is water at one degree, almost frozen.',
+        demo: 'cold',
+      },
+      {
+        id: 'ocean-intro-3',
+        es: 'Y así suena el agua a treinta grados.',
+        en: 'And this is water at thirty degrees.',
+        demo: 'warm',
+      },
+      {
+        id: 'ocean-intro-4',
+        es: 'Estos cristales son agua polar, a cinco grados o menos.',
+        en: 'These crystals are polar water, at five degrees or less.',
+        demo: 'ice',
+      },
+      {
+        id: 'ocean-intro-5',
+        es: 'Y el agua que corre son las corrientes en movimiento. Empezamos.',
+        en: 'And the running water is the currents in motion. Let’s begin.',
+        demo: 'flow',
+      },
+    ],
+    cues: [
+      {
+        id: 'ocean-cue-sweep',
+        t: 0.3,
+        es: 'El cabezal baja del polo norte al polo sur, una y otra vez. Escucha la forma: grave en el Ártico, aguda en el ecuador, y grave otra vez en la Antártida.',
+        en: 'The playhead goes down from the North Pole to the South Pole, again and again. Listen to the shape: low in the Arctic, high at the equator, and low again in Antarctica.',
+      },
+      {
+        id: 'ocean-cue-warm',
+        t: 12.5,
+        es: 'Una franja de agua cálida rodea el ecuador. La más caliente de todas, de más de veintinueve grados, suena a tu derecha: océano Índico y oeste del Pacífico.',
+        en: 'A band of warm water circles the equator. The hottest of all, above twenty-nine degrees, sounds on your right: the Indian Ocean and the western Pacific.',
+      },
+      {
+        id: 'ocean-quiz',
+        t: 23,
+        quiz: { metric: 'hotCols', measure: { es: 'del agua de más de veintinueve grados', en: 'the water above twenty-nine degrees' } },
+        es: 'Pregunta. ¿Dónde está el agua más caliente: a la izquierda, del Pacífico central al Atlántico, o a la derecha, de África al oeste del Pacífico?',
+        en: 'Question. Where is the hottest water: on the left, from the central Pacific to the Atlantic, or on the right, from Africa to the western Pacific?',
+      },
+      {
+        id: 'ocean-cue-currents',
+        t: 31,
+        es: 'Las líneas que se mueven son corrientes y remolinos. Según la NASA, transportan calor y carbono por todo el océano.',
+        en: 'The moving lines are currents and eddies. According to NASA, they transport heat and carbon throughout the ocean.',
+      },
+      {
+        id: 'ocean-cue-seasons',
+        t: 43,
+        es: 'Pasa el año, y la franja más caliente se desplaza con las estaciones.',
+        en: 'The year goes by, and the warmest band shifts with the seasons.',
+      },
+      {
+        id: 'ocean-cue-south',
+        t: 54,
+        es: 'Abajo, alrededor de la Antártida, el agua está cerca de cero grados. Escucha los cristales.',
+        en: 'At the bottom, around Antarctica, the water is close to zero degrees. Listen to the crystals.',
+      },
+    ],
+    outro: [
+      {
+        id: 'ocean-outro-1',
+        es: 'Lo que escuchaste: el mar guarda su calor cerca del ecuador, sobre todo en el Índico y el oeste del Pacífico, y es casi hielo en los polos. Las corrientes reparten ese calor.',
+        en: 'What you heard: the sea keeps its heat near the equator, especially in the Indian Ocean and the western Pacific, and it is almost ice at the poles. The currents spread that heat around.',
+      },
+      {
+        id: 'ocean-outro-2',
+        es: 'Es el modelo ECCO2, de la NASA y el MIT, que combina datos de satélites y mediciones en el mar. Ahora explora tú: la voz te dirá el océano y la temperatura de cada punto.',
+        en: 'This is the ECCO2 model, by NASA and MIT, which combines satellite data and measurements at sea. Now explore on your own: the voice will tell you the ocean and the temperature of each point.',
+      },
+    ],
+    exploreAt: 30,
+    rate: 0.7,
+  },
+
+  // ---------------------------------------------------------------------------
   'night-lights': {
     // Spoken when the track is selected (audio menu for people who cannot see).
     menu: {
@@ -409,13 +507,13 @@ export const STORIES = {
 export const EXTRA_LINES = [
   {
     id: 'welcome',
-    es: 'Bienvenido a TerraBeats, la rocola de información de la Tierra. Hay cuatro historias sonoras hechas con datos de la NASA. Pulsa uno, dos, tres o cuatro para elegir una, y espacio para escucharla. Pulsa H para escuchar la ayuda.',
-    en: 'Welcome to TerraBeats, the Earth information jukebox. There are four sound stories made with NASA data. Press one, two, three or four to choose one, and space to listen. Press H to hear the help.',
+    es: 'Bienvenido a TerraBeats, la rocola de información de la Tierra. Hay cinco historias sonoras hechas con datos de la NASA. Pulsa un número del uno al cinco para elegir una, y espacio para escucharla. Pulsa H para escuchar la ayuda.',
+    en: 'Welcome to TerraBeats, the Earth information jukebox. There are five sound stories made with NASA data. Press a number from one to five to choose one, and space to listen. Press H to hear the help.',
   },
   {
     id: 'help',
-    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener. Uno a cuatro: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. Al final puedes explorar la imagen con las flechas: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. L cambia el idioma. Si usas un lector de pantalla como NVDA, todos los controles son botones: recórrelos con Tabulador y actívalos con Enter, o activa el modo foco para usar las teclas.',
-    en: 'Help. Space: listen to or pause the story. Escape: stop. One to four: change story. In the questions, answer with the left or right arrow. At the end you can explore the image with the arrow keys: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. L changes the language. If you use a screen reader such as NVDA, every control is a button: move with Tab and activate with Enter, or switch to focus mode to use the keys.',
+    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener. Uno a cinco: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. Al final puedes explorar la imagen con las flechas: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. L cambia el idioma. Si usas un lector de pantalla como NVDA, todos los controles son botones: recórrelos con Tabulador y actívalos con Enter, o activa el modo foco para usar las teclas.',
+    en: 'Help. Space: listen to or pause the story. Escape: stop. One to five: change story. In the questions, answer with the left or right arrow. At the end you can explore the image with the arrow keys: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. L changes the language. If you use a screen reader such as NVDA, every control is a button: move with Tab and activate with Enter, or switch to focus mode to use the keys.',
   },
 ];
 

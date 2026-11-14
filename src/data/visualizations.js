@@ -40,6 +40,31 @@ export const VISUALIZATIONS = [
     },
   },
   {
+    id: 'ocean',
+    svsId: 3912,
+    svsUrl: 'https://svs.gsfc.nasa.gov/3912/',
+    video: '/media/ocean.mp4',
+    poster: '/media/ocean.jpg',
+    aspect: '2 / 1',
+    flatMap: true,
+    // Equirectangular map: the sound sweeps latitudes, from north to south.
+    sweep: 'rows',
+    masks: [],
+    title: {
+      es: 'Corrientes y temperatura del océano',
+      en: 'Ocean Currents and Temperature',
+    },
+    short: {
+      es: 'El calor del mar, de polo a polo.',
+      en: 'The heat of the sea, from pole to pole.',
+    },
+    description: {
+      es: 'Mapa plano del mundo con las corrientes de la superficie del océano, coloreadas por la temperatura del agua: azul es 0 grados Celsius, verde entre 10 y 20, amarillo unos 25 y rojo 32. Las líneas que se mueven son las corrientes y sus remolinos. Es el modelo ECCO2 de la NASA y el MIT, de marzo de 2007 a marzo de 2008. La tierra aparece en gris.',
+      en: 'A flat world map of ocean surface currents, coloured by water temperature: blue is 0 degrees Celsius, green is 10 to 20, yellow about 25 and red 32. The moving lines are the currents and their eddies. It is the ECCO2 model by NASA and MIT, from March 2007 to March 2008. Land is shown in grey.',
+    },
+    legend: { es: [], en: [] },
+  },
+  {
     id: 'night-lights',
     svsId: 5313,
     svsUrl: 'https://svs.gsfc.nasa.gov/5313/',

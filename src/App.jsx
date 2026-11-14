@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VISUALIZATIONS } from './data/visualizations.js';
-import { LEGENDS } from './data/legends.js';
+import { LEGENDS, WHY } from './data/legends.js';
 import { EXTRA_LINES, STORIES } from './data/stories.js';
-import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue } from './analysis/features.js';
+import { analysisSize, COLUMNS, extractFeatures, oceanRegion, pixelKind, pixelValue } from './analysis/features.js';
 import { SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 
@@ -333,11 +333,19 @@ export default function App() {
       g.clearRect(0, 0, cw, ch);
       const step = stepRef.current;
       if (playingRef.current && step >= 0 && vizRef.current.id !== 'lightning') {
-        const x = (step / COLUMNS) * cw;
-        g.fillStyle = 'rgba(250, 204, 21, 0.10)';
-        g.fillRect(x, 0, cw / COLUMNS, ch);
-        g.fillStyle = 'rgba(250, 204, 21, 0.85)';
-        g.fillRect(x + cw / COLUMNS / 2 - dpr, 0, 2 * dpr, ch);
+        if (vizRef.current.sweep === 'rows') {
+          const y = (step / COLUMNS) * ch;
+          g.fillStyle = 'rgba(250, 204, 21, 0.10)';
+          g.fillRect(0, y, cw, ch / COLUMNS);
+          g.fillStyle = 'rgba(250, 204, 21, 0.85)';
+          g.fillRect(0, y + ch / COLUMNS / 2 - dpr, cw, 2 * dpr);
+        } else {
+          const x = (step / COLUMNS) * cw;
+          g.fillStyle = 'rgba(250, 204, 21, 0.10)';
+          g.fillRect(x, 0, cw / COLUMNS, ch);
+          g.fillStyle = 'rgba(250, 204, 21, 0.85)';
+          g.fillRect(x + cw / COLUMNS / 2 - dpr, 0, 2 * dpr, ch);
+        }
       }
       const cur = cursorRef.current;
       if (exploreRef.current && cur.visible) {
@@ -583,7 +591,7 @@ export default function App() {
       setQuiz(null);
       if (!live()) break;
       const f = featuresRef.current;
-      const arr = cue.quiz.metric === 'high' ? f?.colHigh : f?.colSum;
+      const arr = cue.quiz.metric === 'high' ? f?.colHigh : cue.quiz.metric === 'columns' ? f?.colSum : f?.[cue.quiz.metric];
       let L = 0;
       let R = 0;
       // split: where "left" ends on screen (e.g. the Atlantic on the flat night map).
@@ -692,14 +700,22 @@ export default function App() {
       const engine = await ensureEngine();
       engine.playProbe(value, x * 2 - 1, kind);
       if (hapticsRef.current && navigator.vibrate && value > 0) navigator.vibrate(Math.round(10 + value * 50));
-      const what = kind
-        ? t.probe[kind]
-        : value <= 0
-          ? t.probe.none
-          : id === 'forest-height'
-            ? t.probe.forest(Math.round(value * 50))
-            : `${t.probe.value} ${t.levels[levelIndex(value)]}`;
-      const text = `${regionName(t, x, y)}: ${what}`;
+      let text;
+      if (id === 'ocean') {
+        // Real geography: the map is equirectangular, so x/y are longitude/latitude.
+        const o = oceanRegion(x, y);
+        const place = `${t.probe.oceans[o.ocean]}${o.band ? ` ${t.probe.bands[o.band]}` : ''}`;
+        text = kind === 'land' ? t.probe.land : t.probe.sea(place, Math.round(value * 32));
+      } else {
+        const what = kind
+          ? t.probe[kind]
+          : value <= 0
+            ? t.probe.none
+            : id === 'forest-height'
+              ? t.probe.forest(Math.round(value * 50))
+              : `${t.probe.value} ${t.levels[levelIndex(value)]}`;
+        text = `${regionName(t, x, y)}: ${what}`;
+      }
       if (text !== lastProbeRef.current.text) {
         lastProbeRef.current.text = text;
         setProbeText(text);
@@ -799,8 +815,15 @@ export default function App() {
     }
     if (!exploreRef.current) setExplore(true);
     await probe(bx, by, true);
-    const what = id === 'forest-height' ? t.probe.forest(Math.round(best * 50)) : `${t.probe.value} ${t.levels[levelIndex(best)]}`;
-    const text = `${t.foundMax(what)} (${regionName(t, bx, by)})`;
+    let text;
+    if (id === 'ocean') {
+      const o = oceanRegion(bx, by);
+      const place = `${t.probe.oceans[o.ocean]}${o.band ? ` ${t.probe.bands[o.band]}` : ''}`;
+      text = t.foundMax(t.probe.sea(place, Math.round(best * 32)));
+    } else {
+      const what = id === 'forest-height' ? t.probe.forest(Math.round(best * 50)) : `${t.probe.value} ${t.levels[levelIndex(best)]}`;
+      text = `${t.foundMax(what)} (${regionName(t, bx, by)})`;
+    }
     setProbeText(text);
     setAnnouncement(text);
     clearTimeout(exploreSpeakTimer.current);
@@ -884,7 +907,7 @@ export default function App() {
       } else if (e.key === 'p' || e.key === 'P') {
         stopStory();
         togglePlay();
-      } else if (/^[1-4]$/.test(e.key)) {
+      } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= VISUALIZATIONS.length) {
         setVizIndex(Number(e.key) - 1);
       } else if (e.key === 'e' || e.key === 'E') {
         toggleExplore();
@@ -1339,6 +1362,11 @@ export default function App() {
               >
                 <span className="mr-2 font-mono text-yellow-300">{k + 1}.</span>
                 {item[lang]}
+                {WHY[viz.id]?.[item.key] && (
+                  <span className="mt-1 block text-sm italic text-slate-400">
+                    {t.why}: {WHY[viz.id][item.key][lang]}
+                  </span>
+                )}
               </li>
             ))}
           </ol>
