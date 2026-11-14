@@ -21,6 +21,35 @@ export const STRINGS = {
     exploreHelp:
       'Modo explorar: pasa el puntero o usa las flechas sobre la imagen. Cada punto suena según su valor. Mayús + flechas = pasos grandes.',
     describe: 'Describir ahora',
+    quizHint: 'Responde con la flecha izquierda o derecha (o los botones).',
+    left: 'Izquierda',
+    right: 'Derecha',
+    quizAnswer: (ans, side, pct, measure) => {
+      const s = side === 'left' ? 'izquierda' : 'derecha';
+      if (pct == null) return `En este momento casi no hay ${measure} en la imagen.`;
+      if (pct < 56) return `Muy parejo: ${measure} está repartido casi por igual a ambos lados.`;
+      if (!ans) return `Te lo digo: el ${pct} % de ${measure} está a la ${s}.`;
+      return ans === side
+        ? `¡Correcto! El ${pct} % de ${measure} está a la ${s}.`
+        : `Casi. Escucha otra vez: el ${pct} % de ${measure} está a la ${s}.`;
+    },
+    findMax: 'Buscar el valor más alto',
+    foundMax: (what) => `Valor más alto en esta imagen: ${what}`,
+    repeat: 'Repetir la última frase',
+    edge: 'Borde de la imagen',
+    story: 'Historia sonora',
+    storyPlay: 'Escuchar la historia',
+    storyStop: 'Detener historia',
+    storyPause: 'Pausar historia',
+    storyResume: 'Continuar historia',
+    freePlay: 'Modo libre',
+    storyHint: 'Recomendado: escucha la historia guiada con auriculares. Espacio = pausa, Esc = detener.',
+    legend: 'Leyenda auditiva',
+    legendPlay: 'Escuchar la leyenda',
+    legendStop: 'Detener leyenda',
+    legendHelp: 'Antes de escuchar, conoce cada sonido: se reproduce aislado y con su nombre.',
+    legendIntro: (title) => `Leyenda auditiva de ${title}. Escucharás cada sonido por separado.`,
+    legendEnd: 'Fin de la leyenda. Pulsa espacio para escuchar la pista completa.',
     autoNarrate: 'Narración automática',
     voice: 'Voz integrada',
     haptics: 'Vibración (móvil)',
@@ -42,10 +71,16 @@ export const STRINGS = {
     ],
     shortcuts: 'Atajos de teclado',
     shortcutList: [
-      ['Espacio', 'Reproducir / pausar'],
+      ['Espacio', 'Escuchar la historia / pausar'],
+      ['P', 'Modo libre (sin narración)'],
+      ['Esc', 'Detener historia o leyenda'],
       ['1 – 4', 'Cambiar de pista'],
+      ['G', 'Escuchar / detener la leyenda auditiva'],
       ['E', 'Activar / desactivar modo explorar'],
       ['Flechas', 'Mover el cursor en modo explorar'],
+      ['F', 'Ir al valor más alto de la imagen'],
+      ['R', 'Repetir la última frase del narrador'],
+      ['H', 'Escuchar la ayuda'],
       ['D', 'Describir lo que suena ahora'],
       ['L', 'Cambiar idioma'],
     ],
@@ -74,10 +109,13 @@ export const STRINGS = {
           : ''),
       lightning: (l, where, f) => `Actividad de rayos ${l}: ${f.flashes.length} rayos nuevos, concentrados hacia ${where}.`,
       co2: (l, where) => `Concentración de CO₂ ${l}; las zonas más altas están hacia ${where}.`,
-      'forest-height': (l, where, f) =>
-        `Vegetación en el ${Math.round(f.coverage * 100)}% de la vista, altura media ${l}, más alta hacia ${where}. Océano: ${Math.round(f.ocean * 100)}%.`,
+      'forest-height': (l, where, f, whereHigh) =>
+        `Vegetación en el ${Math.round(f.coverage * 100)}% de la vista, con una altura media de unos ${Math.round(f.meanMeters)} metros. ` +
+        (whereHigh ? `Los bosques de más de 30 metros están hacia ${whereHigh}.` : 'No se ven bosques de más de 30 metros.') +
+        ` Océano: ${Math.round(f.ocean * 100)}% de la vista.`,
     },
     probe: {
+      forest: (m) => `bosque de unos ${m} metros`,
       none: 'sin señal',
       ocean: 'océano',
       gain: 'ganó luz',
@@ -109,6 +147,34 @@ export const STRINGS = {
     exploreHelp:
       'Explore mode: move the pointer or use the arrow keys over the image. Each point sounds according to its value. Shift + arrows = big steps.',
     describe: 'Describe now',
+    quizHint: 'Answer with the left or right arrow key (or the buttons).',
+    left: 'Left',
+    right: 'Right',
+    quizAnswer: (ans, side, pct, measure) => {
+      if (pct == null) return `Right now there is almost no ${measure} in the image.`;
+      if (pct < 56) return `Very even: ${measure} is split almost equally between both sides.`;
+      if (!ans) return `Here is the answer: ${pct}% of ${measure} is on the ${side}.`;
+      return ans === side
+        ? `Correct! ${pct}% of ${measure} is on the ${side}.`
+        : `Close. Listen again: ${pct}% of ${measure} is on the ${side}.`;
+    },
+    findMax: 'Find the highest value',
+    foundMax: (what) => `Highest value in this image: ${what}`,
+    repeat: 'Repeat the last sentence',
+    edge: 'Edge of the image',
+    story: 'Sound story',
+    storyPlay: 'Listen to the story',
+    storyStop: 'Stop story',
+    storyPause: 'Pause story',
+    storyResume: 'Resume story',
+    freePlay: 'Free mode',
+    storyHint: 'Recommended: listen to the guided story with headphones. Space = pause, Esc = stop.',
+    legend: 'Audio legend',
+    legendPlay: 'Play the legend',
+    legendStop: 'Stop legend',
+    legendHelp: 'Before listening, meet each sound: it plays on its own, with its name.',
+    legendIntro: (title) => `Audio legend for ${title}. You will hear each sound on its own.`,
+    legendEnd: 'End of the legend. Press space to listen to the full track.',
     autoNarrate: 'Auto narration',
     voice: 'Built-in voice',
     haptics: 'Vibration (mobile)',
@@ -130,10 +196,16 @@ export const STRINGS = {
     ],
     shortcuts: 'Keyboard shortcuts',
     shortcutList: [
-      ['Space', 'Play / pause'],
+      ['Space', 'Listen to the story / pause'],
+      ['P', 'Free mode (no narration)'],
+      ['Esc', 'Stop story or legend'],
       ['1 – 4', 'Switch track'],
+      ['G', 'Play / stop the audio legend'],
       ['E', 'Toggle explore mode'],
       ['Arrows', 'Move the cursor in explore mode'],
+      ['F', 'Jump to the highest value in the image'],
+      ['R', 'Repeat the narrator’s last sentence'],
+      ['H', 'Hear the help'],
       ['D', 'Describe what is playing now'],
       ['L', 'Switch language'],
     ],
@@ -162,10 +234,13 @@ export const STRINGS = {
           : ''),
       lightning: (l, where, f) => `Lightning activity ${l}: ${f.flashes.length} new flashes, concentrated toward ${where}.`,
       co2: (l, where) => `CO₂ concentration ${l}; the highest areas are toward ${where}.`,
-      'forest-height': (l, where, f) =>
-        `Vegetation covers ${Math.round(f.coverage * 100)}% of the view, average height ${l}, tallest toward ${where}. Ocean: ${Math.round(f.ocean * 100)}%.`,
+      'forest-height': (l, where, f, whereHigh) =>
+        `Vegetation covers ${Math.round(f.coverage * 100)}% of the view, with an average height of about ${Math.round(f.meanMeters)} metres. ` +
+        (whereHigh ? `Forests taller than 30 metres are toward ${whereHigh}.` : 'No forests taller than 30 metres are in view.') +
+        ` Ocean: ${Math.round(f.ocean * 100)}% of the view.`,
     },
     probe: {
+      forest: (m) => `forest about ${m} metres tall`,
       none: 'no signal',
       ocean: 'ocean',
       gain: 'gained light',
@@ -196,12 +271,73 @@ export function describe(t, viz, f) {
   const l = t.levels[levelIndex(levelValue(viz.id, f))];
   const h = viz.flatMap ? t.flatH : t.globeH;
   const v = viz.flatMap ? t.flatV : t.globeV;
-  const hx = third(f.cx);
-  const vy = third(f.cy);
-  const where = vy === 1 ? h[hx] : hx === 1 ? v[vy] : `${v[vy]} / ${h[hx]}`;
-  return t.narr[viz.id](l, where, f);
+  const place = (x, y) => {
+    const a = third(x);
+    const b = third(y);
+    return b === 1 ? h[a] : a === 1 ? v[b] : `${v[b]} / ${h[a]}`;
+  };
+  const whereHigh = f.hcx != null && f.highCover > 0.002 ? place(f.hcx, f.hcy) : null;
+  return t.narr[viz.id](l, place(f.cx, f.cy), f, whereHigh);
 }
 
 export function regionName(t, x, y) {
   return t.regions[third(y)][third(x)];
+}
+
+// ---------------------------------------------------------------------------
+// Live remarks: short sentences generated from the data of the current frame,
+// spoken between the scripted lines so the story reacts to what is on screen.
+const SIDES = {
+  es: { left: 'a tu izquierda', right: 'a tu derecha', center: 'al centro' },
+  en: { left: 'on your left', right: 'on your right', center: 'in the middle' },
+};
+const sideOf = (x) => (x == null ? 'center' : x < 0.4 ? 'left' : x > 0.6 ? 'right' : 'center');
+
+export function liveRemark(lang, vizId, f) {
+  if (!f) return null;
+  const es = lang === 'es';
+  const S = SIDES[lang];
+  switch (vizId) {
+    case 'forest-height': {
+      if (f.highCover > 0.012 && f.hcx != null) {
+        const sd = sideOf(f.hcx);
+        return { key: `tall-${sd}`, text: es ? `Ahora: bosque de más de treinta metros ${S[sd]}. Escucha los pájaros.` : `Now: forest over thirty metres ${S[sd]}. Listen to the birds.` };
+      }
+      if (f.ocean > 0.5) return { key: 'ocean', text: es ? 'Ahora casi todo es océano.' : 'Now it is almost all ocean.' };
+      if (f.coverage > 0.08 && f.meanMeters < 9) {
+        const sd = sideOf(f.cx);
+        return { key: `low-${sd}`, text: es ? `Vegetación baja ${S[sd]}: notas graves, unos ${Math.round(f.meanMeters)} metros.` : `Short vegetation ${S[sd]}: low notes, about ${Math.round(f.meanMeters)} metres.` };
+      }
+      return null;
+    }
+    case 'night-lights': {
+      if (f.gain > 0.0008 && f.gain >= f.loss) return { key: 'gain', text: es ? 'Ahora suenan más zonas que ganaron luz.' : 'More areas that gained light are sounding now.' };
+      if (f.loss > 0.0008) return { key: 'loss', text: es ? 'Ahora suenan zonas que perdieron luz.' : 'Areas that lost light are sounding now.' };
+      if (f.level > 0.5) {
+        const sd = sideOf(f.cx);
+        return { key: `bright-${sd}`, text: es ? `Mucha luz ${S[sd]}.` : `A lot of light ${S[sd]}.` };
+      }
+      return null;
+    }
+    case 'lightning': {
+      const n = f.flashes.length;
+      if (n >= 40) {
+        const x = f.flashes.reduce((a, b) => a + b.x, 0) / n;
+        const sd = sideOf(x);
+        return { key: `burst-${sd}`, text: es ? `¡Ráfaga de ${n} rayos ${S[sd]}!` : `A burst of ${n} flashes ${S[sd]}!` };
+      }
+      if (f.level < 0.04) return { key: 'quiet', text: es ? 'Casi no hay rayos en esta zona.' : 'Almost no lightning in this area.' };
+      return null;
+    }
+    case 'co2': {
+      if (f.level > 0.55) {
+        const sd = sideOf(f.hcx ?? f.cx);
+        return { key: `high-${sd}`, text: es ? `Concentración alta ${S[sd]}: el latido se acelera.` : `High concentration ${S[sd]}: the heartbeat speeds up.` };
+      }
+      if (f.level < 0.2) return { key: 'low', text: es ? 'La atmósfera se calma: el acorde se relaja.' : 'The atmosphere calms down: the chord relaxes.' };
+      return null;
+    }
+    default:
+      return null;
+  }
 }

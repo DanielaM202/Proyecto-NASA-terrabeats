@@ -4,6 +4,42 @@
 
 export const VISUALIZATIONS = [
   {
+    id: 'forest-height',
+    svsId: 4950,
+    svsUrl: 'https://svs.gsfc.nasa.gov/4950/',
+    video: '/media/forest-height.mp4',
+    poster: '/media/forest-height.jpg',
+    aspect: '16 / 9',
+    // Colour bar "Height Above Ground 0–50 m" in the bottom-left corner.
+    masks: [[0, 0.86, 0.27, 1]],
+    title: {
+      es: 'Altura de los bosques (GEDI)',
+      en: 'Forest Height (GEDI)',
+    },
+    short: {
+      es: 'Árboles más altos, notas más agudas.',
+      en: 'Taller trees, higher notes.',
+    },
+    description: {
+      es: 'Globo giratorio con la altura del dosel forestal medida por el láser GEDI de la Estación Espacial Internacional (abril 2019 – abril 2020). El marrón y verde oscuro son vegetación baja; el verde brillante y blanco, bosques altos como la Amazonía o el Congo. El océano es azul. La altura está exagerada.',
+      en: 'A rotating globe of forest canopy height measured by the GEDI laser on the International Space Station (April 2019 – April 2020). Brown and dark green are short vegetation; bright green and white are tall forests such as the Amazon or the Congo. The ocean is blue. Height is exaggerated.',
+    },
+    legend: {
+      es: [
+        'Una cuerda pulsada recorre el globo de izquierda a derecha.',
+        'Bosque más alto = nota más aguda; vegetación baja = nota grave.',
+        'Más tierra con vegetación = acorde de fondo más lleno.',
+        'El rumor de olas sube cuando el océano domina la vista.',
+      ],
+      en: [
+        'A plucked string sweeps the globe from left to right.',
+        'Taller forest = higher note; short vegetation = lower note.',
+        'More vegetated land = fuller background chord.',
+        'The sound of waves rises when the ocean fills the view.',
+      ],
+    },
+  },
+  {
     id: 'night-lights',
     svsId: 5313,
     svsUrl: 'https://svs.gsfc.nasa.gov/5313/',
@@ -11,6 +47,8 @@ export const VISUALIZATIONS = [
     poster: '/media/night-lights.jpg',
     aspect: '32 / 9',
     flatMap: true,
+    // On-screen year label and colour bar (x0, y0, x1, y1 as fractions).
+    masks: [[0.47, 0.44, 0.59, 0.64]],
     title: {
       es: 'Luces nocturnas 2012–2023',
       en: 'Night Lights 2012–2023',
@@ -47,6 +85,7 @@ export const VISUALIZATIONS = [
     video: '/media/lightning.mp4',
     poster: '/media/lightning.jpg',
     aspect: '16 / 9',
+    masks: [[0.8, 0.55, 1, 1]],
     title: {
       es: 'Rayos detectados desde la EEI 2017–2023',
       en: 'Lightning Seen from the ISS 2017–2023',
@@ -81,6 +120,7 @@ export const VISUALIZATIONS = [
     video: '/media/co2.mp4',
     poster: '/media/co2.jpg',
     aspect: '16 / 9',
+    masks: [[0.74, 0.88, 1, 1]],
     title: {
       es: 'Dióxido de carbono global (DYAMOND)',
       en: 'Global Carbon Dioxide (DYAMOND)',
@@ -108,38 +148,5 @@ export const VISUALIZATIONS = [
       ],
     },
   },
-  {
-    id: 'forest-height',
-    svsId: 4950,
-    svsUrl: 'https://svs.gsfc.nasa.gov/4950/',
-    video: '/media/forest-height.mp4',
-    poster: '/media/forest-height.jpg',
-    aspect: '16 / 9',
-    title: {
-      es: 'Altura de los bosques (GEDI)',
-      en: 'Forest Height (GEDI)',
-    },
-    short: {
-      es: 'Árboles más altos, notas más agudas.',
-      en: 'Taller trees, higher notes.',
-    },
-    description: {
-      es: 'Globo giratorio con la altura del dosel forestal medida por el láser GEDI de la Estación Espacial Internacional (abril 2019 – abril 2020). El marrón y verde oscuro son vegetación baja; el verde brillante y blanco, bosques altos como la Amazonía o el Congo. El océano es azul. La altura está exagerada.',
-      en: 'A rotating globe of forest canopy height measured by the GEDI laser on the International Space Station (April 2019 – April 2020). Brown and dark green are short vegetation; bright green and white are tall forests such as the Amazon or the Congo. The ocean is blue. Height is exaggerated.',
-    },
-    legend: {
-      es: [
-        'Una cuerda pulsada recorre el globo de izquierda a derecha.',
-        'Bosque más alto = nota más aguda; vegetación baja = nota grave.',
-        'Más tierra con vegetación = acorde de fondo más lleno.',
-        'El rumor de olas sube cuando el océano domina la vista.',
-      ],
-      en: [
-        'A plucked string sweeps the globe from left to right.',
-        'Taller forest = higher note; short vegetation = lower note.',
-        'More vegetated land = fuller background chord.',
-        'The sound of waves rises when the ocean fills the view.',
-      ],
-    },
-  },
+
 ];

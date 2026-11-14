@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { VISUALIZATIONS } from './data/visualizations.js';
+import { LEGENDS } from './data/legends.js';
+import { EXTRA_LINES, STORIES } from './data/stories.js';
 import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue } from './analysis/features.js';
 import { SonificationEngine } from './audio/engine.js';
-import { STRINGS, describe, levelIndex, levelValue, regionName } from './i18n.js';
+import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
+const STORY_RATE = 0.6; // video speed during the guided story, so narration fits each region
 
 function initialLang() {
   try {
@@ -87,16 +90,42 @@ export default function App() {
   const cursorRef = useRef({ x: 0.5, y: 0.5, visible: false });
   const lastProbeRef = useRef({ t: 0, text: '' });
   const vizRef = useRef(viz);
+  const langRef = useRef(lang);
   const playingRef = useRef(false);
   const hapticsRef = useRef(haptics);
   const exploreRef = useRef(explore);
+  const stopStoryRef = useRef(() => {});
+  const lastLineRef = useRef(null);
+  const menuAudioRef = useRef(null);
+  const voiceBusyRef = useRef(false); // one narrator at a time
+  const lastSpokeRef = useRef(0);
+  const quizRef = useRef(null); // resolver while a question waits for an answer
+  const pendingVoiceRef = useRef(null); // resolves the line currently being spoken
+  const hushRef = useRef(() => {});
+  const startedOnceRef = useRef(false);
+  const exploreSpeakTimer = useRef(null);
+  const interactedRef = useRef(false);
 
   vizRef.current = viz;
+  langRef.current = lang;
   playingRef.current = playing;
   hapticsRef.current = haptics;
   exploreRef.current = explore;
 
   if (!engineRef.current) engineRef.current = new SonificationEngine();
+
+  // Stop every sound if this component goes away (also on hot reload in dev).
+  useEffect(
+    () => () => {
+      stopStoryRef.current();
+      hushRef.current();
+      const e = engineRef.current;
+      e.stop();
+      e.stopSources();
+      e.disposeVoices();
+    },
+    [],
+  );
 
   // ---------- language ----------
   useEffect(() => {
@@ -109,19 +138,82 @@ export default function App() {
     }
   }, [lang, t]);
 
+  // ONE narrator: every new line first silences whatever was speaking
+  // (story clip, menu clip, synthetic voice) and releases whoever was waiting for it.
+  const hush = useCallback(() => {
+    const n = narrRef.current;
+    if (n) {
+      n.onended = null;
+      n.onerror = null;
+      n.pause();
+      narrRef.current = null;
+    }
+    menuAudioRef.current?.pause();
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    const pending = pendingVoiceRef.current;
+    pendingVoiceRef.current = null;
+    pending?.();
+    voiceBusyRef.current = false;
+    engineRef.current.setDucked(false);
+  }, []);
+  hushRef.current = hush;
+
+  // Speaks a text (if the built-in voice is on) and resolves when finished.
+  // The music is ducked while the narrator talks.
   const speak = useCallback(
-    (text) => {
-      if (!voice || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = lang === 'es' ? 'es-ES' : 'en-US';
-      u.rate = 1.05;
-      window.speechSynthesis.speak(u);
-    },
-    [voice, lang],
+    (text) =>
+      new Promise((resolve) => {
+        const engine = engineRef.current;
+        hush();
+        if (!voice || !('speechSynthesis' in window)) {
+          setTimeout(resolve, Math.min(4000, 800 + text.length * 25));
+          return;
+        }
+        voiceBusyRef.current = true;
+        lastSpokeRef.current = performance.now();
+        const u = new SpeechSynthesisUtterance(text);
+        // Pick an installed voice for the language; if none exists, use the
+        // default voice rather than staying silent.
+        const match = window.speechSynthesis.getVoices().find((vo) => vo.lang.toLowerCase().startsWith(lang));
+        if (match) {
+          u.voice = match;
+          u.lang = match.lang;
+        }
+        u.rate = 1.05;
+        let done = false;
+        const finish = () => {
+          if (done) return;
+          done = true;
+          if (pendingVoiceRef.current === finish) {
+            pendingVoiceRef.current = null;
+            voiceBusyRef.current = false;
+            engine.setDucked(false);
+          }
+          lastSpokeRef.current = performance.now();
+          resolve();
+        };
+        pendingVoiceRef.current = finish;
+        u.onend = finish;
+        u.onerror = finish;
+        // Safety net: some browsers never fire onend.
+        setTimeout(finish, 2500 + text.length * 90);
+        engine.setDucked(true);
+        window.speechSynthesis.speak(u);
+      }),
+    [voice, lang, hush],
   );
 
   // ---------- audio engine ----------
+  // ---------- auditory legend ----------
+  const [legendIdx, setLegendIdx] = useState(-1);
+  const legendRunRef = useRef(0);
+
+  const stopLegend = useCallback(() => {
+    legendRunRef.current++;
+    setLegendIdx(-1);
+    hushRef.current();
+  }, []);
+
   const ensureEngine = useCallback(async () => {
     const engine = engineRef.current;
     await engine.init();
@@ -169,14 +261,28 @@ export default function App() {
     featuresRef.current = null;
     imgRef.current = null;
     setUi(null);
+    stopLegend();
+    stopStoryRef.current();
     const engine = engineRef.current;
     if (engine.ready) engine.setViz(viz.id);
+    // Audio menu (needs a previous user gesture so the browser allows sound).
+    if (interactedRef.current) {
+      // Audio menu: say which track was chosen and what question it answers.
+      const menu = STORIES[viz.id]?.menu;
+      if (menu) {
+        hushRef.current();
+        const a = new Audio(`/narration/${langRef.current}/${menu.id}.mp3`);
+        menuAudioRef.current = a;
+        lastLineRef.current = menu;
+        a.play().catch(() => {});
+      }
+    }
     const { w, h } = analysisSize(viz);
     const c = document.createElement('canvas');
     c.width = w;
     c.height = h;
     workRef.current = c.getContext('2d', { willReadFrequently: true });
-  }, [viz]);
+  }, [viz, stopLegend]);
 
   const onLoadedData = () => {
     const v = videoRef.current;
@@ -200,7 +306,7 @@ export default function App() {
       ctx.drawImage(v, 0, 0, w, h);
       const img = ctx.getImageData(0, 0, w, h);
       imgRef.current = img;
-      const f = extractFeatures(img, vizRef.current.id, prevMaskRef.current);
+      const f = extractFeatures(img, vizRef.current.id, prevMaskRef.current, vizRef.current.masks);
       // When the video loops, the first frame would look like a burst of "new" pixels.
       if (v.currentTime < 0.15) f.flashes = [];
       prevMaskRef.current = f.mask;
@@ -272,6 +378,256 @@ export default function App() {
     speak(text);
   }, [t, speak]);
 
+  const playLegend = useCallback(async () => {
+    const run = ++legendRunRef.current;
+    const live = () => run === legendRunRef.current;
+    if (playingRef.current) pause();
+    const engine = await ensureEngine();
+    const viz = vizRef.current;
+    const items = LEGENDS[viz.id];
+    const say = async (text) => {
+      if (!live()) return;
+      setAnnouncement(text);
+      await speak(text);
+    };
+    setLegendIdx(-2); // intro
+    await say(t.legendIntro(viz.title[lang]));
+    for (let k = 0; k < items.length; k++) {
+      if (!live()) return;
+      setLegendIdx(k);
+      await say(items[k][lang]);
+      if (!live()) return;
+      await engine.demo(items[k].key);
+    }
+    if (!live()) return;
+    setLegendIdx(-1);
+    await say(t.legendEnd);
+  }, [ensureEngine, pause, speak, t, lang]);
+
+  const toggleLegend = useCallback(() => (legendIdx !== -1 ? stopLegend() : playLegend()), [legendIdx, stopLegend, playLegend]);
+
+  // ---------- guided sound story ----------
+  // Pre-rendered narration (public/narration/<lang>/<id>.mp3) + engine demos +
+  // cues synced to the video time. Falls back to speech synthesis if a file fails.
+  const [storyPhase, setStoryPhase] = useState('idle'); // idle | intro | tour | outro
+  const [storyPaused, setStoryPaused] = useState(false);
+  const [caption, setCaption] = useState('');
+  const [quiz, setQuiz] = useState(null); // active question (for the on-screen buttons)
+  const [liveLine, setLiveLine] = useState('');
+  const storyRunRef = useRef(0);
+  const narrRef = useRef(null);
+  const storyPausedRef = useRef(false);
+  const storyPhaseRef = useRef('idle');
+  storyPausedRef.current = storyPaused;
+  storyPhaseRef.current = storyPhase;
+
+  const playLine = useCallback(
+    (line, run) =>
+      new Promise((resolve) => {
+        if (run !== storyRunRef.current) return resolve();
+        const engine = engineRef.current;
+        const text = line[lang];
+        lastLineRef.current = line;
+        setCaption(text);
+        // Single narrator: cut anything still talking.
+        hush();
+        voiceBusyRef.current = true;
+        const audio = new Audio(`/narration/${lang}/${line.id}.mp3`);
+        narrRef.current = audio;
+        let finished = false;
+        const done = () => {
+          if (finished) return;
+          finished = true;
+          if (pendingVoiceRef.current === done) {
+            pendingVoiceRef.current = null;
+            voiceBusyRef.current = false;
+            engine.setDucked(false);
+          }
+          lastSpokeRef.current = performance.now();
+          if (narrRef.current === audio) narrRef.current = null;
+          resolve();
+        };
+        pendingVoiceRef.current = done;
+        audio.onended = done;
+        // Fallback to the synthetic voice; detach first so speak() does not end this line early.
+        let fellBack = false;
+        const fallback = () => {
+          if (fellBack) return;
+          fellBack = true;
+          if (pendingVoiceRef.current === done) pendingVoiceRef.current = null;
+          speak(text).then(done);
+        };
+        audio.onerror = fallback;
+        engine.setDucked(true);
+        audio.play().catch(fallback);
+      }),
+    [lang, speak, hush],
+  );
+
+  const restoreVideo = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.loop = true;
+    v.playbackRate = speed;
+  }, [speed]);
+
+  const stopStory = useCallback(() => {
+    storyRunRef.current++;
+    quizRef.current?.(null);
+    hush();
+    quizRef.current = null;
+    setQuiz(null);
+    setStoryPhase('idle');
+    setStoryPaused(false);
+    setCaption('');
+    restoreVideo();
+  }, [restoreVideo, hush]);
+
+  stopStoryRef.current = stopStory;
+
+  const waitFor = (cond, run) =>
+    new Promise((resolve) => {
+      const id = setInterval(() => {
+        if (run !== storyRunRef.current || cond()) {
+          clearInterval(id);
+          resolve();
+        }
+      }, 100);
+    });
+
+  const startStory = useCallback(async () => {
+    const story = STORIES[vizRef.current.id];
+    if (!story) return;
+    stopLegend();
+    stopStory();
+    const run = ++storyRunRef.current;
+    const live = () => run === storyRunRef.current;
+    if (playingRef.current) pause();
+    setExplore(false);
+    cursorRef.current.visible = false;
+    const engine = await ensureEngine();
+    if (!live()) return;
+    engine.setViz(vizRef.current.id); // fresh instruments: no leftover demo notes
+    startedOnceRef.current = true;
+    const v = videoRef.current;
+    v.loop = false;
+    v.currentTime = 0;
+    prevMaskRef.current = null;
+
+    // 1. Question + reference sounds (video paused on the first frame).
+    setStoryPhase('intro');
+    for (const step of story.intro) {
+      if (!live()) return;
+      await playLine(step, run);
+      await waitFor(() => !storyPausedRef.current, run);
+      if (step.demo && live()) await engine.demo(step.demo);
+    }
+
+    // 2. Tour: the video plays slowly and the narrator names each place.
+    if (!live()) return;
+    setStoryPhase('tour');
+    v.playbackRate = story.rate ?? STORY_RATE;
+    await play();
+
+    // Live remarks: between scripted lines, say what the data shows right now.
+    let nextCueT = story.cues[0]?.t ?? Infinity;
+    let lastRemark = '';
+    const remarkTimer = setInterval(() => {
+      if (!live()) return clearInterval(remarkTimer);
+      if (storyPausedRef.current || quizRef.current || voiceBusyRef.current) return;
+      if (performance.now() - lastSpokeRef.current < 3000) return;
+      const rate = v.playbackRate || 1;
+      if ((nextCueT - v.currentTime) / rate < 3.2) return; // a scripted line is coming
+      const r = liveRemark(lang, vizRef.current.id, featuresRef.current);
+      if (!r || r.key === lastRemark) return;
+      lastRemark = r.key;
+      setLiveLine(r.text);
+      speak(r.text);
+    }, 700);
+
+    for (let k = 0; k < story.cues.length; k++) {
+      const cue = story.cues[k];
+      nextCueT = cue.t;
+      await waitFor(() => v.currentTime >= cue.t, run);
+      if (!live()) break;
+      nextCueT = story.cues[k + 1]?.t ?? Infinity;
+      if (!cue.quiz) {
+        await playLine(cue, run);
+        continue;
+      }
+      // Interactive question: the image freezes but its sound keeps playing,
+      // so the listener can hear left/right before answering.
+      if (!cue.quiz.keepPlaying) v.pause();
+      setQuiz(cue);
+      await playLine(cue, run);
+      if (!live()) break;
+      setCaption(`${cue[lang]} — ${t.quizHint}`);
+      const ans = await new Promise((resolve) => {
+        quizRef.current = resolve;
+        setTimeout(() => resolve(null), 12000);
+      });
+      quizRef.current = null;
+      setQuiz(null);
+      if (!live()) break;
+      const f = featuresRef.current;
+      const arr = cue.quiz.metric === 'high' ? f?.colHigh : f?.colSum;
+      let L = 0;
+      let R = 0;
+      // split: where "left" ends on screen (e.g. the Atlantic on the flat night map).
+      const split = cue.quiz.split ?? 0.5;
+      if (arr) arr.forEach((val, i) => ((i + 0.5) / arr.length < split ? (L += val) : (R += val)));
+      const sum = L + R;
+      const side = L >= R ? 'left' : 'right';
+      const pct = sum > 0.001 ? Math.round((Math.max(L, R) / sum) * 100) : null;
+      const answer = t.quizAnswer(ans, side, pct, cue.quiz.measure[lang]);
+      setCaption(answer);
+      await speak(answer);
+      if (!live()) break;
+      if (!storyPausedRef.current && v.paused) v.play().catch(() => {});
+    }
+    clearInterval(remarkTimer);
+    setLiveLine('');
+    if (!live()) return;
+    await waitFor(() => v.ended || v.currentTime >= v.duration - 0.25, run);
+    if (!live()) return;
+
+    // 3. What you heard + the NASA fact, then free exploration.
+    pause();
+    setStoryPhase('outro');
+    v.currentTime = story.exploreAt;
+    for (const step of story.outro) {
+      if (!live()) return;
+      await playLine(step, run);
+      await waitFor(() => !storyPausedRef.current, run);
+    }
+    if (!live()) return;
+    setStoryPhase('idle');
+    setCaption('');
+    restoreVideo();
+    cursorRef.current = { x: 0.5, y: 0.5, visible: true };
+    setExplore(true);
+    setTimeout(() => overlayRef.current?.focus(), 50);
+  }, [ensureEngine, pause, play, playLine, stopLegend, stopStory, restoreVideo, speak, lang, t]);
+
+  const toggleStoryPause = useCallback(() => {
+    const v = videoRef.current;
+    if (!storyPausedRef.current) {
+      setStoryPaused(true);
+      narrRef.current?.pause();
+      if (storyPhaseRef.current === 'tour') {
+        v?.pause();
+        engineRef.current.stop();
+      }
+    } else {
+      setStoryPaused(false);
+      narrRef.current?.play().catch(() => {});
+      if (storyPhaseRef.current === 'tour') {
+        v?.play().catch(() => {});
+        engineRef.current.start();
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!autoNarrate || !playing) return;
     const id = setInterval(describeNow, 9000);
@@ -296,14 +652,26 @@ export default function App() {
       const kind = pixelKind(id, r, g, b);
       const engine = await ensureEngine();
       engine.playProbe(value, x * 2 - 1, kind);
-      const what = kind ? t.probe[kind] : value > 0 ? `${t.probe.value} ${t.levels[levelIndex(value)]}` : t.probe.none;
+      if (hapticsRef.current && navigator.vibrate && value > 0) navigator.vibrate(Math.round(10 + value * 50));
+      const what = kind
+        ? t.probe[kind]
+        : value <= 0
+          ? t.probe.none
+          : id === 'forest-height'
+            ? t.probe.forest(Math.round(value * 50))
+            : `${t.probe.value} ${t.levels[levelIndex(value)]}`;
       const text = `${regionName(t, x, y)}: ${what}`;
       if (text !== lastProbeRef.current.text) {
         lastProbeRef.current.text = text;
         setProbeText(text);
+        // Say it aloud once the cursor settles (works without a screen reader).
+        clearTimeout(exploreSpeakTimer.current);
+        exploreSpeakTimer.current = setTimeout(() => {
+          if (exploreRef.current && storyPhaseRef.current === 'idle') speak(text);
+        }, 650);
       }
     },
-    [ensureEngine, t],
+    [ensureEngine, t, speak],
   );
 
   const onPointer = (e) => {
@@ -321,7 +689,14 @@ export default function App() {
       e.preventDefault();
       e.stopPropagation();
       const [dx, dy] = moves[e.key];
-      probe(Math.min(0.999, Math.max(0, c.x + dx)), Math.min(0.999, Math.max(0, c.y + dy)), true);
+      const nx = Math.min(0.999, Math.max(0, c.x + dx));
+      const ny = Math.min(0.999, Math.max(0, c.y + dy));
+      if (nx === c.x && ny === c.y) {
+        engineRef.current.playEdge();
+        setProbeText(t.edge);
+        return;
+      }
+      probe(nx, ny, true);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       probe(c.x, c.y, true);
@@ -356,15 +731,118 @@ export default function App() {
     }
   };
 
+  // Jump the explore cursor to the strongest value of the current frame.
+  const findMax = useCallback(async () => {
+    const img = imgRef.current;
+    if (!img) return;
+    const id = vizRef.current.id;
+    const masks = vizRef.current.masks || [];
+    let best = 0;
+    let bx = 0.5;
+    let by = 0.5;
+    const val = (x, y) => {
+      const i = (y * img.width + x) * 4;
+      return pixelValue(id, img.data[i], img.data[i + 1], img.data[i + 2]);
+    };
+    // 2×2 average so a single bright glint does not win.
+    for (let y = 0; y < img.height - 1; y++) {
+      for (let x = 0; x < img.width - 1; x++) {
+        const fx = x / img.width;
+        const fy = y / img.height;
+        if (masks.some((m) => fx >= m[0] && fy >= m[1] && fx <= m[2] && fy <= m[3])) continue;
+        const v = (val(x, y) + val(x + 1, y) + val(x, y + 1) + val(x + 1, y + 1)) / 4;
+        if (v > best) {
+          best = v;
+          bx = (x + 0.5) / img.width;
+          by = (y + 0.5) / img.height;
+        }
+      }
+    }
+    if (!exploreRef.current) setExplore(true);
+    await probe(bx, by, true);
+    const what = id === 'forest-height' ? t.probe.forest(Math.round(best * 50)) : `${t.probe.value} ${t.levels[levelIndex(best)]}`;
+    const text = `${t.foundMax(what)} (${regionName(t, bx, by)})`;
+    setProbeText(text);
+    setAnnouncement(text);
+    clearTimeout(exploreSpeakTimer.current);
+    speak(text);
+    setTimeout(() => overlayRef.current?.focus(), 50);
+  }, [probe, t, speak]);
+
+  const repeatLast = useCallback(() => {
+    const line = lastLineRef.current;
+    if (!line) return;
+    // If the story narrator is talking, restart that line instead of overlapping.
+    if (narrRef.current) {
+      narrRef.current.currentTime = 0;
+      return;
+    }
+    hush();
+    const a = new Audio(`/narration/${lang}/${line.id}.mp3`);
+    menuAudioRef.current = a;
+    a.play().catch(() => speak(line[lang]));
+  }, [lang, speak, hush]);
+
+  // Plays a stand-alone narration clip (welcome, help) on the single narrator.
+  const playClip = useCallback(
+    (id) => {
+      const line = EXTRA_LINES.find((l) => l.id === id);
+      if (!line) return;
+      if (storyPhaseRef.current !== 'idle') {
+        // During a story: pause it (Space resumes) instead of skipping its line.
+        if (!storyPausedRef.current) toggleStoryPause();
+        menuAudioRef.current?.pause();
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+      } else {
+        hush();
+      }
+      lastLineRef.current = line;
+      setAnnouncement(line[langRef.current]);
+      const a = new Audio(`/narration/${langRef.current}/${id}.mp3`);
+      menuAudioRef.current = a;
+      a.play().catch(() => speak(line[langRef.current]));
+    },
+    [hush, speak, toggleStoryPause],
+  );
+
+  useEffect(() => {
+    const mark = () => {
+      if (interactedRef.current) return;
+      interactedRef.current = true;
+      // First contact: welcome a person who may not see the screen, unless the
+      // same key/click already started something.
+      setTimeout(() => {
+        if (storyPhaseRef.current === 'idle' && !playingRef.current && !voiceBusyRef.current && !menuPlaying()) playClip('welcome');
+      }, 350);
+    };
+    const menuPlaying = () => menuAudioRef.current && !menuAudioRef.current.paused;
+    window.addEventListener('pointerdown', mark, true);
+    window.addEventListener('keydown', mark, true);
+    return () => {
+      window.removeEventListener('pointerdown', mark, true);
+      window.removeEventListener('keydown', mark, true);
+    };
+  }, [playClip]);
+
   // ---------- keyboard shortcuts ----------
   useEffect(() => {
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (quizRef.current && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+        e.preventDefault();
+        quizRef.current(e.key === 'ArrowLeft' ? 'left' : 'right');
+        return;
+      }
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
       if (e.key === ' ' || e.code === 'Space') {
         if (tag === 'BUTTON' || tag === 'A') return; // native activation
         e.preventDefault();
+        if (storyPhaseRef.current !== 'idle') toggleStoryPause();
+        else if (STORIES[vizRef.current.id] && !playingRef.current) startStory();
+        else togglePlay();
+      } else if (e.key === 'p' || e.key === 'P') {
+        stopStory();
         togglePlay();
       } else if (/^[1-4]$/.test(e.key)) {
         setVizIndex(Number(e.key) - 1);
@@ -372,13 +850,24 @@ export default function App() {
         toggleExplore();
       } else if (e.key === 'd' || e.key === 'D') {
         describeNow();
+      } else if (e.key === 'h' || e.key === 'H') {
+        playClip('help');
+      } else if (e.key === 'f' || e.key === 'F') {
+        findMax();
+      } else if (e.key === 'r' || e.key === 'R') {
+        repeatLast();
+      } else if (e.key === 'g' || e.key === 'G') {
+        toggleLegend();
+      } else if (e.key === 'Escape') {
+        stopLegend();
+        stopStory();
       } else if (e.key === 'l' || e.key === 'L') {
         setLang((l) => (l === 'es' ? 'en' : 'es'));
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, playClip]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -391,6 +880,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vizIndex]);
 
+  const story = STORIES[viz.id];
   const level = ui ? levelValue(viz.id, ui) : 0;
   const position = useMemo(() => (ui && ui.coverage > 0.0005 ? regionName(t, ui.cx, ui.cy) : '—'), [ui, t]);
 
@@ -439,6 +929,72 @@ export default function App() {
             <span className="text-slate-400">{t.nowPlaying}: </span>
             {viz.title[lang]}
           </h2>
+
+          {story && (
+            <div className="mb-4 rounded-xl border border-emerald-400/60 bg-emerald-950/40 p-4">
+              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-300">🎧 {t.story}</p>
+              <p className="mt-1 text-xl font-bold text-white">{story.question[lang]}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {storyPhase === 'idle' ? (
+                  <button
+                    type="button"
+                    autoFocus={!startedOnceRef.current}
+                    onClick={startStory}
+                    aria-keyshortcuts="Space"
+                    className="rounded-lg bg-emerald-400 px-5 py-3 text-lg font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                  >
+                    ▶ {t.storyPlay}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={toggleStoryPause}
+                      aria-keyshortcuts="Space"
+                      className="rounded-lg bg-emerald-400 px-5 py-3 font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                    >
+                      {storyPaused ? `▶ ${t.storyResume}` : `❚❚ ${t.storyPause}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={stopStory}
+                      aria-keyshortcuts="Escape"
+                      className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-3 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                    >
+                      ■ {t.storyStop}
+                    </button>
+                  </>
+                )}
+              </div>
+              <p className="mt-2 text-sm text-emerald-100/80">{t.storyHint}</p>
+              {caption && (
+                <p className="mt-3 rounded-lg bg-black/40 p-3 text-lg leading-snug text-white">
+                  <span aria-hidden="true">🎙 </span>
+                  {caption}
+                </p>
+              )}
+              {quiz && (
+                <div className="mt-3 flex gap-3" role="group" aria-label={t.quizHint}>
+                  {['left', 'right'].map((sd) => (
+                    <button
+                      key={sd}
+                      type="button"
+                      onClick={() => quizRef.current?.(sd)}
+                      className="flex-1 rounded-lg bg-yellow-300 px-4 py-3 text-lg font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
+                    >
+                      {sd === 'left' ? `← ${t.left}` : `${t.right} →`}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {liveLine && storyPhase === 'tour' && (
+                <p className="mt-2 text-sm text-sky-200">
+                  <span aria-hidden="true">📡 </span>
+                  {liveLine}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: viz.aspect }}>
             <video
@@ -492,11 +1048,14 @@ export default function App() {
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={togglePlay}
-              aria-keyshortcuts="Space"
+              onClick={() => {
+                stopStory();
+                togglePlay();
+              }}
+              aria-keyshortcuts={story ? 'P' : 'Space'}
               className="rounded-lg bg-yellow-300 px-6 py-3 text-lg font-extrabold text-slate-900 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
             >
-              {playing ? `❚❚ ${t.pause}` : `▶ ${t.play}`}
+              {playing ? `❚❚ ${t.pause}` : `▶ ${story ? t.freePlay : t.play}`}
             </button>
             <button
               type="button"
@@ -544,6 +1103,22 @@ export default function App() {
               className="rounded-lg border border-sky-500 bg-sky-500/20 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
               🗣 {t.describe} (D)
+            </button>
+            <button
+              type="button"
+              onClick={findMax}
+              aria-keyshortcuts="F"
+              className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-3 py-2 text-sm font-medium text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ⌖ {t.findMax} (F)
+            </button>
+            <button
+              type="button"
+              onClick={repeatLast}
+              aria-keyshortcuts="R"
+              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ↺ {t.repeat} (R)
             </button>
             <Toggle checked={autoNarrate} onChange={setAutoNarrate}>
               {t.autoNarrate}
@@ -646,13 +1221,33 @@ export default function App() {
         {/* ---------- Explanations ---------- */}
         <section aria-labelledby="hear" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-2">
           <h2 id="hear" className="mb-3 text-xl font-bold">
-            🎧 {t.whatYouHear}
+            🎧 {t.legend}
           </h2>
-          <ul className="list-disc space-y-1 pl-5 text-slate-200">
-            {viz.legend[lang].map((line) => (
-              <li key={line}>{line}</li>
+          <p className="mb-3 text-slate-300">{t.legendHelp}</p>
+          <button
+            type="button"
+            onClick={toggleLegend}
+            aria-keyshortcuts="G"
+            className={`mb-4 rounded-lg px-4 py-2 font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 ${
+              legendIdx !== -1 ? 'bg-red-500/30 text-red-100 border border-red-400' : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+            }`}
+          >
+            {legendIdx !== -1 ? `■ ${t.legendStop} (Esc)` : `🎧 ${t.legendPlay} (G)`}
+          </button>
+          <ol className="space-y-2">
+            {LEGENDS[viz.id].map((item, k) => (
+              <li
+                key={item.key}
+                aria-current={legendIdx === k ? 'step' : undefined}
+                className={`rounded-lg border p-3 transition ${
+                  legendIdx === k ? 'border-yellow-300 bg-yellow-300/10 text-yellow-50' : 'border-slate-700 text-slate-200'
+                }`}
+              >
+                <span className="mr-2 font-mono text-yellow-300">{k + 1}.</span>
+                {item[lang]}
+              </li>
             ))}
-          </ul>
+          </ol>
           <h3 className="mb-2 mt-5 text-lg font-bold">{t.aboutViz}</h3>
           <p id="viz-description" className="text-slate-300">
             {viz.description[lang]}
