@@ -1,16 +1,49 @@
-# React + Vite
+# TerraBeats — The Earth Information Jukebox
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**EN** · An accessible, bilingual web jukebox that turns NASA Earth Information Center visualizations into music in real time. Built for the **2026 NASA Space Apps Challenge** (challenge: *The Earth Information Jukebox*, Cajamarca).
 
-Currently, two official plugins are available:
+**ES** · Una rocola web accesible y bilingüe que convierte en música, en tiempo real, visualizaciones del Earth Information Center de la NASA. Hecha para el **NASA Space Apps Challenge 2026**, reto *The Earth Information Jukebox*, sede Cajamarca.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Product definition (ES): [`docs/PRODUCTO.md`](docs/PRODUCTO.md)
+- Submission text (EN): [`docs/SUBMISSION.md`](docs/SUBMISSION.md)
 
-## React Compiler
+## Tracks
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| # | Visualization | Sound |
+|---|---|---|
+| 1 | [Night Lights 2012–2023](https://svs.gsfc.nasa.gov/5313/) | Chimes follow lit cities; pitch = latitude |
+| 2 | [Lightning from the ISS 2017–2023](https://svs.gsfc.nasa.gov/5011/) | Each new flash is a percussive hit |
+| 3 | [DYAMOND Global CO₂](https://svs.gsfc.nasa.gov/5196/) | Chord turns dissonant, heartbeat speeds up |
+| 4 | [GEDI Forest Height](https://svs.gsfc.nasa.gov/4950/) | Taller forest = higher plucked note; ocean waves |
 
-## Expanding the Oxlint configuration
+## Accessibility
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+- Keyboard shortcuts: **Space** play/pause · **1–4** tracks · **E** explore mode · **Arrows** move the explore cursor · **D** describe now · **L** language.
+- Explore mode lets you hear any point of the image, with text announcements.
+- Spoken descriptions (Web Speech), auto-narration, `aria-live` regions and phone vibration on lightning.
+
+## Run
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # production build in dist/
+```
+
+Deploys to Vercel as a standard Vite app (build `npm run build`, output `dist`).
+
+## Structure
+
+```
+src/
+  data/visualizations.js   catalog + bilingual texts
+  analysis/features.js     computer vision: pixel classifiers → features
+  audio/engine.js          Tone.js sonification engine per track
+  i18n.js                  ES/EN strings and narration
+  App.jsx                  UI, analysis loop, explore mode, shortcuts
+public/media/              web-sized NASA SVS videos + posters
+```
+
+## Credits
+
+Visualizations: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA does not endorse this project.
