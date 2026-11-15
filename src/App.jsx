@@ -1899,7 +1899,7 @@ export default function App() {
                         {DATA_TAG[v.id]}
                       </span>
                     </span>
-                    {i === vizIndex && audioStatus && !audioStatus.paused && (
+                    {i === vizIndex && audioStatus && !audioStatus.paused && ['story', 'free', 'legend'].includes(audioStatus.kind) && (
                       <span aria-hidden="true" className="mr-1 flex h-5 w-6 flex-none items-end gap-0.5">
                         {[0, 1, 2, 3].map((k) => (
                           <span key={k} className="eq-bar h-full w-1 rounded-sm" style={{ background: ACCENT[v.id] }} />
