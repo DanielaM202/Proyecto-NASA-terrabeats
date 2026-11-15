@@ -6,7 +6,7 @@ import { PLAYLIST } from './data/playlist.js';
 import EpisodePlayer from './components/EpisodePlayer.jsx';
 import { episodePlaying, getActiveEpisode, pauseActiveEpisode } from './audio/episodes.js';
 import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue, readWindow } from './analysis/features.js';
-import { lonLat, placeAt, placeLabel } from './analysis/geo.js';
+import { REGIONS, lonLat, placeAt, placeLabel, xyOf } from './analysis/geo.js';
 import { FLASH_MIN, SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 import Icon from './components/Icon.jsx';
@@ -15,6 +15,7 @@ import Glyph from './components/Glyph.jsx';
 import Telemetry from './components/Telemetry.jsx';
 import ScrollFx from './components/ScrollFx.jsx';
 import ViewOptions from './components/ViewOptions.jsx';
+import OfflinePack from './components/OfflinePack.jsx';
 import { WINDOW, average, compareStrings, compareText, summarize } from './analysis/compare.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
@@ -190,6 +191,7 @@ export default function App() {
   const legendIdxRef = useRef(-1);
   const startedOnceRef = useRef(false);
   const exploreSpeakTimer = useRef(null);
+  const regionIdxRef = useRef(-1);
   const sampleCanvasRef = useRef(null);
   const voiceNameRef = useRef('');
   const quizBoxRef = useRef(null);
@@ -1123,6 +1125,28 @@ export default function App() {
     }
   }, [ensureEngine, t]);
 
+  // "My region": the explore cursor jumps to places off the coast of Peru (ocean map only).
+  const goRegion = useCallback(async () => {
+    const L = langRef.current;
+    if (vizRef.current.id !== 'ocean') {
+      const text = STRINGS[L].region.only;
+      setAnnouncement(text);
+      if (storyPhaseRef.current === 'idle') speak(text);
+      return;
+    }
+    if (storyPhaseRef.current !== 'idle') return;
+    if (!exploreRef.current) await toggleExplore();
+    regionIdxRef.current = (regionIdxRef.current + 1) % REGIONS.length;
+    const r = REGIONS[regionIdxRef.current];
+    const { x, y } = xyOf(r.lon, r.lat);
+    const res = await probe(x, y, true);
+    clearTimeout(exploreSpeakTimer.current);
+    const text = `${r[L]}. ${res?.text ?? ''}`;
+    lastProbeRef.current.text = text;
+    setProbeText(text);
+    speak(text);
+  }, [probe, speak, toggleExplore]);
+
   // recording
   const toggleRecord = async () => {
     const engine = await ensureEngine();
@@ -1332,6 +1356,8 @@ export default function App() {
         repeatLast();
       } else if (e.key === 'm' || e.key === 'M') {
         markMoment();
+      } else if (e.key === 'x' || e.key === 'X') {
+        goRegion();
       } else if (e.key === 'g' || e.key === 'G') {
         toggleLegend();
       } else if (e.key === 'Escape') {
@@ -1342,7 +1368,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, playClip, stopAll]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, goRegion, playClip, stopAll]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -1711,6 +1737,16 @@ export default function App() {
             >
               {t.compare.button} (M)
             </button>
+            {viz.id === 'ocean' && (
+              <button
+                type="button"
+                onClick={goRegion}
+                aria-keyshortcuts="X"
+                className="rounded-lg border border-sky-400/70 bg-sky-400/10 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-400/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+              >
+                {t.region.button} (X)
+              </button>
+            )}
           </div>
           {marks.some((m) => m.viz === viz.id) && (
             <div role="group" aria-label={t.compare.title} className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-sm">
@@ -2040,6 +2076,8 @@ export default function App() {
             })}
           </ul>
         </section>
+
+        <OfflinePack t={t} />
 
         <section aria-labelledby="how" className="panel lg:col-span-3">
           <h2 id="how" className="flex items-center gap-2.5 mb-3 text-xl font-bold">

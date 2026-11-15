@@ -33,6 +33,16 @@ export const STRINGS = {
     exploreHelp:
       'Modo explorar: pasa el puntero o usa las flechas sobre la imagen. Cada punto suena según su valor. Mayús + flechas = pasos grandes. En el móvil, usa la cruceta o arrastra el dedo.',
     describe: 'Describir ahora',
+    offline: {
+      title: 'Usar sin conexión',
+      text: 'Guarda en este dispositivo las voces, los videos de la NASA y los episodios (unos 55 MB) para usar TerraBeats sin internet, por ejemplo en el campo o con mala señal. Conviene hacerlo con wifi.',
+      save: 'Guardar para usar sin conexión',
+      saving: (d, t) => `Guardando ${d} de ${t} archivos`,
+      ready: 'Listo: ya puedes usar TerraBeats sin internet.',
+      clear: 'Borrar lo guardado',
+      error: 'No se pudo guardar todo. Revisa la conexión y vuelve a intentarlo.',
+    },
+    region: { button: 'Mi región', only: 'Mi región funciona en la pista de Océanos: salta a lugares frente a la costa de Perú.' },
     compare: {
       button: 'Marcar momento',
       title: 'Comparar dos momentos',
@@ -158,6 +168,7 @@ export const STRINGS = {
       ['F', 'Ir al valor más alto de la imagen'],
       ['R', 'Repetir la última frase del narrador'],
       ['M', 'Marcar un momento; otra vez M lo compara con el anterior'],
+      ['X', 'En Océanos: saltar a lugares frente a la costa de Perú'],
       ['N', 'Saltar a la siguiente frase de la historia'],
       ['H', 'Escuchar la ayuda (dentro de un episodio: la ayuda de los episodios)'],
       ['D', 'Describir lo que suena ahora'],
@@ -248,6 +259,16 @@ export const STRINGS = {
     exploreHelp:
       'Explore mode: move the pointer or use the arrow keys over the image. Each point sounds according to its value. Shift + arrows = big steps. On a phone, use the pad or drag your finger.',
     describe: 'Describe now',
+    offline: {
+      title: 'Use offline',
+      text: 'Save the voices, the NASA videos and the episodes on this device (about 55 MB) to use TerraBeats without internet, for example in the field or with a weak signal. Best done on wifi.',
+      save: 'Save to use offline',
+      saving: (d, t) => `Saving ${d} of ${t} files`,
+      ready: 'Done: you can now use TerraBeats without internet.',
+      clear: 'Delete saved files',
+      error: 'Could not save everything. Check your connection and try again.',
+    },
+    region: { button: 'My region', only: 'My region works on the Oceans track: it jumps to places off the coast of Peru.' },
     compare: {
       button: 'Mark moment',
       title: 'Compare two moments',
@@ -372,6 +393,7 @@ export const STRINGS = {
       ['F', 'Jump to the highest value in the image'],
       ['R', 'Repeat the narrator’s last sentence'],
       ['M', 'Mark a moment; press M again to compare it with the previous one'],
+      ['X', 'On Oceans: jump to places off the coast of Peru'],
       ['N', 'Skip to the next sentence of the story'],
       ['H', 'Hear the help (inside an episode: the episode help)'],
       ['D', 'Describe what is playing now'],

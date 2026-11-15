@@ -1,5 +1,7 @@
 # La voz de TerraBeats: opciones y cómo cambiarla
 
+> **Escuchar las muestras:** abran `muestras-de-voz/muestras-standalone.html` (tiene los 17 audios dentro de la página). Si el navegador no reproduce los archivos sueltos de `muestras-de-voz/index.html`, usen este.
+
 ## Qué voz usa hoy
 - **Español: Camila (Perú)** · **Inglés: Jenny (Estados Unidos)**, voces neuronales de Microsoft Edge, generadas con `scripts/build-narration-edge.py` (paquete `edge-tts`).
 - **Por qué:** en las 17 muestras comparadas (`muestras-de-voz/index.html`) fueron las más naturales, y son las que el navegador Edge ofrece como voces "Natural", de modo que las partes dinámicas (respuestas, comentarios en vivo, valores del modo explorar) pueden sonar con **la misma persona** si el navegador las tiene.

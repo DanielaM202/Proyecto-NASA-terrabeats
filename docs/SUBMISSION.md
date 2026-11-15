@@ -63,6 +63,10 @@ Each story also exists as a **downloadable audio episode** of about two minutes,
 - On phones, explore mode has a **pad of large buttons** (up, down, left, right, jump to highest value, big steps) that move the cursor and speak the value. This works with TalkBack and VoiceOver, which intercept finger drags. Sighted touch users can also drag a finger over the image (the page does not scroll while exploring).
 - Explore mode speaks each value aloud, so it works without a screen reader; it is also compatible with screen readers. A low bump marks the edge of the image, and the phone vibrates with the value.
 - Switching language changes the voice immediately, mid-story.
+- **Compare two moments:** in free mode, press M to mark moment A and M again for B; the voice says what changed between them (more or less tall forest, warmer water, more or less light, lightning activity, carbon dioxide level) and "Go to A / B" buttons replay each moment. This turns a changing planet into something you can check by ear.
+- **My region:** on the Oceans track, X moves the explore cursor to places off the coast of Peru and says the sea temperature the data shows there.
+- **Display panel for low vision:** high contrast, larger text and no motion or animated background, remembered on the device.
+- **Use offline:** one button saves the page, voices, NASA videos and episodes on the device (about 52 MB), so it works without internet and can be installed as an app. Tested by shutting the server down.
 
 ### How it works
 
@@ -89,7 +93,7 @@ The app shows the reason behind every sound next to it. Examples: real height be
 - **Learning you can check:** after one story, a listener should be able to answer "Where are the tallest forests?" or "Which country gained light and where did lights go out?" without seeing the screen.
   - `TODO: add the result of our test (N people, blindfolded or blind; X of 4 questions answered correctly) and one quote.`
 - **Reusable:** adding another EIC visualization needs only a video, its colour bar and a script with cue times.
-- **Reach:** runs in any browser with no installation, in English and Spanish, from Cajamarca, Peru.
+- **Reach:** runs in any browser with no installation, in English and Spanish, from Cajamarca, Peru, and works offline once saved.
 
 ### Tools, languages and software
 

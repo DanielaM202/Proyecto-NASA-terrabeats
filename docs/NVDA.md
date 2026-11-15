@@ -54,6 +54,8 @@ Instalar NVDA (gratis, nvaccess.org) y abrir la web publicada en Chrome o Edge. 
 | 21 | Modo explorar en Océanos: ¿el nombre del mar y la temperatura coinciden con el color que señalas? | | |
 | 22 | Botón "Ver mejor": ¿se anuncia como botón desplegable, y cada opción dice si está activada? | | |
 | 23 | En modo libre, M dos veces: ¿se oye el momento A, luego la comparación, y los botones "Ir a A" y "Ir a B" se anuncian bien? | | |
+| 24 | Modo explorar en Océanos, tecla X: ¿la voz dice el lugar de Perú y la temperatura, y cada pulsación pasa al siguiente? | | |
+| 25 | Panel "Usar sin conexión": ¿el avance ("Guardando 12 de 186 archivos") y el aviso final se leen? | | |
 | 18 | "Reproducir toda la playlist": ¿pasa sola de un episodio a otro? | | |
 | 15 | Escuchar la leyenda (G): ¿se entiende el "Por qué" después de cada sonido? | | |
 

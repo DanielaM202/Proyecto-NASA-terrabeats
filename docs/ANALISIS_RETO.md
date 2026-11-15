@@ -86,6 +86,9 @@ Ordenadas por impacto frente al reto, esfuerzo y riesgo.
 - **Ver mejor** (baja visión): alto contraste, texto grande y muy grande, sin movimiento. Se recuerda en el dispositivo.
 - **Comparar dos momentos** (tecla M): marca A y B en modo libre y la voz dice qué cambió; botones para volver a cada momento. Probado en las cinco pistas.
 
+- **Mi región** (tecla X, Océanos): el cursor salta a lugares frente a la costa de Perú y la voz dice el lugar y la temperatura medida en el video.
+- **Usar sin conexión:** panel que guarda todo en el dispositivo (52 MB, 186 archivos) y funciona instalado como aplicación. Probado apagando el servidor: la página, la historia con voz y sonido, los videos y los episodios siguieron funcionando.
+
 ## 7. Qué decide el equipo
 1. ¿Voz de Edge (declarada), Kokoro o voz humana?
 2. ¿Alguna persona del equipo es menor de 18 años? ¿Se mantienen los nombres en la página?
