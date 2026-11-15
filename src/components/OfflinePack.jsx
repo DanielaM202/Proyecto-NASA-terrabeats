@@ -31,6 +31,23 @@ function packUrls() {
   return [...urls];
 }
 
+// One file, with up to three tries: a single dropped connection should not stop the whole pack.
+async function saveOne(cache, url) {
+  let last;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      await cache.put(url, res);
+      return;
+    } catch (err) {
+      last = err;
+      await new Promise((r) => setTimeout(r, 700 * attempt));
+    }
+  }
+  throw last;
+}
+
 // Button that saves the audio, video and images on the device so the page works offline.
 export default function OfflinePack({ t }) {
   const o = t.offline;
@@ -38,6 +55,7 @@ export default function OfflinePack({ t }) {
   const [state, setState] = useState('idle'); // idle | saving | ready | error
   const [done, setDone] = useState(0);
   const [total, setTotal] = useState(0);
+  const [failed, setFailed] = useState('');
 
   useEffect(() => {
     if (!supported) return;
@@ -53,20 +71,21 @@ export default function OfflinePack({ t }) {
     const urls = packUrls();
     setTotal(urls.length);
     setDone(0);
+    setFailed('');
     setState('saving');
+    let current = '';
     try {
       const cache = await caches.open(CACHE);
       let n = 0;
       for (const u of urls) {
-        if (!(await cache.match(u))) {
-          const res = await fetch(u);
-          if (!res.ok) throw new Error(u);
-          await cache.put(u, res);
-        }
+        current = u;
+        if (!(await cache.match(u))) await saveOne(cache, u);
         setDone(++n);
       }
       setState('ready');
-    } catch {
+    } catch (err) {
+      console.error('Offline pack:', current, err);
+      setFailed(`${current} (${err?.name || 'error'})`);
       setState('error');
     }
   }, []);
@@ -91,7 +110,7 @@ export default function OfflinePack({ t }) {
             disabled={state === 'saving'}
             className="rounded-lg bg-yellow-300 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-yellow-200 disabled:opacity-60"
           >
-            {state === 'saving' ? o.saving(done, total) : o.save}
+            {state === 'saving' ? o.saving(done, total) : state === 'error' ? o.retry : o.save}
           </button>
         )}
         {state === 'ready' && (
@@ -100,7 +119,7 @@ export default function OfflinePack({ t }) {
           </button>
         )}
         <span role="status" aria-live="polite" className="text-sm text-slate-300">
-          {state === 'ready' ? o.ready : state === 'error' ? o.error : ''}
+          {state === 'ready' ? o.ready : state === 'error' ? o.error(failed) : ''}
         </span>
       </div>
     </section>

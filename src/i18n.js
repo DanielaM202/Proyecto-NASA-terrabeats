@@ -40,7 +40,8 @@ export const STRINGS = {
       saving: (d, t) => `Guardando ${d} de ${t} archivos`,
       ready: 'Listo: ya puedes usar TerraBeats sin internet.',
       clear: 'Borrar lo guardado',
-      error: 'No se pudo guardar todo. Revisa la conexión y vuelve a intentarlo.',
+      error: (u) => `No se pudo guardar ${u}. Revisa la conexión y vuelve a intentarlo: lo ya guardado se conserva.`,
+      retry: 'Reintentar',
     },
     region: { button: 'Mi región', only: 'Mi región funciona en la pista de Océanos: salta a lugares frente a la costa de Perú.' },
     compare: {
@@ -266,7 +267,8 @@ export const STRINGS = {
       saving: (d, t) => `Saving ${d} of ${t} files`,
       ready: 'Done: you can now use TerraBeats without internet.',
       clear: 'Delete saved files',
-      error: 'Could not save everything. Check your connection and try again.',
+      error: (u) => `Could not save ${u}. Check your connection and try again: what is already saved is kept.`,
+      retry: 'Try again',
     },
     region: { button: 'My region', only: 'My region works on the Oceans track: it jumps to places off the coast of Peru.' },
     compare: {
