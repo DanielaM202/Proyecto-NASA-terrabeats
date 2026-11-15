@@ -11,6 +11,8 @@ import { SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 import Icon from './components/Icon.jsx';
 import Starfield from './components/Starfield.jsx';
+import Glyph from './components/Glyph.jsx';
+import Telemetry from './components/Telemetry.jsx';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
 // Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
@@ -49,6 +51,15 @@ const PLAY_ORDER = VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => v.id)
 const requestEpisode = (id, fromStart = false) => window.dispatchEvent(new CustomEvent('terrabeats:episode', { detail: { id, fromStart } }));
 // One accent per track, taken from its own data colours (see docs/DESIGN.md).
 const ACCENT = { 'forest-height': '#8fcf7e', ocean: '#5eb6e8', 'night-lights': '#f2c14e', lightning: '#b9a2ff', co2: '#ff9a62' };
+const TEAM = ['Daniela Miranda', 'Liliam Gil', 'Diego Quiliche', 'Rodrigo Vargas', 'José Rodriguez'];
+// Instrument or model and period of each track, shown as a small data tag on its card.
+const DATA_TAG = {
+  'forest-height': 'GEDI · ISS · 2019-20',
+  ocean: 'ECCO2 · NASA/JPL · 2007-08',
+  'night-lights': 'VIIRS · Suomi NPP · 2012-23',
+  lightning: 'LIS · ISS · 2017-23',
+  co2: 'DYAMOND · 2020',
+};
 const PAD_BTN =
   'inline-flex h-14 w-14 items-center justify-center rounded-xl border border-slate-500 bg-slate-800 text-2xl hover:bg-slate-700 active:bg-yellow-300 active:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300';
 const STORY_RATE = 0.6; // video speed during the guided story, so narration fits each region
@@ -1303,7 +1314,10 @@ export default function App() {
                 aria-keyshortcuts="H"
                 className="btn-lift rounded-lg bg-yellow-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
               >
-                {t.listenHelp} (H)
+                <span className="inline-flex items-center gap-2">
+                  <Glyph name="help" className="h-4 w-4" />
+                  {t.listenHelp} (H)
+                </span>
               </button>
               <button
                 type="button"
@@ -1311,7 +1325,10 @@ export default function App() {
                 aria-keyshortcuts="Escape"
                 className="btn-lift rounded-lg border border-red-400/80 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-100 hover:bg-red-500/25 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
               >
-                {t.stopAll} (Esc)
+                <span className="inline-flex items-center gap-2">
+                  <Glyph name="stop" className="h-4 w-4" />
+                  {t.stopAll} (Esc)
+                </span>
               </button>
             </div>
             <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600/80">
@@ -1353,14 +1370,18 @@ export default function App() {
             ))}
           </ul>
         </div>
+        <Telemetry viz={viz} index={vizIndex} total={VISUALIZATIONS.length} lang={lang} tag={DATA_TAG[viz.id]} accent={ACCENT[viz.id]} />
       </header>
 
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-3">
         {/* ---------- Player ---------- */}
         <section id="player" aria-labelledby="now-playing" className="lg:col-span-2" tabIndex={-1}>
-          <h2 id="now-playing" className="mb-3 text-xl font-bold">
-            <span className="text-slate-400">{t.nowPlaying}: </span>
-            {viz.title[lang]}
+          <h2 id="now-playing" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
+            <Glyph name="player" className="h-5 w-5 flex-none text-sky-300" />
+            <span>
+              <span className="text-slate-400">{t.nowPlaying}: </span>
+              {viz.title[lang]}
+            </span>
           </h2>
 
           {story && (
@@ -1703,7 +1724,8 @@ export default function App() {
         {/* ---------- Track list + live data ---------- */}
         <aside className="space-y-6">
           <section aria-labelledby="tracks">
-            <h2 id="tracks" className="mb-3 text-xl font-bold">
+            <h2 id="tracks" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
+            <Glyph name="tracks" className="h-5 w-5 flex-none text-sky-300" />
               {t.chooseTrack}
             </h2>
             <ul className="space-y-2">
@@ -1727,6 +1749,10 @@ export default function App() {
                         {v.title[lang]}
                       </span>
                       <span className="mt-0.5 block text-sm text-slate-400">{v.short[lang]}</span>
+                      <span className="mt-1.5 flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-wide text-slate-400">
+                        <Glyph name={v.id} className="h-3.5 w-3.5" style={{ color: ACCENT[v.id] }} />
+                        {DATA_TAG[v.id]}
+                      </span>
                     </span>
                     {i === vizIndex && audioStatus && !audioStatus.paused && (
                       <span aria-hidden="true" className="mr-1 flex h-5 w-6 flex-none items-end gap-0.5">
@@ -1742,7 +1768,8 @@ export default function App() {
           </section>
 
           <section aria-labelledby="live" className="panel">
-            <h2 id="live" className="mb-3 text-lg font-bold">
+            <h2 id="live" className="flex items-center gap-2.5 mb-3 text-lg font-bold">
+            <Glyph name="live" className="h-5 w-5 flex-none text-emerald-300" />
               {t.liveData}
             </h2>
             <div className="space-y-3">
@@ -1766,7 +1793,8 @@ export default function App() {
 
         {/* ---------- Explanations ---------- */}
         <section aria-labelledby="hear" className="panel lg:col-span-2">
-          <h2 id="hear" className="mb-3 text-xl font-bold">
+          <h2 id="hear" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
+            <Glyph name="legend" className="h-5 w-5 flex-none text-emerald-300" />
             {t.legend}
           </h2>
           <p className="mb-3 text-slate-300">{t.legendHelp}</p>
@@ -1811,7 +1839,8 @@ export default function App() {
         </section>
 
         <section aria-labelledby="shortcuts" className="panel">
-          <h2 id="shortcuts" className="mb-3 text-xl font-bold">
+          <h2 id="shortcuts" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
+            <Glyph name="shortcuts" className="h-5 w-5 flex-none text-sky-300" />
             {t.shortcuts}
           </h2>
           <dl className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 text-sm">
@@ -1827,7 +1856,8 @@ export default function App() {
         </section>
 
         <section aria-labelledby="playlist" className="panel lg:col-span-3">
-          <h2 id="playlist" className="mb-2 text-xl font-bold">
+          <h2 id="playlist" className="flex items-center gap-2.5 mb-2 text-xl font-bold">
+            <Glyph name="playlist" className="h-5 w-5 flex-none text-yellow-300" />
             {t.playlist}
           </h2>
           <p className="mb-4 max-w-3xl text-slate-300">{t.playlistIntro}</p>
@@ -1898,7 +1928,8 @@ export default function App() {
         </section>
 
         <section aria-labelledby="how" className="panel lg:col-span-3">
-          <h2 id="how" className="mb-3 text-xl font-bold">
+          <h2 id="how" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
+            <Glyph name="how" className="h-5 w-5 flex-none text-sky-300" />
             {t.howItWorks}
           </h2>
           <ol className="list-decimal space-y-1 pl-5 text-slate-300">
@@ -1940,8 +1971,28 @@ export default function App() {
         </div>
       )}
 
-      <footer className="border-t border-slate-800 px-4 py-6 text-center text-sm text-slate-400">
-        <p>{t.footer}</p>
+      <footer className="border-t border-slate-800 px-4 py-10 text-center text-sm text-slate-400">
+        <section aria-labelledby="team">
+          <h2 id="team" className="eyebrow flex items-center justify-center gap-2">
+            <Glyph name="team" className="h-4 w-4" />
+            {t.team}
+          </h2>
+          <ul className="mx-auto mt-5 flex max-w-4xl flex-wrap justify-center gap-3">
+            {TEAM.map((n, k) => (
+              <li key={n} className="group flex items-center gap-3 rounded-full border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-5 text-left backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-white/25">
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 flex-none items-center justify-center rounded-full font-mono text-xs font-semibold text-slate-950"
+                  style={{ background: Object.values(ACCENT)[k % 5] }}
+                >
+                  {n.split(' ').map((w) => w[0]).join('')}
+                </span>
+                <span className="font-display text-base text-slate-100">{n}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+        <p className="mt-8">{t.footer}</p>
         <p className="mt-1">{t.credits}</p>
       </footer>
     </div>

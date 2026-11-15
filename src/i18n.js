@@ -148,6 +148,7 @@ export const STRINGS = {
     },
     startHint: 'Pulsa Reproducir (o Espacio) para escuchar. Usa auriculares para oír el movimiento izquierda/derecha.',
     footer: 'Hecho para el NASA Space Apps Challenge 2026 · Reto “The Earth Information Jukebox” · Sede Cajamarca',
+    team: 'Equipo',
     credits: 'Visualizaciones: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA no respalda este proyecto.',
     levels: ['muy baja', 'baja', 'media', 'alta', 'muy alta'],
     levelsM: ['muy bajo', 'bajo', 'medio', 'alto', 'muy alto'], // masculine, for "valor"
@@ -337,6 +338,7 @@ export const STRINGS = {
     },
     startHint: 'Press Play (or Space) to listen. Use headphones to hear left/right movement.',
     footer: 'Made for the 2026 NASA Space Apps Challenge · “The Earth Information Jukebox” challenge · Cajamarca',
+    team: 'Team',
     credits: 'Visualizations: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA does not endorse this project.',
     levels: ['very low', 'low', 'medium', 'high', 'very high'],
     levelsM: ['very low', 'low', 'medium', 'high', 'very high'],

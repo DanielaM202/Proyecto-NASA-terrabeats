@@ -10,6 +10,10 @@
 
 **TerraBeats — The Earth Information Jukebox**
 
+## Team
+
+Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas and José Rodriguez (Cajamarca).
+
 ## High-Level Project Summary
 
 NASA's Earth Information Center tells the story of our changing planet through images, so people who are blind or have low vision are left out. TerraBeats is an accessible, bilingual (English/Spanish) web jukebox that turns five EIC visualizations into **interactive sound documentaries**. As the NASA video plays, TerraBeats reads every frame with computer vision and generates the sound live: a note for forest height or sea temperature, percussion for lightning, a chord that tightens with carbon dioxide, chimes for city lights. A narrator gives each sound a meaning, a place and a time, asks the listener a question, and answers it from the data on screen at that moment. Then the listener explores the image alone with the keyboard. It is audio description for Earth science data.

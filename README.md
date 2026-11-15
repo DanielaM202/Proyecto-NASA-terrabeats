@@ -67,3 +67,6 @@ public/media/              web-sized NASA SVS videos + posters
 ## Credits
 
 Visualizations: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA does not endorse this project.
+
+## Equipo
+Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas y José Rodriguez. NASA Space Apps Challenge 2026, sede Cajamarca.
