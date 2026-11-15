@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ArrowUp } from 'lucide-react';
 
-// Page-level polish, all decorative and independent from the audio:
-//  - a thin reading-progress bar at the top,
-//  - a soft light that follows the pointer over panels and cards,
-//  - panels that fade in as they enter the viewport,
-//  - a "back to top" button after scrolling down.
-// With prefers-reduced-motion the light and the fade-ins are not used.
+// Decorative page effects: reading-progress bar, light that follows the pointer over panels,
+// fade-in of panels as they enter the viewport and a back-to-top button.
+// With prefers-reduced-motion the light and the fade-ins are skipped.
 export default function ScrollFx({ label }) {
   const [showTop, setShowTop] = useState(false);
 

@@ -18,8 +18,7 @@ import {
   Users,
 } from 'lucide-react';
 
-// Decorative icons (lucide, line style). They never carry meaning on their own:
-// every button and heading keeps its text, so they are hidden from screen readers.
+// Decorative lucide icons, hidden from screen readers: every button and heading keeps its text.
 const MAP = {
   help: Volume2,
   stop: Square,

@@ -115,8 +115,7 @@ export const LEGENDS = {
   ],
 };
 
-// The "why" behind each artistic choice (the challenge asks teams to share it).
-// Shown under each legend item.
+// The reason behind each sound, shown under each legend item.
 export const WHY = {
   'forest-height': {
     ruler: {

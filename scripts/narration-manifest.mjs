@@ -1,5 +1,5 @@
 // Prints every narration line of the stories as JSON: [{ id, lang, text }]
-// Used by build-narration.ps1 to generate the audio files.
+// Used by the build-narration scripts to generate the audio files.
 import { EXTRA_LINES, STORIES, storyLines } from '../src/data/stories.js';
 
 const out = [];

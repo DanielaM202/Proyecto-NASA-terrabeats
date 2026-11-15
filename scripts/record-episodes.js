@@ -1,6 +1,6 @@
 // Records the playlist episodes of the app and sends them to scripts/episode-receiver.mjs.
 //
-// 1. Terminal A:  npm run dev
+// 1. Terminal A:  npm run dev  (or npm run build && npm run preview, then use ?equipo)
 // 2. Terminal B:  node scripts/episode-receiver.mjs C:\path\to\ffmpeg.exe
 // 3. Open http://localhost:5173 in Chrome or Edge and leave the tab in view
 //    (use one tab per language to record both at the same time).
@@ -11,8 +11,7 @@
 //    hook is not available in the public build)
 //    Every episode plays its full story (2-3 min). Progress: window.__recorder.log
 //
-// Re-run it whenever the narration audio or the script changes (for example when
-// the voice is replaced by ElevenLabs): the episodes must be re-recorded.
+// Re-run it whenever the narration audio or the script changes: the episodes must be re-recorded.
 (() => {
   const LANG = window.RECORD_LANG || 'es';
   const ONLY = window.RECORD_ONLY || null;

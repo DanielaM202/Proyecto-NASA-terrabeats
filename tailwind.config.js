@@ -11,8 +11,7 @@ export default {
         display: ['Fraunces', 'Georgia', 'Times New Roman', 'serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      // One restrained palette (see docs/DESIGN.md): a deep blue-black "observatory" base
-      // and a single warm accent. Overriding these tokens restyles every existing class.
+      // Dark blue base and one warm accent (see docs/DESIGN.md). Overriding these tokens restyles every class.
       colors: {
         slate: {
           50: '#f4f6fa', 100: '#e6ebf4', 200: '#cbd4e3', 300: '#aab6ca', 400: '#8b99b1',

@@ -126,8 +126,8 @@ export default function App() {
   const [autoNarrate, setAutoNarrate] = useState(false);
   const [voice, setVoice] = useState(true);
   const [haptics, setHaptics] = useState(true);
-  const [padBig, setPadBig] = useState(false); // exploration pad: big steps
-  const [playAll, setPlayAll] = useState(false); // playing the whole playlist
+  const [padBig, setPadBig] = useState(false);
+  const [playAll, setPlayAll] = useState(false);
   const [audioStatus, setAudioStatus] = useState(null); // what is playing right now (status bar)
   const [voiceName, setVoiceName] = useState(() => {
     try {
@@ -223,7 +223,7 @@ export default function App() {
     [],
   );
 
-  // ---------- language ----------
+  // language
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = `${t.appName} · ${t.tagline}`;
@@ -274,9 +274,7 @@ export default function App() {
         voiceBusyRef.current = true;
         lastSpokeRef.current = performance.now();
         const u = new SpeechSynthesisUtterance(text);
-        // Use the voice chosen by the person, or the most natural one installed
-        // (Edge ships neural "Natural" voices); if none matches the language, the
-        // default voice is used rather than staying silent.
+        // The chosen voice, or the most natural one installed; otherwise the default.
         const match = pickVoice(langRef.current, voiceNameRef.current);
         if (match) {
           u.voice = match;
@@ -308,8 +306,7 @@ export default function App() {
   const speakRef = useRef(speak);
   speakRef.current = speak;
 
-  // ---------- audio engine ----------
-  // ---------- auditory legend ----------
+  // auditory legend
   const [legendIdx, setLegendIdx] = useState(-1);
   legendIdxRef.current = legendIdx;
   const legendRunRef = useRef(0);
@@ -414,7 +411,7 @@ export default function App() {
     if (videoRef.current) videoRef.current.playbackRate = speed;
   }, [speed]);
 
-  // ---------- analysis loop (computer vision → features → sound) ----------
+  // analysis loop (computer vision → features → sound)
   useEffect(() => {
     let raf;
     let lastUi = 0;
@@ -515,7 +512,7 @@ export default function App() {
     };
   }, []);
 
-  // ---------- narration ----------
+  // narration
   const describeNow = useCallback(() => {
     const text = describe(t, vizRef.current, featuresRef.current);
     setAnnouncement(text);
@@ -534,7 +531,7 @@ export default function App() {
       setAnnouncement(text);
       await speak(text);
     };
-    setLegendIdx(-2); // intro
+    setLegendIdx(-2);
     await say(STRINGS[langRef.current].legendIntro(viz.title[langRef.current]));
     for (let k = 0; k < items.length; k++) {
       if (!live()) return;
@@ -553,7 +550,7 @@ export default function App() {
 
   const toggleLegend = useCallback(() => (legendIdx !== -1 ? stopLegend() : playLegend()), [legendIdx, stopLegend, playLegend]);
 
-  // ---------- guided sound story ----------
+  // guided sound story
   // Pre-rendered narration (public/narration/<lang>/<id>.mp3) + engine demos +
   // cues synced to the video time. Falls back to speech synthesis if a file fails.
   const [storyPhase, setStoryPhase] = useState('idle'); // idle | intro | tour | outro
@@ -643,7 +640,6 @@ export default function App() {
         const text = line[L];
         lastLineRef.current = line;
         setCaption(text);
-        // Single narrator: cut anything still talking.
         hush();
         voiceBusyRef.current = true;
         const audio = new Audio(`/narration/${L}/${line.id}.mp3`);
@@ -862,7 +858,10 @@ export default function App() {
       if (blob) {
         const key = `${vizRef.current.id}-${langRef.current}`;
         const data = { url: URL.createObjectURL(blob), marks: episodeMarksRef.current || [], duration: +((performance.now() - recStartRef.current) / 1000).toFixed(2) };
-        setEpisodes((e) => ({ ...e, [key]: data }));
+        setEpisodes((e) => {
+          if (e[key]) URL.revokeObjectURL(e[key].url);
+          return { ...e, [key]: data };
+        });
       }
       episodeMarksRef.current = null;
       setStoryPhase('idle');
@@ -905,7 +904,6 @@ export default function App() {
     setAnnouncement(STRINGS[langRef.current].allStopped);
   }, [stopLegend, stopStory, hush, pause]);
 
-  // "Play the whole playlist": the five episodes one after another.
   const startPlaylist = () => {
     stopLegend();
     stopStory();
@@ -960,7 +958,7 @@ export default function App() {
     if (!storyPausedRef.current) {
       setStoryPaused(true);
       narrRef.current?.pause();
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // a live remark in progress
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       if (storyPhaseRef.current === 'tour') {
         v?.pause();
         engineRef.current.stop();
@@ -983,7 +981,7 @@ export default function App() {
     return () => clearInterval(id);
   }, [autoNarrate, playing, describeNow]);
 
-  // ---------- explore mode ----------
+  // explore mode
   // Reads the window of the video frame around (x, y) at the video's own resolution.
   const readAround = useCallback((x, y) => {
     const v = videoRef.current;
@@ -1113,7 +1111,7 @@ export default function App() {
     }
   }, [ensureEngine, t]);
 
-  // ---------- recording ----------
+  // recording
   const toggleRecord = async () => {
     const engine = await ensureEngine();
     if (!recording) {
@@ -1129,7 +1127,6 @@ export default function App() {
     }
   };
 
-  // Jump the explore cursor to the strongest value of the current frame.
   const findMax = useCallback(async () => {
     const img = imgRef.current;
     if (!img) return;
@@ -1230,7 +1227,7 @@ export default function App() {
     };
   }, [playClip]);
 
-  // ---------- keyboard shortcuts ----------
+  // keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1267,7 +1264,6 @@ export default function App() {
       } else if (e.key === 'd' || e.key === 'D') {
         describeNow();
       } else if (e.key === 'n' || e.key === 'N') {
-        // Skip the sentence being narrated: the story moves on to the next step.
         if (storyPhaseRef.current !== 'idle') hushRef.current();
       } else if (e.key === 'h' || e.key === 'H') {
         playClip('help');
@@ -1331,7 +1327,7 @@ export default function App() {
           </div>
           <div className="earth-limb absolute inset-x-0 bottom-0 h-24" />
         </div>
-        {/* Top bar: controls first (help and stop are the first things a keyboard or screen-reader user meets). */}
+        {/* Top bar: help and stop come first for keyboard and screen-reader users. */}
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5">
           <div className="flex items-center gap-2.5" aria-hidden="true">
             <img src="/favicon.svg" alt="" className="h-8 w-8" />
@@ -1405,7 +1401,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-3">
-        {/* ---------- Player ---------- */}
+        {/* Player */}
         <section id="player" aria-labelledby="now-playing" className="lg:col-span-2" tabIndex={-1}>
           <h2 id="now-playing" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
             <Glyph name="player" className="h-5 w-5 flex-none text-sky-300" />
@@ -1596,7 +1592,6 @@ export default function App() {
             </div>
           )}
 
-          {/* Column profile: what the playhead is reading */}
           <div className="mt-2 flex h-10 items-end gap-0.5" aria-hidden="true">
             {Array.from({ length: COLUMNS }, (_, i) => (
               <div
@@ -1607,7 +1602,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Controls */}
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -1752,7 +1746,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ---------- Track list + live data ---------- */}
+        {/* Track list + live data */}
         <aside className="space-y-6">
           <section aria-labelledby="tracks">
             <h2 id="tracks" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
@@ -1822,7 +1816,7 @@ export default function App() {
           </section>
         </aside>
 
-        {/* ---------- Explanations ---------- */}
+        {/* Explanations */}
         <section aria-labelledby="hear" className="panel lg:col-span-2">
           <h2 id="hear" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
             <Glyph name="legend" className="h-5 w-5 flex-none text-emerald-300" />

@@ -1,6 +1,5 @@
-// Computer-vision layer: turns one downsampled video frame (ImageData) into
-// numeric features that drive the sound. Each visualization has its own pixel
-// classifier, calibrated against the colour scale of the original NASA SVS visual.
+// Turns one downsampled video frame into the numbers that drive the sound.
+// Each visualization has its own pixel classifier, calibrated on the colour scale of the NASA video.
 
 export const COLUMNS = 16;
 

@@ -1,5 +1,4 @@
-// Bilingual UI (Spanish / English). Judges evaluate in English, so every
-// visible or spoken string exists in both languages.
+// Bilingual UI (Spanish / English): every visible or spoken string exists in both languages.
 
 export const STRINGS = {
   es: {
@@ -416,7 +415,6 @@ export function regionName(t, x, y) {
   return t.regions[third(y)][third(x)];
 }
 
-// ---------------------------------------------------------------------------
 // Live remarks: short sentences generated from the data of the current frame,
 // spoken between the scripted lines so the story reacts to what is on screen.
 const SIDES = {

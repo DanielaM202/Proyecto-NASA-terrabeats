@@ -1,7 +1,7 @@
-// Real geography for the ocean map: which sea or ocean is at a longitude/latitude.
-// Data: Natural Earth 1:50m marine polygons (public domain), simplified to 0.1°.
+// Which sea or ocean is at a longitude/latitude (ocean map).
+// Natural Earth 1:50m marine polygons (public domain), simplified to 0.1 degrees.
 // Seas, bays and gulfs come before the big oceans, so a point in the Black Sea is
-// "Black Sea" and not "Pacific Ocean" (the previous version used rough boxes).
+// "Black Sea" and not "Pacific Ocean".
 import MARINE from '../data/marine.json';
 
 const BOXES = MARINE.map((f) => {

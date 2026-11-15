@@ -33,7 +33,6 @@
 }
 
 @layer components {
-  /* Content panel: a quiet surface with a hairline border. */
   .panel {
     @apply rounded-2xl border border-slate-700/70 bg-slate-900/80 p-5 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset];
   }
@@ -69,7 +68,7 @@
   50% { transform: scaleY(1); }
 }
 
-/* Hero title: soft light-to-blue gradient on the lettering. */
+/* Hero title: white-to-blue gradient on the lettering. */
 .hero-title {
   background: linear-gradient(180deg, #ffffff 30%, #9fc4ff 120%);
   -webkit-background-clip: text;
@@ -88,7 +87,6 @@
 @keyframes fadein {
   from { opacity: 0; }
 }
-/* Buttons lift slightly on hover and press down on click. */
 .btn-lift {
   transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.2s ease;
 }
@@ -99,7 +97,6 @@
 .btn-lift:active {
   transform: translateY(0) scale(0.98);
 }
-/* Panels appear one after another instead of all at once. */
 main > section:nth-of-type(2) { animation-delay: 0.1s; }
 main > section:nth-of-type(3) { animation-delay: 0.16s; }
 main > section:nth-of-type(4) { animation-delay: 0.22s; }
@@ -110,7 +107,7 @@ main > section:nth-of-type(4) { animation-delay: 0.22s; }
   border-bottom: 1px solid rgba(120, 180, 255, 0.25);
 }
 
-/* Gentle entrance for the main panels (opacity and a short rise). */
+/* Entrance of the main panels. */
 main > section,
 main > aside {
   animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
@@ -142,8 +139,6 @@ main > aside { animation-delay: 0.08s; }
     transition-duration: 0.01ms !important;
   }
 }
-
-/* ---------- Extra polish (decorative, see docs/DESIGN.md) ---------- */
 
 /* Orbits: a tilted ellipse (reads as a 3D orbit) with two satellites turning in opposite directions. */
 .orbit-tilt {
@@ -189,7 +184,6 @@ main > aside { animation-delay: 0.08s; }
   translate: 0 calc(var(--scroll, 0) * 0.18px);
 }
 
-/* Thin reading-progress bar. */
 .progress-bar {
   position: fixed;
   inset: 0 0 auto 0;
@@ -201,7 +195,6 @@ main > aside { animation-delay: 0.08s; }
   pointer-events: none;
 }
 
-/* Back-to-top button. */
 .to-top {
   position: fixed;
   right: 1rem;
@@ -231,7 +224,7 @@ main > aside { animation-delay: 0.08s; }
   border-color: #f2c14e;
 }
 
-/* Soft light that follows the pointer inside panels and cards. */
+/* Light that follows the pointer inside panels and cards (--mx / --my are set by ScrollFx). */
 .panel,
 .glow {
   position: relative;

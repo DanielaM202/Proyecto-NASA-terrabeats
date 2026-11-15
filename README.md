@@ -33,11 +33,11 @@ Narrated facts come from NASA's SVS page of each visualization. Values are deriv
 
 ## Narration
 
-The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with Windows voices:
+The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with the neural voice (see [`docs/VOZ.md`](docs/VOZ.md)):
 
 ```
-powershell -ExecutionPolicy Bypass -File scripts/build-narration.ps1 -Ffmpeg C:\ruta\a\ffmpeg.exe
-utafmpeg.exe
+.venv\Scripts\python scripts/build-narration-edge.py --ffmpeg C:\ruta\a\ffmpeg.exe
+node scripts/check-narration-timing.mjs C:\ruta\a\ffmpeg.exe
 ```
 
 ## Run

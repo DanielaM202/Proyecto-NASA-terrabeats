@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-// Decorative night-sky background: slowly drifting, twinkling stars and an occasional
-// shooting star. It is purely visual (aria-hidden), costs little (about 140 points), pauses
-// when the tab is hidden and draws a single still frame when the user prefers reduced motion.
-// It never touches the audio engine.
+// Decorative night sky: twinkling, slowly drifting stars and an occasional shooting star.
+// Pauses when the tab is hidden and draws one still frame with prefers-reduced-motion.
 export default function Starfield() {
   const ref = useRef(null);
 
@@ -91,17 +89,20 @@ export default function Starfield() {
       else raf = requestAnimationFrame(loop);
     };
 
-    resize();
-    start();
-    window.addEventListener('resize', () => {
+    const onResize = () => {
       resize();
       start();
-    });
+    };
+    resize();
+    start();
+    window.addEventListener('resize', onResize);
     document.addEventListener('visibilitychange', start);
-    reduce.addEventListener?.('change', start);
+    reduce.addEventListener('change', start);
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', start);
+      reduce.removeEventListener('change', start);
     };
   }, []);
 

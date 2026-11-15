@@ -4,12 +4,11 @@ import { storyLines } from '../data/stories.js';
 import { getActiveEpisode, setActiveEpisode } from '../audio/episodes.js';
 import Icon from './Icon.jsx';
 
-// Accessible player for a recorded episode. Designed for people who cannot see:
-//  - chapters = narrated sentences, so every jump lands at the start of a sentence
-//  - the chapter list doubles as the transcript (text equivalent of the audio)
-//  - everything is a labelled button; keyboard and Media Session (headphones, lock screen)
-//  - speed up to 2× (screen-reader users are used to fast speech), remembered
-//  - remembers where you stopped
+// Accessible player for a recorded episode.
+//  - chapters are narrated sentences, so every jump lands at the start of a sentence
+//  - the chapter list doubles as the transcript
+//  - labelled buttons, keyboard and Media Session (headphones, lock screen)
+//  - speed up to 2x, and the position, are remembered
 
 const RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
 const PHASES = ['intro', 'tour', 'outro'];
@@ -220,10 +219,11 @@ export default function EpisodePlayer({ id, story, title, poster, lang, t, src, 
     cur >= 0 ? `. ${t.chapterOf(cur + 1, chapters.length, chapters[cur].title)}` : ''
   }`;
   const showResume = saved > 5 && duration && saved < duration - 5 && time < 1 && !playing;
-  const chaptersHref = useMemo(() => {
-    if (!marks) return null;
-    return URL.createObjectURL(new Blob([JSON.stringify({ duration: fresh.duration, chapters: marks }, null, 2)], { type: 'application/json' }));
-  }, [marks, fresh]);
+  // A data: URI instead of an object URL: nothing to revoke later.
+  const chaptersHref = useMemo(
+    () => (marks ? `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify({ duration: fresh.duration, chapters: marks }, null, 2))}` : null),
+    [marks, fresh],
+  );
 
   return (
     <div data-episode-player onKeyDown={onKeyDown} className="mt-3 space-y-3">
