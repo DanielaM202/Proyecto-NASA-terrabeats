@@ -1,28 +1,25 @@
 # La voz de TerraBeats: opciones y cómo cambiarla
 
-> **Escuchar las muestras:** abran `muestras-de-voz/muestras-standalone.html` (tiene los 17 audios dentro de la página). Si el navegador no reproduce los archivos sueltos de `muestras-de-voz/index.html`, usen este.
-
 ## Qué voz usa hoy
-- **Español: Camila (Perú)** · **Inglés: Jenny (Estados Unidos)**, voces neuronales de Microsoft Edge, generadas con `scripts/build-narration-edge.py` (paquete `edge-tts`).
-- **Por qué:** en las 17 muestras comparadas (`muestras-de-voz/index.html`) fueron las más naturales, y son las que el navegador Edge ofrece como voces "Natural", de modo que las partes dinámicas (respuestas, comentarios en vivo, valores del modo explorar) pueden sonar con **la misma persona** si el navegador las tiene.
-- **Condiciones (hay que declararlas):** es un servicio **no oficial** de Microsoft, sin términos claros para este uso, y el **texto de cada frase se envía a sus servidores** al generar los archivos (solo el guion público; el nombre del proyecto se quitó de la bienvenida). La web en sí **no depende del servicio**: usa archivos MP3 fijos.
-- **Respaldo:** la voz anterior de Windows está en la carpeta de copia de seguridad del equipo; la alternativa abierta y sin envío de texto es Kokoro (`scripts/build-narration-kokoro.py`).
+- **Español: Dora (`ef_dora`)** · **Inglés: Heart (`af_heart`)**, del modelo abierto **Kokoro** (pesos con licencia **Apache 2.0**), generadas en el propio equipo con `scripts/build-narration-kokoro.py`.
+- **Por qué Kokoro:** los términos de Space Apps 2026 piden que todo material que no sea de la NASA sea libre o de licencia abierta, y que se identifique en la documentación. Kokoro cumple, corre sin conexión y **no envía el texto a nadie**. Cualquiera del equipo puede repetirlo con un comando.
+- **Por qué no Edge:** sonaba más natural, pero `edge-tts` usa un servicio de Microsoft sin acceso oficial y sin términos claros para este uso. Si NASA lo revisara, podría retirar la solución. La diferencia de calidad no compensa ese riesgo. Los clips de Edge se conservaron en una copia de seguridad del equipo.
+- **Herramientas de generación (no se distribuyen):** `kokoro-onnx`, `onnxruntime`, y `espeak-ng` para la fonética. Lo que se publica son los MP3.
 
 ### Cómo se hizo menos robótica (además del motor)
 1. **Motor neuronal** (entonación y ritmo de persona en vez de melodía plana).
-2. **Siglas pronunciadas para el oído** (`GEDI` → "Yédi", `ECCO2` → "Eco dos", `VIIRS`, `LIS`, `MIT`, `Suomi NPP`…), solo para la síntesis; el texto en pantalla no cambia.
+2. **Siglas pronunciadas para el oído** (`GEDI` → "Yédi", `ECCO2` → "Eco dos", `VIIRS`, `LIS`, `MIT`, `Suomi NPP`...), solo para la síntesis; el texto en pantalla no cambia.
 3. **Compresión suave y nivelación de volumen** en cada clip, para que todas las frases tengan la misma presencia.
-4. **Ritmo ligeramente más lento** (−4 %) y frases cortas.
-5. **Misma voz en la parte dinámica** cuando el navegador la tiene (la web prefiere "Camila" y "Jenny").
+4. **Pausa entre frases** y frases cortas.
 
-La voz de Windows (Helena y Zira) suena robótica. Estas son las alternativas gratuitas que probamos. **Las muestras están en `muestras-de-voz/index.html`** (ábranlo en el navegador, con auriculares).
+La voz de Windows (Helena y Zira) sonaba robótica y se descartó. Las muestras comparadas están en `muestras-de-voz/muestras-standalone.html` (ábranlo con auriculares).
 
 ## Qué partes tienen voz
 | Parte | Cómo se genera | Cómo mejorarla |
 |---|---|---|
 | **Narración de las historias** (ayuda, preguntas, recorrido, cierre) | Archivos MP3 en `public/narration/` | Regenerarlos con otra voz (este documento) |
 | **Episodios de la playlist** | Grabaciones de las historias (voz + sonidos) en `public/playlist/` | Volver a grabarlos **después** de cambiar la voz (`docs/PLAYLIST.md`) |
-| **Respuestas a las preguntas, comentarios en vivo y valores del modo explorar** | Voz del **navegador** (Web Speech), porque dependen de los datos del momento | La web elige sola la voz más natural instalada (en **Edge** hay voces "Natural" de Microsoft) y se puede cambiar en *Más opciones → Voz* |
+| **Respuestas a las preguntas, comentarios en vivo y valores del modo explorar** | Voz del **navegador** (Web Speech), porque dependen de los datos del momento | La web elige sola la voz más natural instalada en el dispositivo (no es la de la narración) (en **Edge** hay voces "Natural" de Microsoft) y se puede cambiar en *Más opciones → Voz* |
 
 ## Opciones para los archivos de narración
 | Opción | Naturalidad | Licencia y privacidad | Esfuerzo |

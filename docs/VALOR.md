@@ -50,7 +50,7 @@ Pedimos a una persona con los ojos vendados, o mejor, a una persona ciega, que e
 **Meta: 3 de 4 respuestas correctas.** El resultado y una frase de la persona que lo probó van en la entrega (persona C).
 
 ## 6. Por qué es un producto y no solo una demo
-- **Es replicable:** añadir otra visualización del EIC solo requiere 1) el video, 2) la barra de colores para calibrar y 3) un guion con tiempos. La narración se genera sola con `scripts/build-narration-edge.py`.
+- **Es replicable:** añadir otra visualización del EIC solo requiere 1) el video, 2) la barra de colores para calibrar y 3) un guion con tiempos. La narración se genera sola con `scripts/build-narration-kokoro.py`.
 - **Usos reales:** museos y planetarios (el EIC es una exposición), aulas inclusivas y la web de la NASA como "versión sonora" de cada visualización.
 - **Es código abierto** y funciona en el navegador: no necesita servidor ni instalación.
 

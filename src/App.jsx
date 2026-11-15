@@ -19,11 +19,6 @@ import OfflinePack from './components/OfflinePack.jsx';
 import { WINDOW, average, compareStrings, compareText, summarize } from './analysis/compare.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
-// Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
-// The narration files use these Microsoft neural voices (scripts/build-narration-edge.py);
-// when the browser has the same voice, the live sentences are spoken by it too.
-const NARRATOR = { es: 'camila', en: 'jenny' };
-
 // Most natural voice of the browser for a language: Edge "Natural" neural voices first,
 // then other online voices, preferring Latin American Spanish for our audience.
 function pickVoice(lang, wanted) {
@@ -37,7 +32,6 @@ function pickVoice(lang, wanted) {
     const n = v.name.toLowerCase();
     const l = v.lang.toLowerCase();
     let s = 0;
-    if (NARRATOR[lang] && n.includes(NARRATOR[lang])) s += 60; // the same person who narrates the stories
     if (n.includes('natural')) s += 100;
     if (n.includes('online')) s += 40;
     if (n.includes('google')) s += 30;
@@ -50,6 +44,7 @@ function pickVoice(lang, wanted) {
   return voices.sort((a, b) => score(b) - score(a))[0];
 }
 
+// Team tools (recording episodes, console hooks): only in development or with ?equipo in the address.
 const TEAM_MODE = import.meta.env.DEV || new URLSearchParams(window.location.search).has('equipo');
 const PLAY_ORDER = VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => v.id);
 const requestEpisode = (id, fromStart = false) => window.dispatchEvent(new CustomEvent('terrabeats:episode', { detail: { id, fromStart } }));

@@ -47,12 +47,27 @@ LANG = {'es': 'es', 'en': 'en-us'}
 tmp = os.path.join(root, '.tmp-narration')
 os.makedirs(tmp, exist_ok=True)
 
+# How each acronym must be said (only used for synthesis, never shown).
+PRON = {
+    'es': [(r'\bGEDI\b', 'Yédi'), (r'\bECCO2\b', 'Eco dos'), (r'\bMIT\b', 'eme i te'), (r'\bVIIRS\b', 'Víirs'), (r'Suomi NPP', 'Suomi ene pe pe'), (r'\bLIS\b', 'Lis'), (r'\bNVDA\b', 'ene ve de a')],
+    'en': [(r'\bGEDI\b', 'Jeddy'), (r'\bECCO2\b', 'Ecco two'), (r'\bVIIRS\b', 'veers'), (r'Suomi NPP', 'Suomi N P P'), (r'\bLIS\b', 'Liss'), (r'\bNVDA\b', 'N V D A')],
+}
+# Same gentle compression and loudness as the Edge script, so every voice has the same presence.
+FILTER = 'highpass=f=70,acompressor=threshold=-21dB:ratio=2:attack=20:release=250:makeup=2,loudnorm=I=-16:TP=-1.5:LRA=11'
+
+
+def for_the_ear(text, lang):
+    for pat, rep in PRON[lang]:
+        text = re.sub(pat, rep, text)
+    return text
+
+
 done = 0
 for item in manifest:
     if a.only and not item['id'].startswith(a.only):
         continue
     lang = item['lang']
-    sentences = re.split(r'(?<=[.!?:])\s+', item['text'].strip())
+    sentences = re.split(r'(?<=[.!?:])\s+', for_the_ear(item['text'], lang).strip())
     chunks, sr = [], 24000
     for s in sentences:
         audio, sr = kokoro.create(s, voice=VOICE[lang], speed=a.speed, lang=LANG[lang])
@@ -62,7 +77,7 @@ for item in manifest:
     out_dir = os.path.join(root, 'public', 'narration', lang)
     os.makedirs(out_dir, exist_ok=True)
     mp3 = os.path.join(out_dir, f"{item['id']}.mp3")
-    subprocess.run([a.ffmpeg, '-hide_banner', '-loglevel', 'error', '-y', '-i', wav, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-ac', '1', '-ar', '44100', '-b:a', '96k', mp3], check=True)
+    subprocess.run([a.ffmpeg, '-hide_banner', '-loglevel', 'error', '-y', '-i', wav, '-af', FILTER, '-ac', '1', '-ar', '44100', '-b:a', '96k', mp3], check=True)
     os.remove(wav)
     done += 1
     print(f'{lang}/{item["id"]}.mp3', flush=True)

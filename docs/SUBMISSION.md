@@ -102,7 +102,7 @@ JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), lucide icons, sel
 ## Use of Artificial Intelligence
 
 - **Code and documentation:** we used an AI coding assistant (Anthropic's Claude) to help write and debug code and documents. The team directed the design, tested by ear and reviewed the result.
-- **Narrator voice:** the scripted narration is AI text-to-speech: Microsoft Edge neural voices (es-PE Camila and en-US Jenny) generated with the open-source `edge-tts` package, an unofficial route to the service behind Edge's "Read aloud" (no official terms for this use). Only the public narration text was sent to generate the files, which are static MP3s: the app does not call any speech service. The script was written and fact-checked by the team against NASA's SVS pages. Quiz answers, live remarks and explore values use the browser's built-in speech synthesis (it prefers the same voices when installed).
+- **Narrator voice:** the scripted narration is AI text-to-speech made with **Kokoro**, an open model (Apache 2.0 weights) that we ran on our own computer, so no text or data was sent to any service. We chose it over other voices precisely because the challenge terms require non-NASA materials to be free or open source. The narration files are static MP3s: the app does not call any speech service. The script was written and fact-checked by the team against NASA's SVS pages. Quiz answers, live remarks and explore values use the speech voices already installed in the visitor's browser or device.
 - **No AI-generated images, video or music.** All visuals are NASA SVS visualizations and all sonification is synthesized live by our code from the pixels.
 
 ## NASA Data

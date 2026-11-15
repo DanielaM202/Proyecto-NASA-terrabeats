@@ -33,10 +33,10 @@ Narrated facts come from NASA's SVS page of each visualization. Values are deriv
 
 ## Narration
 
-The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with the neural voice (see [`docs/VOZ.md`](docs/VOZ.md)):
+The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with the open Kokoro voice (see [`docs/VOZ.md`](docs/VOZ.md)):
 
 ```
-.venv\Scripts\python scripts/build-narration-edge.py --ffmpeg C:\ruta\a\ffmpeg.exe
+.venv\Scripts\python scripts/build-narration-kokoro.py --ffmpeg C:\ruta\a\ffmpeg.exe --models C:\modelos\kokoro --es-voice ef_dora --en-voice af_heart
 node scripts/check-narration-timing.mjs C:\ruta\a\ffmpeg.exe
 ```
 

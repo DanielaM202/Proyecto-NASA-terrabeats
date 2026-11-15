@@ -1,6 +1,6 @@
 // Guided sound stories: a question, an audio legend, narration synced to the NASA video,
 // a contrast you can hear and a closing fact. Every line has an audio file at
-// /narration/<lang>/<id>.mp3 (see scripts/build-narration-edge.py).
+// /narration/<lang>/<id>.mp3 (see scripts/build-narration-kokoro.py).
 //
 // intro / outro steps: { id, es, en, demo? }  demo = engine sound played after the line
 // cues:                { id, t, es, en }      t = video time (s) when the line starts

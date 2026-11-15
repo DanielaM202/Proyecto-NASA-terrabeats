@@ -36,10 +36,10 @@ Todo el material visual es de la **NASA/Goddard Space Flight Center Scientific V
 | Natural Earth, polígonos marinos 1:50m (https://www.naturalearthdata.com/) | Nombre del mar u océano en el modo explorar (`src/data/marine.json`, simplificado) | Dominio público |
 
 ## Herramientas de desarrollo (no se distribuyen con la página)
-Vite, Tailwind CSS, PostCSS, Autoprefixer, oxlint (MIT); ffmpeg (para preparar videos y audio); Python con `edge-tts` y, como alternativa, Kokoro (Apache 2.0); Git, GitHub y Vercel.
+Vite, Tailwind CSS, PostCSS, Autoprefixer, oxlint (MIT); ffmpeg (para preparar videos y audio); Python con Kokoro (Apache 2.0), `kokoro-onnx`, `onnxruntime` y `espeak-ng`; Git, GitHub y Vercel.
 
 ## Voz de la narración
-Las frases del recorrido son audios sintéticos generados con voces neuronales de Microsoft Edge (es-PE Camila y en-US Jenny) mediante el paquete `edge-tts`. Es un servicio propietario sin términos claros para este uso. Ver `docs/VOZ.md` y `docs/ANALISIS_RETO.md` para la decisión pendiente (alternativa abierta: Kokoro, Apache 2.0).
+Las frases del recorrido son audios sintéticos generados en el propio equipo con **Kokoro** (voces `ef_dora` en español y `af_heart` en inglés). Los pesos del modelo tienen licencia **Apache 2.0** (https://huggingface.co/hexgrad/Kokoro-82M); se ejecutan con `kokoro-onnx`, `onnxruntime` (MIT) y `espeak-ng` para la fonética, que son herramientas de generación y no se distribuyen. No se envió texto a ningún servicio. Ver `docs/VOZ.md`.
 
 ## Inteligencia artificial
 Código y documentos se escribieron con ayuda de un asistente de IA (Claude, de Anthropic), dirigido y revisado por el equipo. No hay imágenes, video ni música generados por IA: el sonido se sintetiza en vivo con nuestro código a partir de los píxeles de las visualizaciones de la NASA.

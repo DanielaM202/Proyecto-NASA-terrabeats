@@ -33,17 +33,11 @@ Rama: `develop`. Fuentes: texto del reto "Earth Jukebox" y *2026 NASA Space Apps
 | Fraunces, Inter, JetBrains Mono | Tipografías | SIL OFL 1.1 (abierta) | Hoy se **cargan desde los servidores de Google Fonts**: no está en el repositorio, depende de un tercero y envía la IP de cada visitante. **Mejor alojarlas dentro del proyecto** |
 | Natural Earth (mares y océanos) | Nombres de lugares en el mapa del océano | Dominio público | Falta citarla |
 | Visualizaciones del SVS/EIC | Videos e imágenes | Material de la NASA, con crédito | Citadas; mantener el aviso "NASA no respalda este proyecto" |
-| **Voz de la narración (Microsoft Edge, `edge-tts`)** | 148 clips MP3 | **Servicio propietario, ruta no oficial, sin términos claros** | **Riesgo principal** (ver abajo) |
-| ffmpeg, `edge-tts`, Kokoro | Solo herramientas de preparación; no se distribuyen con la página | LGPL/GPL, LGPL, Apache 2.0 | Citar como herramientas |
+| Voz de la narración (Kokoro, Apache 2.0) | 148 clips MP3 | Pesos abiertos, generada en el equipo | Resuelto: se descartó Edge |
+| ffmpeg, Kokoro, kokoro-onnx, onnxruntime, espeak-ng | Solo herramientas de preparación; no se distribuyen con la página | LGPL/GPL, Apache 2.0, MIT | Citadas en `CREDITOS.md` |
 
-### El punto de riesgo: la voz
-Los términos piden que todo material no NASA sea **libre o de licencia OSI**. Los MP3 son salidas de un servicio de Microsoft cuyas condiciones para este uso no están claras. Probablemente no se revisará, pero **si se revisa, NASA puede quitar la solución**. Opciones:
-
-1. **Mantener la voz de Edge y declararla** (hoy). Mejor calidad, riesgo bajo pero con consecuencias altas.
-2. **Regenerar con Kokoro** (Apache 2.0, se ejecuta en el equipo, `scripts/build-narration-kokoro.py` ya existe). Cumple por completo; la voz en español es menos natural. Requiere regrabar los 10 episodios (unos 25 minutos).
-3. **Voz humana del equipo** para las frases principales. La más cálida y sin ningún riesgo, pero son 74 frases por idioma.
-
-Recomendación: decidir con el equipo **antes de la entrega**; si no se puede aceptar el riesgo, la opción 2 es la más rápida.
+### La voz (decisión tomada)
+Los términos piden que todo material no NASA sea libre o de licencia OSI. Las voces de Microsoft Edge (`edge-tts`) venían de un servicio propietario sin acceso oficial ni términos claros, así que **se reemplazaron por Kokoro** (Dora en español, Heart en inglés), con pesos Apache 2.0 y generación local. Los 148 clips y los 10 episodios se regeneraron. Ver `docs/VOZ.md`.
 
 ## 4. Alineación con el reto
 
@@ -80,7 +74,8 @@ Ordenadas por impacto frente al reto, esfuerzo y riesgo.
 ## 6. Estado del cierre de cumplimiento (rama develop)
 - Hecho: `LICENSE` (Apache 2.0) y `NOTICE`; `docs/CREDITOS.md` con todas las fuentes y licencias; tipografías alojadas en el proyecto (la página ya no pide nada a Google); README y `SUBMISSION.md` actualizados.
 - Confirmado por el equipo: todos son mayores de edad, así que se mantienen los nombres.
-- Pendiente: decidir la voz (muestras en `muestras-de-voz/index.html`), grabar el video de 30 s siguiendo la sección 2 y confirmar la cláusula sobre entidades de China.
+- Decidido: voz de Kokoro (Apache 2.0), clips y episodios regenerados.
+- Pendiente: grabar el video de 30 s siguiendo la sección 2 y confirmar la cláusula sobre entidades de China.
 
 ## 6b. Valor agregado ya construido en develop
 - **Ver mejor** (baja visión): alto contraste, texto grande y muy grande, sin movimiento. Se recuerda en el dispositivo.
@@ -90,7 +85,7 @@ Ordenadas por impacto frente al reto, esfuerzo y riesgo.
 - **Usar sin conexión:** panel que guarda todo en el dispositivo (52 MB, 186 archivos) y funciona instalado como aplicación. Probado apagando el servidor: la página, la historia con voz y sonido, los videos y los episodios siguieron funcionando.
 
 ## 7. Qué decide el equipo
-1. ¿Voz de Edge (declarada), Kokoro o voz humana?
+1. Voz: Kokoro (decidido).
 2. ¿Alguna persona del equipo es menor de 18 años? ¿Se mantienen los nombres en la página?
 3. ¿Licencia Apache 2.0 para el código?
 4. ¿Qué propuestas del punto 5 entran?

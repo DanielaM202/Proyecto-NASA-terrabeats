@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { EXTRA_LINES, STORIES, storyLines } from '../data/stories.js';
 import { PLAYLIST } from '../data/playlist.js';
 import { VISUALIZATIONS } from '../data/visualizations.js';
+import { PACK_CACHE } from '../data/packVersion.js';
 
-const CACHE = 'terrabeats-v1'; // same name as public/sw.js
+const CACHE = PACK_CACHE;
 
 // Every file the page needs to work without a connection: the page itself, the built files
 // it has already loaded (script, styles, fonts), and the audio, video and images.

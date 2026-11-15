@@ -2,10 +2,18 @@
 // - Page and built files: saved the first time they are used.
 // - Audio, video and images: served from the "offline pack" (see src/components/OfflinePack.jsx).
 // - Audio and video ask for byte ranges, so a saved file is cut to the range requested.
-const CACHE = 'terrabeats-v1';
+// The cache name carries the pack version (src/data/packVersion.js), passed in the script address.
+const CACHE = `terrabeats-v${new URL(self.location).searchParams.get('v') || '0'}`;
 
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
+self.addEventListener('activate', (event) =>
+  event.waitUntil(
+    caches
+      .keys()
+      .then((names) => Promise.all(names.filter((n) => n.startsWith('terrabeats-') && n !== CACHE).map((n) => caches.delete(n))))
+      .then(() => self.clients.claim()),
+  ),
+);
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
