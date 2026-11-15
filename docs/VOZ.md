@@ -1,5 +1,18 @@
 # La voz de TerraBeats: opciones y cómo cambiarla
 
+## Qué voz usa hoy
+- **Español: Camila (Perú)** · **Inglés: Jenny (Estados Unidos)**, voces neuronales de Microsoft Edge, generadas con `scripts/build-narration-edge.py` (paquete `edge-tts`).
+- **Por qué:** en las 17 muestras comparadas (`muestras-de-voz/index.html`) fueron las más naturales, y son las que el navegador Edge ofrece como voces "Natural", de modo que las partes dinámicas (respuestas, comentarios en vivo, valores del modo explorar) pueden sonar con **la misma persona** si el navegador las tiene.
+- **Condiciones (hay que declararlas):** es un servicio **no oficial** de Microsoft, sin términos claros para este uso, y el **texto de cada frase se envía a sus servidores** al generar los archivos (solo el guion público; el nombre del proyecto se quitó de la bienvenida). La web en sí **no depende del servicio**: usa archivos MP3 fijos.
+- **Respaldo:** la voz anterior de Windows está en la carpeta de copia de seguridad del equipo; la alternativa abierta y sin envío de texto es Kokoro (`scripts/build-narration-kokoro.py`).
+
+### Cómo se hizo menos robótica (además del motor)
+1. **Motor neuronal** (entonación y ritmo de persona en vez de melodía plana).
+2. **Siglas pronunciadas para el oído** (`GEDI` → "Yédi", `ECCO2` → "Eco dos", `VIIRS`, `LIS`, `MIT`, `Suomi NPP`…), solo para la síntesis; el texto en pantalla no cambia.
+3. **Compresión suave y nivelación de volumen** en cada clip, para que todas las frases tengan la misma presencia.
+4. **Ritmo ligeramente más lento** (−4 %) y frases cortas.
+5. **Misma voz en la parte dinámica** cuando el navegador la tiene (la web prefiere "Camila" y "Jenny").
+
 La voz de Windows (Helena y Zira) suena robótica. Estas son las alternativas gratuitas que probamos. **Las muestras están en `muestras-de-voz/index.html`** (ábranlo en el navegador, con auriculares).
 
 ## Qué partes tienen voz
@@ -18,6 +31,12 @@ La voz de Windows (Helena y Zira) suena robótica. Estas son las alternativas gr
 | Voz humana (persona A) | La más cálida | Sin problema | Grabar ~130 frases ([`GRABACION.md`](GRABACION.md)) |
 
 **Recomendación:** voz humana para lo principal si hay tiempo; si no, Kokoro (abierto y reproducible). Las voces de Edge son la mejor calidad, pero conviene decidirlo con el equipo por el envío del texto y la falta de términos oficiales.
+
+## Cambiar la voz con Edge (un comando)
+1. Una vez: `python -m venv .venv` y `.venv\Scripts\python -m pip install edge-tts`.
+2. Generar todo (unos 5 minutos): `.venv\Scripts\python scripts/build-narration-edge.py --ffmpeg C:\ruta\ffmpeg.exe`. Otras voces: `--es-voice es-MX-DaliaNeural --en-voice en-US-AriaNeural` (lista: `edge-tts --list-voices`).
+3. `node scripts/check-narration-timing.mjs C:\ruta\ffmpeg.exe` y, si una frase no cabe, `--only <id> --override <id>=+8%`.
+4. Volver a grabar los 10 episodios (`docs/PLAYLIST.md`).
 
 ## Cambiar la voz con Kokoro (un comando)
 1. Una vez: `python -m venv .venv` y `.venv\Scripts\python -m pip install kokoro-onnx soundfile numpy`.

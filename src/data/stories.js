@@ -28,8 +28,8 @@ export const STORIES = {
       },
       {
         id: 'forest-intro-2',
-        es: 'Cada nota es la altura del bosque. Así suena un arbusto de dos metros.',
-        en: 'Each note is the height of the forest. This is a two‑metre shrub.',
+        es: 'Cada nota es la altura del bosque: cuanto más aguda, más alto el árbol. Así suena un arbusto de dos metros.',
+        en: 'Each note is the height of the forest: the higher the note, the taller the tree. This is a two‑metre shrub.',
         demo: 'low',
       },
       {
@@ -40,14 +40,14 @@ export const STORIES = {
       },
       {
         id: 'forest-intro-4',
-        es: 'Los pájaros solo cantan donde el bosque supera, aproximadamente, los treinta metros.',
-        en: 'Birds only sing where the forest is taller than about thirty metres.',
+        es: 'Los pájaros significan bosque muy alto: solo cantan donde supera los treinta metros. Si no los oyes, el bosque es más bajo.',
+        en: 'Birds mean very tall forest: they only sing where it is taller than thirty metres. If you do not hear them, the forest is shorter.',
         demo: 'birds',
       },
       {
         id: 'forest-intro-5',
-        es: 'Y las olas significan océano. Empezamos.',
-        en: 'And waves mean ocean. Let’s begin.',
+        es: 'Y las olas significan océano: donde no hay tierra. Empezamos.',
+        en: 'And waves mean ocean: where there is no land. Let’s begin.',
         demo: 'waves',
       },
     ],
@@ -67,14 +67,14 @@ export const STORIES = {
       {
         id: 'forest-cue-sahara',
         t: 13.5,
-        es: 'Llega África. Arriba, el Sahara: notas muy graves, casi sin vegetación.',
-        en: 'Here comes Africa. At the top, the Sahara: very low notes, almost no vegetation.',
+        es: 'Llega África. Arriba, el Sahara: pocas notas y graves, porque casi no hay vegetación.',
+        en: 'Here comes Africa. At the top, the Sahara: few, low notes, because there is almost no vegetation.',
       },
       {
         id: 'forest-cue-congo',
         t: 19.3,
-        es: 'En el centro, la selva del Congo: notas agudas y pájaros. Es bosque alto.',
-        en: 'In the middle, the Congo rainforest: high notes and birds. This is tall forest.',
+        es: 'En el centro, la selva del Congo: muchas más notas, porque hay más vegetación. Los pájaros marcan el bosque más alto.',
+        en: 'In the middle, the Congo rainforest: many more notes, because there is more vegetation. Birds mark the tallest forest.',
       },
       {
         id: 'forest-quiz',
@@ -98,8 +98,8 @@ export const STORIES = {
       {
         id: 'forest-cue-pacific',
         t: 38.5,
-        es: 'Y el océano Pacífico: solo olas, casi sin tierra.',
-        en: 'And the Pacific Ocean: only waves, almost no land.',
+        es: 'Y el océano Pacífico: suenan las olas y casi ninguna nota, porque casi no hay tierra.',
+        en: 'And the Pacific Ocean: you hear waves and almost no notes, because there is almost no land.',
       },
       {
         id: 'forest-cue-back',
@@ -150,8 +150,8 @@ export const STORIES = {
       },
       {
         id: 'ocean-intro-2',
-        es: 'Cada nota es la temperatura del agua. Así suena el agua a un grado, casi congelada.',
-        en: 'Each note is the temperature of the water. This is water at one degree, almost frozen.',
+        es: 'Cada nota es la temperatura del agua: cuanto más aguda, más caliente. Así suena el agua a un grado, casi congelada.',
+        en: 'Each note is the temperature of the water: the higher the note, the warmer. This is water at one degree, almost frozen.',
         demo: 'cold',
       },
       {
@@ -162,14 +162,14 @@ export const STORIES = {
       },
       {
         id: 'ocean-intro-4',
-        es: 'Estos cristales son agua polar, a cinco grados o menos.',
-        en: 'These crystals are polar water, at five degrees or less.',
+        es: 'Estos cristales significan agua polar, a cinco grados o menos. Si no los oyes, el agua está más caliente.',
+        en: 'These crystals mean polar water, at five degrees or less. If you do not hear them, the water is warmer.',
         demo: 'ice',
       },
       {
         id: 'ocean-intro-5',
-        es: 'Y el agua que corre son las corrientes en movimiento. Empezamos.',
-        en: 'And the running water is the currents in motion. Let’s begin.',
+        es: 'Y el agua que corre son las corrientes en movimiento: cuanto más fuerte, más se mueve el mar. Empezamos.',
+        en: 'And the running water is the currents in motion: the louder it is, the more the sea moves. Let’s begin.',
         demo: 'flow',
       },
     ],
@@ -248,8 +248,8 @@ export const STORIES = {
       },
       {
         id: 'night-intro-2',
-        es: 'Un cabezal recorre el mapa de oeste a este. Cada campanilla es una región iluminada: más luz, más fuerte; más al norte, más aguda.',
-        en: 'A playhead sweeps the map from west to east. Each chime is a lit region: more light, louder; further north, higher.',
+        es: 'Un cabezal recorre el mapa de oeste a este. Cada campanilla es una región iluminada: más luz, más fuerte; más al norte, más aguda. Donde no suena nada, no hay luz.',
+        en: 'A playhead sweeps the map from west to east. Each chime is a lit region: more light, louder; further north, higher. Where nothing sounds, there is no light.',
         demo: 'chimes',
       },
       {
@@ -338,14 +338,14 @@ export const STORIES = {
       },
       {
         id: 'light-intro-2',
-        es: 'Cada golpe significa rayos nuevos en la imagen. Suena a la izquierda o a la derecha según dónde aparecen, y más agudo si aparecen más arriba.',
-        en: 'Each hit means new lightning in the image. It sounds left or right depending on where it appears, and higher if it appears further up.',
+        es: 'Cada golpe es un rayo nuevo en la imagen. Muchos golpes seguidos significan muchos rayos; pocos golpes sueltos, pocos rayos; y silencio, ningún rayo. Suena a la izquierda o a la derecha según dónde aparece, y más agudo cuanto más arriba.',
+        en: 'Each hit is a new flash of lightning in the image. Many hits in a row mean a lot of lightning; a few scattered hits, little lightning; and silence, none. It sounds left or right depending on where it appears, and higher the further up it is.',
         demo: 'drops',
       },
       {
         id: 'light-intro-3',
-        es: 'El trueno de fondo crece con la tormenta. Empezamos.',
-        en: 'The background thunder grows with the storm. Let’s begin.',
+        es: 'El trueno grave de fondo solo suena cuando hay tormentas en la imagen: cuanto más fuerte, más tormenta. Empezamos.',
+        en: 'The deep background thunder only sounds when there are storms in the image: the louder it is, the bigger the storm. Let’s begin.',
         demo: 'rumble',
       },
     ],
@@ -353,14 +353,14 @@ export const STORIES = {
       {
         id: 'light-cue-iss',
         t: 0.5,
-        es: 'Marzo de 2017. La Estación Espacial sobrevuela África y detecta los primeros rayos.',
-        en: 'March 2017. The Space Station flies over Africa and detects its first flashes.',
+        es: 'Marzo de 2017. La Estación Espacial sobrevuela África y detecta los primeros rayos: al principio hay pocos, y casi no oyes golpes.',
+        en: 'March 2017. The Space Station flies over Africa and detects its first flashes: at first there are few, and you hardly hear any hits.',
       },
       {
         id: 'light-cue-africa',
         t: 12.5,
-        es: 'Ahora cada imagen reúne diez días de rayos. Escucha África central: una de las zonas más activas.',
-        en: 'Now each image gathers ten days of lightning. Listen to Central Africa: one of the most active areas.',
+        es: 'Ahora cada imagen reúne diez días de rayos. África central: golpes muy seguidos y trueno de fondo. Muchos rayos.',
+        en: 'Now each image gathers ten days of lightning. Central Africa: hits close together and background thunder. Lots of lightning.',
       },
       {
         id: 'light-cue-summer',
@@ -371,8 +371,8 @@ export const STORIES = {
       {
         id: 'light-cue-pacific',
         t: 32,
-        es: 'Sobre el océano Pacífico se ven muy pocos rayos. Escucha el silencio.',
-        en: 'Over the Pacific Ocean very little lightning is seen. Listen to the silence.',
+        es: 'Sobre el océano Pacífico hay muy pocos rayos: los golpes se vuelven escasos y se pierde el trueno de fondo.',
+        en: 'Over the Pacific Ocean there is very little lightning: the hits become sparse and the background thunder fades.',
       },
       {
         id: 'light-cue-asia',
@@ -383,8 +383,8 @@ export const STORIES = {
       {
         id: 'light-cue-africa2',
         t: 55.5,
-        es: 'De nuevo África: vuelve la percusión intensa.',
-        en: 'Africa again: the intense percussion returns.',
+        es: 'De nuevo África: golpes sin parar, muchos rayos.',
+        en: 'Africa again: non-stop hits, lots of lightning.',
       },
       {
         id: 'light-quiz',
@@ -436,20 +436,20 @@ export const STORIES = {
       },
       {
         id: 'co2-intro-2',
-        es: 'Así suena una atmósfera con poco dióxido de carbono: un acorde limpio y tranquilo.',
-        en: 'This is an atmosphere with little carbon dioxide: a clean, calm chord.',
+        es: 'Un acorde limpio y tranquilo significa poco dióxido de carbono. Así suena.',
+        en: 'A clean, calm chord means little carbon dioxide. This is how it sounds.',
         demo: 'calm',
       },
       {
         id: 'co2-intro-3',
-        es: 'Y así, cuando la concentración sube: el acorde se tensa.',
-        en: 'And this is when the concentration rises: the chord grows tense.',
+        es: 'Y cuando la concentración sube, el acorde se desafina y se tensa. Más tensión, más dióxido de carbono.',
+        en: 'And when the concentration rises, the chord detunes and grows tense. More tension, more carbon dioxide.',
         demo: 'tense',
       },
       {
         id: 'co2-intro-4',
-        es: 'El latido se acelera con el dióxido de carbono. Empezamos.',
-        en: 'The heartbeat speeds up with carbon dioxide. Let’s begin.',
+        es: 'El latido es el ritmo del planeta: más rápido significa más dióxido de carbono en la imagen. Empezamos.',
+        en: 'The heartbeat is the planet’s pulse: the faster it beats, the more carbon dioxide in the image. Let’s begin.',
         demo: 'heart',
       },
     ],
@@ -507,8 +507,8 @@ export const STORIES = {
 export const EXTRA_LINES = [
   {
     id: 'welcome',
-    es: 'Bienvenido a TerraBeats, la rocola de información de la Tierra. Hay cinco historias sonoras hechas con datos de la NASA. Pulsa un número del uno al cinco para elegir una, y espacio para escucharla. Pulsa H para escuchar la ayuda.',
-    en: 'Welcome to TerraBeats, the Earth information jukebox. There are five sound stories made with NASA data. Press a number from one to five to choose one, and space to listen. Press H to hear the help.',
+    es: 'Bienvenido a la rocola de información de la Tierra. Hay cinco historias sonoras hechas con datos de la NASA. Pulsa un número del uno al cinco para elegir una, y espacio para escucharla. Pulsa H para escuchar la ayuda.',
+    en: 'Welcome to the Earth information jukebox. There are five sound stories made with NASA data. Press a number from one to five to choose one, and space to listen. Press H to hear the help.',
   },
   {
     id: 'help',

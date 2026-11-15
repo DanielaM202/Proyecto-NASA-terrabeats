@@ -10,7 +10,7 @@ Por cada pista e idioma, en `public/playlist/`:
 Y `src/data/playlist.js` indica qué idiomas tiene cada pista (`files`).
 
 ## Cuándo hay que volver a grabar
-- Si cambian los **audios de narración** (por ejemplo, al sustituir la voz de Windows por ElevenLabs).
+- Si cambian los **audios de narración** (por ejemplo, al cambiar de voz: `docs/VOZ.md`).
 - Si cambia el **texto del guion** o los **tiempos** (`t`) de las frases.
 - Si cambian los **sonidos** de una pista.
 

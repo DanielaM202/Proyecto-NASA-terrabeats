@@ -21,13 +21,13 @@ export const LEGENDS = {
     },
     {
       key: 'birds',
-      es: 'Pájaros: bosque de más de treinta metros en esa zona.',
-      en: 'Birds: forest taller than thirty metres in that area.',
+      es: 'Pájaros: bosque de más de treinta metros en esa zona. Sin pájaros, el bosque es más bajo.',
+      en: 'Birds: forest taller than thirty metres in that area. No birds means shorter forest.',
     },
     {
       key: 'waves',
-      es: 'Olas: océano a la vista.',
-      en: 'Waves: ocean in view.',
+      es: 'Olas: océano a la vista. Más olas, más mar y menos tierra.',
+      en: 'Waves: ocean in view. More waves, more sea and less land.',
     },
   ],
   ocean: [
@@ -48,8 +48,8 @@ export const LEGENDS = {
     },
     {
       key: 'ice',
-      es: 'Cristales de hielo: agua polar, a cinco grados o menos.',
-      en: 'Ice crystals: polar water, at five degrees or less.',
+      es: 'Cristales de hielo: agua polar, a cinco grados o menos. Si no suenan, el agua está más caliente.',
+      en: 'Ice crystals: polar water, at five degrees or less. If they do not sound, the water is warmer.',
     },
     {
       key: 'flow',
@@ -60,8 +60,8 @@ export const LEGENDS = {
   'night-lights': [
     {
       key: 'chimes',
-      es: 'Campanillas: cada una es una región iluminada. Más luz, más fuerte. Más al norte, más aguda.',
-      en: 'Chimes: each one is a lit region. More light, louder. Further north, higher pitch.',
+      es: 'Campanillas: cada una es una región iluminada. Más luz, más fuerte. Más al norte, más aguda. Sin campanilla, no hay luz.',
+      en: 'Chimes: each one is a lit region. More light, louder. Further north, higher pitch. No chime means no light.',
     },
     {
       key: 'gain',
@@ -82,8 +82,8 @@ export const LEGENDS = {
   lightning: [
     {
       key: 'drops',
-      es: 'Golpes cortos: rayos nuevos. Suenan a la izquierda o a la derecha según dónde caen; más agudos si caen más al norte.',
-      en: 'Short hits: new lightning. They sound left or right depending on where they strike; higher if further north.',
+      es: 'Golpes cortos: rayos nuevos. Muchos golpes seguidos son muchos rayos, pocos golpes sueltos son pocos rayos, y el silencio es ningún rayo. Suenan a la izquierda o a la derecha según dónde caen; más agudos si caen más al norte.',
+      en: 'Short hits: new lightning. Many hits in a row are a lot of lightning, a few scattered hits are little lightning, and silence is none. They sound left or right depending on where they strike; higher if further north.',
     },
     {
       key: 'crack',
@@ -92,8 +92,8 @@ export const LEGENDS = {
     },
     {
       key: 'rumble',
-      es: 'Trueno de fondo: crece con la actividad eléctrica total.',
-      en: 'Background thunder: grows with total electrical activity.',
+      es: 'Trueno de fondo: solo suena cuando hay tormentas en la imagen, y es más fuerte cuanto mayor es la actividad eléctrica.',
+      en: 'Background thunder: it only sounds when there are storms in the image, and it is louder the more electrical activity there is.',
     },
   ],
   co2: [
@@ -109,8 +109,8 @@ export const LEGENDS = {
     },
     {
       key: 'heart',
-      es: 'Latido: se acelera cuando la concentración sube.',
-      en: 'Heartbeat: it speeds up as concentration rises.',
+      es: 'Latido: más rápido significa más dióxido de carbono en la imagen; más lento, menos.',
+      en: 'Heartbeat: faster means more carbon dioxide in the image; slower, less.',
     },
   ],
 };

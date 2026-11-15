@@ -23,6 +23,11 @@ const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (scale, v) => scale[Math.round(clamp01(v) * (scale.length - 1))];
 const dbFrom = (v, min = -48, max = -10) => min + clamp01(v) * (max - min);
 const SILENT = -70;
+const FLASH_MIN = 22; // measured: Pacific/ISS frames show ~8-35 new pixels, active land 60-190
+// dB added per track so all five reach a similar loudness (measured before the trim:
+// forest -33, ocean -41, night lights -52, lightning -31, CO2 -33 dB vs voice -17 dB).
+const TRIM = { 'forest-height': 9, ocean: 20, 'night-lights': 24, lightning: 10, co2: 20 };
+const LEVEL_GATE = 0.05; // lightning level below this = no thunder
 
 export class SonificationEngine {
   constructor() {
@@ -46,9 +51,14 @@ export class SonificationEngine {
     await Tone.start();
     this.transport = Tone.getTransport();
     this.limiter = new Tone.Limiter(-2).toDestination();
-    this.master = new Tone.Volume(-4).connect(this.limiter);
+    // Gentle compression + make-up gain: the soundscapes are sparse and soft, so they
+    // need to sit at the same presence as the narrator (measured about 15-35 dB lower).
+    this.glue = new Tone.Compressor({ threshold: -26, ratio: 3, attack: 0.02, release: 0.25 }).connect(this.limiter);
+    this.master = new Tone.Volume(0).connect(this.glue);
+    // Per-track loudness trim (measured RMS of each track brought to a common level).
+    this.trim = new Tone.Volume(0).connect(this.master);
     // Ducking bus: music goes down while the narrator speaks.
-    this.duck = new Tone.Volume(0).connect(this.master);
+    this.duck = new Tone.Volume(0).connect(this.trim);
     this.reverb = new Tone.Reverb({ decay: 5, wet: 0.32 }).connect(this.duck);
     this.dry = new Tone.Volume(0).connect(this.duck);
     this.recorder = new Tone.Recorder();
@@ -75,7 +85,7 @@ export class SonificationEngine {
 
   /** Lower the music while the voice speaks. */
   setDucked(on) {
-    if (this.duck) this.duck.volume.rampTo(on ? -14 : 0, on ? 0.25 : 0.8);
+    if (this.duck) this.duck.volume.rampTo(on ? -9 : 0, on ? 0.25 : 0.8);
   }
 
   /** Builds the instruments of one visualization. */
@@ -95,6 +105,7 @@ export class SonificationEngine {
       ocean: () => this.buildOcean(),
     };
     builders[id]();
+    this.trim.volume.value = TRIM[id] ?? 0;
     this.transport.bpm.value = BPM[id];
     if (wasPlaying) this.start();
   }
@@ -396,14 +407,15 @@ export class SonificationEngine {
     const kick = this.track(new Tone.MembraneSynth({ pitchDecay: 0.08, octaves: 4, volume: -12 }).connect(this.reverb));
     this.voices = { drops, crack };
     this.lastCrack = 0;
-    this.levels = (f) => rumbleVol.volume.rampTo(dbFrom(f.level, -50, -16), 0.3);
+    // Thunder only when there is a storm in view (gate), so quiet regions are silent.
+    this.levels = (f) => rumbleVol.volume.rampTo(f.level < LEVEL_GATE ? SILENT : dbFrom(f.level, -50, -14), 0.3);
     this.silence = () => rumbleVol.volume.rampTo(SILENT, 0.6);
 
     this.transport.scheduleRepeat((time) => {
       const f = this.features;
       const i = this.advance(time);
       if (!f) return;
-      if (i % 4 === 0 && f.level > 0.05) kick.triggerAttackRelease('A1', '8n', time, 0.3 + f.level * 0.7);
+      if (i % 4 === 0 && f.level > 0.08) kick.triggerAttackRelease('A1', '8n', time, 0.3 + f.level * 0.7);
     }, '8n');
 
     this.demos = {
@@ -432,9 +444,11 @@ export class SonificationEngine {
     if (this.vizId !== 'lightning' || !this.playing) return;
     const { drops, crack } = this.voices;
     const flashes = f.flashes;
-    if (!flashes.length) return;
-    // Cluster the flashes so many dots become a few musical hits.
-    const n = Math.min(6, Math.ceil(Math.sqrt(flashes.length)));
+    // A handful of changed pixels is image noise, not lightning: below the threshold
+    // there is real silence, so "no hits" truly means "no lightning here".
+    if (flashes.length < FLASH_MIN) return;
+    // Cluster the flashes so many dots become a few musical hits (more lightning, more hits).
+    const n = Math.min(6, Math.ceil(Math.sqrt(flashes.length / 6)));
     const now = Tone.now();
     for (let k = 0; k < n; k++) {
       const fl = flashes[Math.floor((k / n) * flashes.length)];

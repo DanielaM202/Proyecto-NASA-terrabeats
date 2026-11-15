@@ -2,7 +2,7 @@
 
 > Copy each section into the matching field of the project page. Replace the `<…>` links.
 > Field names can differ slightly in this year's form; match them by meaning.
-> Before submitting, fill in the two `TODO` items: the user-test result and the voice tool actually used.
+> Before submitting, fill in the `TODO` item: the user-test result.
 
 ---
 
@@ -94,7 +94,7 @@ JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), HTML Canvas, Web 
 ## Use of Artificial Intelligence
 
 - **Code and documentation:** we used an AI coding assistant (Anthropic's Claude) to help write and debug code and documents. The team directed the design, tested by ear and reviewed the result.
-- **Narrator voice:** the scripted narration is synthetic speech. `TODO: state the tool actually used in the submitted version — "AI text-to-speech (ElevenLabs)" or "Microsoft Windows text-to-speech voices".` The script itself was written and fact-checked by the team against NASA's SVS pages. Quiz answers, live remarks and explore values use the browser's built-in speech synthesis.
+- **Narrator voice:** the scripted narration is AI text-to-speech: Microsoft Edge neural voices (es-PE Camila and en-US Jenny) generated with the open-source `edge-tts` package, an unofficial route to the service behind Edge's "Read aloud" (no official terms for this use). Only the public narration text was sent to generate the files, which are static MP3s: the app does not call any speech service. The script was written and fact-checked by the team against NASA's SVS pages. Quiz answers, live remarks and explore values use the browser's built-in speech synthesis (it prefers the same voices when installed).
 - **No AI-generated images, video or music.** All visuals are NASA SVS visualizations and all sonification is synthesized live by our code from the pixels.
 
 ## NASA Data
