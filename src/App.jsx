@@ -1285,6 +1285,29 @@ export default function App() {
     [hush, speak, toggleStoryPause],
   );
 
+  // Choosing the track that is already selected says its menu again (a new track does it by itself).
+  const selectTrack = useCallback(
+    (i) => {
+      if (i !== VISUALIZATIONS.indexOf(vizRef.current)) {
+        setVizIndex(i);
+        return;
+      }
+      const menu = STORIES[vizRef.current.id]?.menu;
+      if (!menu) return;
+      stopLegend();
+      stopStoryRef.current();
+      if (playingRef.current) pauseRef.current();
+      hush();
+      const L = langRef.current;
+      lastLineRef.current = menu;
+      setAnnouncement(menu[L]);
+      const a = new Audio(`/narration/${L}/${menu.id}.mp3`);
+      menuAudioRef.current = a;
+      a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(menu[L]));
+    },
+    [hush, speak, stopLegend],
+  );
+
   useEffect(() => {
     const mark = (e) => {
       if (interactedRef.current) return;
@@ -1336,7 +1359,7 @@ export default function App() {
         stopStory();
         togglePlay();
       } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= VISUALIZATIONS.length) {
-        setVizIndex(Number(e.key) - 1);
+        selectTrack(Number(e.key) - 1);
       } else if (e.key === 'e' || e.key === 'E') {
         toggleExplore();
       } else if (e.key === 'd' || e.key === 'D') {
@@ -1363,7 +1386,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, goRegion, playClip, stopAll]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, goRegion, playClip, selectTrack, stopAll]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -1878,7 +1901,7 @@ export default function App() {
                 <li key={v.id}>
                   <button
                     type="button"
-                    onClick={() => setVizIndex(i)}
+                    onClick={() => selectTrack(i)}
                     aria-pressed={i === vizIndex}
                     aria-keyshortcuts={String(i + 1)}
                     style={{ '--accent': ACCENT[v.id] }}
