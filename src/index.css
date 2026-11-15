@@ -3,6 +3,54 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --slate-50: 244 246 250;
+    --slate-100: 230 235 244;
+    --slate-200: 203 212 227;
+    --slate-300: 170 182 202;
+    --slate-400: 139 153 177;
+    --slate-500: 102 117 143;
+    --slate-600: 68 82 107;
+    --slate-700: 38 50 74;
+    --slate-800: 22 31 49;
+    --slate-900: 13 20 34;
+    --slate-950: 6 10 18;
+  }
+  /* "Ver mejor": higher contrast between text, borders and backgrounds. */
+  :root[data-contrast='high'] {
+    --slate-100: 255 255 255;
+    --slate-200: 244 246 250;
+    --slate-300: 230 235 244;
+    --slate-400: 203 212 227;
+    --slate-500: 170 182 202;
+    --slate-600: 139 153 177;
+    --slate-700: 120 135 160;
+    --slate-800: 10 14 24;
+    --slate-900: 0 0 0;
+    --slate-950: 0 0 0;
+  }
+  :root[data-contrast='high'] :focus-visible {
+    outline: 4px solid #ffffff;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 7px #000000;
+  }
+  :root[data-contrast='high'] .hero-backdrop,
+  :root[data-contrast='high'] .orbit-tilt,
+  :root[data-contrast='high'] body > #root canvas[aria-hidden='true'] {
+    display: none;
+  }
+  :root[data-contrast='high'] body {
+    background: #000;
+  }
+  :root[data-text='large'] {
+    font-size: 125%;
+  }
+  :root[data-text='xlarge'] {
+    font-size: 150%;
+  }
+}
+
+@layer base {
   html {
     color-scheme: dark;
     -webkit-font-smoothing: antialiased;
@@ -291,4 +339,28 @@ main > aside { animation-delay: 0.08s; }
   .to-top {
     transition: none;
   }
+}
+
+/* "Ver mejor", no motion: the same rules as prefers-reduced-motion. */
+:root[data-motion='off'] .reveal {
+  opacity: 1;
+  transform: none;
+}
+:root[data-motion='off'] .parallax {
+  translate: none;
+}
+:root[data-motion='off'] .orbit,
+:root[data-motion='off'] .hero-in,
+:root[data-motion='off'] .hero-backdrop,
+:root[data-motion='off'] .eq-bar,
+:root[data-motion='off'] main > section,
+:root[data-motion='off'] main > aside {
+  animation: none !important;
+}
+:root[data-motion='off'] * {
+  transition-duration: 0.01ms !important;
+}
+:root[data-motion='off'] .btn-lift:hover,
+:root[data-motion='off'] .btn-lift:active {
+  transform: none;
 }

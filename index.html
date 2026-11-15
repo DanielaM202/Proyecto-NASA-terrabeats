@@ -6,6 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="TerraBeats – The Earth Information Jukebox: NASA Earth visualizations turned into real-time, accessible soundscapes. NASA Space Apps Challenge 2026." />
     <meta name="theme-color" content="#060a12" />
+    <script>
+      try {
+        var v = JSON.parse(localStorage.getItem('terrabeats-view') || '{}');
+        var r = document.documentElement;
+        if (v.contrast) r.dataset.contrast = 'high';
+        if (v.text && v.text !== 'normal') r.dataset.text = v.text;
+        if (v.motion) r.dataset.motion = 'off';
+      } catch (e) {}
+    </script>
     <title>TerraBeats · The Earth Information Jukebox</title>
   </head>
   <body>

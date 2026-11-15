@@ -52,6 +52,8 @@ Instalar NVDA (gratis, nvaccess.org) y abrir la web publicada en Chrome o Edge. 
 | 19 | Pausar la historia a mitad de una frase y de un sonido de ejemplo: ¿se silencia todo al instante y no entra ninguna frase hasta continuar? | | |
 | 20 | En una pregunta: ¿se entiende que hay que usar la flecha izquierda o derecha? | | |
 | 21 | Modo explorar en Océanos: ¿el nombre del mar y la temperatura coinciden con el color que señalas? | | |
+| 22 | Botón "Ver mejor": ¿se anuncia como botón desplegable, y cada opción dice si está activada? | | |
+| 23 | En modo libre, M dos veces: ¿se oye el momento A, luego la comparación, y los botones "Ir a A" y "Ir a B" se anuncian bien? | | |
 | 18 | "Reproducir toda la playlist": ¿pasa sola de un episodio a otro? | | |
 | 15 | Escuchar la leyenda (G): ¿se entiende el "Por qué" después de cada sonido? | | |
 

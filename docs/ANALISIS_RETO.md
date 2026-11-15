@@ -82,6 +82,10 @@ Ordenadas por impacto frente al reto, esfuerzo y riesgo.
 - Confirmado por el equipo: todos son mayores de edad, así que se mantienen los nombres.
 - Pendiente: decidir la voz (muestras en `muestras-de-voz/index.html`), grabar el video de 30 s siguiendo la sección 2 y confirmar la cláusula sobre entidades de China.
 
+## 6b. Valor agregado ya construido en develop
+- **Ver mejor** (baja visión): alto contraste, texto grande y muy grande, sin movimiento. Se recuerda en el dispositivo.
+- **Comparar dos momentos** (tecla M): marca A y B en modo libre y la voz dice qué cambió; botones para volver a cada momento. Probado en las cinco pistas.
+
 ## 7. Qué decide el equipo
 1. ¿Voz de Edge (declarada), Kokoro o voz humana?
 2. ¿Alguna persona del equipo es menor de 18 años? ¿Se mantienen los nombres en la página?

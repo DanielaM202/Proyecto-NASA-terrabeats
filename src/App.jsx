@@ -14,6 +14,8 @@ import Starfield from './components/Starfield.jsx';
 import Glyph from './components/Glyph.jsx';
 import Telemetry from './components/Telemetry.jsx';
 import ScrollFx from './components/ScrollFx.jsx';
+import ViewOptions from './components/ViewOptions.jsx';
+import { WINDOW, average, compareStrings, compareText, summarize } from './analysis/compare.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
 // Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
@@ -174,6 +176,10 @@ export default function App() {
   const lastLineRef = useRef(null);
   // Lightning in free mode: when no new flashes arrive for a while, say why it is silent.
   const quietRef = useRef({ since: 0, told: false });
+  // Compare two moments: summaries of the last analysed frames, and the marked moments.
+  const ringRef = useRef([]);
+  const marksRef = useRef([]);
+  const [marks, setMarks] = useState([]);
   const menuAudioRef = useRef(null);
   const voiceBusyRef = useRef(false); // one narrator at a time
   const lastSpokeRef = useRef(0);
@@ -381,6 +387,7 @@ export default function App() {
     stopStoryRef.current();
     if (playingRef.current) pauseRef.current();
     const engine = engineRef.current;
+    ringRef.current = [];
     if (engine.ready) engine.setViz(viz.id);
     // Audio menu (needs a previous user gesture so the browser allows sound).
     if (interactedRef.current) {
@@ -428,6 +435,11 @@ export default function App() {
       if (v.currentTime < 0.15) f.flashes = [];
       prevMaskRef.current = f.mask;
       featuresRef.current = f;
+      if (playingRef.current) {
+        const ring = ringRef.current;
+        ring.push(summarize(f));
+        if (ring.length > WINDOW) ring.shift();
+      }
       const engine = engineRef.current;
       engine.update(f);
       engine.frameEvents(f);
@@ -437,7 +449,7 @@ export default function App() {
         if (f.flashes.length >= FLASH_MIN || !q.since) {
           q.since = now;
           if (f.flashes.length >= FLASH_MIN) q.told = false;
-        } else if (!q.told && now - q.since > 4000) {
+        } else if (!q.told && now - q.since > 4000 && now - lastSpokeRef.current > 6000) {
           q.told = true;
           const msg = STRINGS[langRef.current].noLightning;
           setAnnouncement(msg);
@@ -1180,6 +1192,53 @@ export default function App() {
     a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(line[L]));
   }, [speak, hush]);
 
+  // Compare two moments (free mode): the first M marks A, the second marks B and speaks the difference.
+  const markMoment = useCallback(() => {
+    const L = langRef.current;
+    const T = compareStrings(L);
+    const say = (text) => {
+      setAnnouncement(text);
+      speak(text);
+    };
+    const v = videoRef.current;
+    const id = vizRef.current.id;
+    if (storyPhaseRef.current !== 'idle') {
+      setAnnouncement(T.needFree); // speaking would cut the narrator
+      return;
+    }
+    if (!playingRef.current || !v || ringRef.current.length < 5) {
+      say(T.needFree);
+      return;
+    }
+    const entry = { viz: id, t: Math.round(v.currentTime), sum: average(ringRef.current) };
+    const mine = marksRef.current.filter((m) => m.viz === id);
+    const next = mine.length === 1 ? [mine[0], entry] : [entry];
+    marksRef.current = next;
+    setMarks(next);
+    engineRef.current?.playProbe(next.length === 1 ? 0.25 : 0.75, 0);
+    say(next.length === 1 ? T.markedA(entry.t) : compareText(L, id, next[0], next[1]));
+  }, [speak]);
+
+  const gotoMark = useCallback(
+    (i) => {
+      const m = marksRef.current.filter((x) => x.viz === vizRef.current.id)[i];
+      const v = videoRef.current;
+      if (!m || !v) return;
+      v.currentTime = m.t;
+      const text = compareStrings(langRef.current).goto(i ? 'B' : 'A', m.t);
+      setAnnouncement(text);
+      speak(text);
+    },
+    [speak],
+  );
+
+  const clearMarks = useCallback(() => {
+    marksRef.current = [];
+    setMarks([]);
+    const text = compareStrings(langRef.current).cleared;
+    setAnnouncement(text);
+  }, []);
+
   // Plays a stand-alone narration clip (welcome, help) on the single narrator.
   const playClip = useCallback(
     (id) => {
@@ -1271,6 +1330,8 @@ export default function App() {
         findMax();
       } else if (e.key === 'r' || e.key === 'R') {
         repeatLast();
+      } else if (e.key === 'm' || e.key === 'M') {
+        markMoment();
       } else if (e.key === 'g' || e.key === 'G') {
         toggleLegend();
       } else if (e.key === 'Escape') {
@@ -1281,7 +1342,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, playClip, stopAll]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, playClip, stopAll]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -1358,6 +1419,7 @@ export default function App() {
                 </span>
               </button>
             </div>
+            <ViewOptions t={t} />
             <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600/80">
               {['es', 'en'].map((l) => (
                 <button
@@ -1641,7 +1703,34 @@ export default function App() {
             >
               {t.repeat} (R)
             </button>
+            <button
+              type="button"
+              onClick={markMoment}
+              aria-keyshortcuts="M"
+              className="rounded-lg border border-emerald-400/70 bg-emerald-400/10 px-3 py-2 text-sm font-medium text-emerald-100 hover:bg-emerald-400/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              {t.compare.button} (M)
+            </button>
           </div>
+          {marks.some((m) => m.viz === viz.id) && (
+            <div role="group" aria-label={t.compare.title} className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-sm">
+              {marks
+                .filter((m) => m.viz === viz.id)
+                .map((m, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => gotoMark(i)}
+                    className="rounded-lg border border-emerald-400/60 px-3 py-1.5 font-medium text-emerald-100 hover:bg-emerald-400/15 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                  >
+                    {t.compare.goto} {i ? 'B' : 'A'}: {t.compare.second} {m.t}
+                  </button>
+                ))}
+              <button type="button" onClick={clearMarks} className="text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
+                {t.compare.clear}
+              </button>
+            </div>
+          )}
 
           <details className="mt-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
