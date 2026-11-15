@@ -9,7 +9,7 @@
     text-rendering: optimizeLegibility;
   }
   body {
-    font-family: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
     background:
       radial-gradient(60rem 40rem at 85% -10%, rgba(60, 100, 200, 0.18), transparent 60%),
       radial-gradient(50rem 36rem at 0% 40%, rgba(110, 70, 190, 0.12), transparent 60%),
@@ -18,7 +18,7 @@
   }
   h1,
   h2 {
-    font-family: Fraunces, Georgia, 'Times New Roman', serif;
+    font-family: 'Fraunces Variable', Fraunces, Georgia, 'Times New Roman', serif;
     letter-spacing: -0.01em;
   }
   /* One clear, consistent focus ring for keyboard and screen-reader users. */

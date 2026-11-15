@@ -77,7 +77,12 @@ Ordenadas por impacto frente al reto, esfuerzo y riesgo.
 
 **Lo que recomiendo hacer en `develop`, en este orden:** 1, 2, 4, 6 y 5 (y que el equipo haga el 3 en paralelo). Dejar 7 y 8 solo si sobra tiempo.
 
-## 6. Qué decide el equipo
+## 6. Estado del cierre de cumplimiento (rama develop)
+- Hecho: `LICENSE` (Apache 2.0) y `NOTICE`; `docs/CREDITOS.md` con todas las fuentes y licencias; tipografías alojadas en el proyecto (la página ya no pide nada a Google); README y `SUBMISSION.md` actualizados.
+- Confirmado por el equipo: todos son mayores de edad, así que se mantienen los nombres.
+- Pendiente: decidir la voz (muestras en `muestras-de-voz/index.html`), grabar el video de 30 s siguiendo la sección 2 y confirmar la cláusula sobre entidades de China.
+
+## 7. Qué decide el equipo
 1. ¿Voz de Edge (declarada), Kokoro o voz humana?
 2. ¿Alguna persona del equipo es menor de 18 años? ¿Se mantienen los nombres en la página?
 3. ¿Licencia Apache 2.0 para el código?

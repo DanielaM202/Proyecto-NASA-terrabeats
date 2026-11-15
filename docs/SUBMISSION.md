@@ -49,7 +49,7 @@ Every story follows the same structure:
 
 ### Curated playlist (the challenge's alternative deliverable)
 
-Each story also exists as a **downloadable audio episode** of about two minutes, in English and Spanish: narration and live sonification recorded together, with no screen needed. Each episode is shown with a short explanation of its creative process and comes with an accessible player: **chapters** (every narrated sentence, so a jump always lands at the start of a sentence), the **full transcript**, speed from 0.75× to 2× (listeners who use screen readers are used to fast speech), a position bar that announces time and chapter in words, headphone and lock-screen controls, and "resume where you stopped". People can play them offline or share them, for example on WhatsApp, with someone who cannot see. Anyone can record a fresh episode from the app ("Record episode now"): it plays the full story in episode mode, without pauses for questions, and captures voice and music together.
+Each story also exists as a **downloadable audio episode** of about two minutes, in English and Spanish: narration and live sonification recorded together, with no screen needed. Each episode is shown with a short explanation of its creative process and comes with an accessible player: **chapters** (every narrated sentence, so a jump always lands at the start of a sentence), the **full transcript**, speed from 0.75× to 2× (listeners who use screen readers are used to fast speech), a position bar that announces time and chapter in words, headphone and lock-screen controls, and "resume where you stopped". People can play them offline or share them, for example on WhatsApp, with someone who cannot see. The team records them with the app itself: each story is played in episode mode, without pauses for questions, capturing voice and music together.
 
 ### Designed for people who cannot see
 
@@ -93,7 +93,7 @@ The app shows the reason behind every sound next to it. Examples: real height be
 
 ### Tools, languages and software
 
-JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), HTML Canvas, Web Speech API, Vibration API, MediaRecorder, ffmpeg (video preparation), Git/GitHub, Vercel.
+JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), lucide icons, self-hosted Inter, Fraunces and JetBrains Mono fonts, HTML Canvas, Web Speech API, Vibration API, MediaRecorder, ffmpeg (video and audio preparation), Git/GitHub, Vercel.
 
 ## Use of Artificial Intelligence
 
@@ -110,6 +110,10 @@ JavaScript, React 19, Vite, Tailwind CSS, Tone.js (Web Audio), HTML Canvas, Web 
 - Lightning Events Detected from the ISS 2017–2023 (LIS) — https://svs.gsfc.nasa.gov/5011/
 - DYAMOND Global Carbon Dioxide (GEOS model) — https://svs.gsfc.nasa.gov/5196/
 - Data Sonification: Caldwell 73 (conceptual reference) — https://svs.gsfc.nasa.gov/13786/
+
+## License and credits
+
+Our code and documentation are released under the **Apache License 2.0** (`LICENSE`). Every third-party resource, with its license, is listed in `docs/CREDITOS.md`: React, Tone.js and Vite (MIT), lucide (ISC), Inter, Fraunces and JetBrains Mono (SIL OFL 1.1, self-hosted), Natural Earth marine polygons (public domain), and the NASA SVS visualizations (credited, not relicensed).
 
 ## References
 

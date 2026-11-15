@@ -64,9 +64,11 @@ src/
 public/media/              web-sized NASA SVS videos + posters
 ```
 
-## Credits
+## Credits and license
 
 Visualizations: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA does not endorse this project.
+
+Our code and documentation are licensed under the **Apache License 2.0** ([`LICENSE`](LICENSE), [`NOTICE`](NOTICE)). Every third-party resource and its license is listed in [`docs/CREDITOS.md`](docs/CREDITOS.md). The NASA visualizations are not covered by that license.
 
 ## Equipo
 Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas y José Rodriguez. NASA Space Apps Challenge 2026, sede Cajamarca.
