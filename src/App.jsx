@@ -9,6 +9,8 @@ import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue, readWind
 import { lonLat, placeAt, placeLabel } from './analysis/geo.js';
 import { SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
+import Icon from './components/Icon.jsx';
+import Starfield from './components/Starfield.jsx';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
 // Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
@@ -45,6 +47,8 @@ function pickVoice(lang, wanted) {
 const TEAM_MODE = import.meta.env.DEV || new URLSearchParams(window.location.search).has('equipo');
 const PLAY_ORDER = VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => v.id);
 const requestEpisode = (id, fromStart = false) => window.dispatchEvent(new CustomEvent('terrabeats:episode', { detail: { id, fromStart } }));
+// One accent per track, taken from its own data colours (see docs/DESIGN.md).
+const ACCENT = { 'forest-height': '#8fcf7e', ocean: '#5eb6e8', 'night-lights': '#f2c14e', lightning: '#b9a2ff', co2: '#ff9a62' };
 const PAD_BTN =
   'inline-flex h-14 w-14 items-center justify-center rounded-xl border border-slate-500 bg-slate-800 text-2xl hover:bg-slate-700 active:bg-yellow-300 active:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300';
 const STORY_RATE = 0.6; // video speed during the guided story, so narration fits each region
@@ -1265,7 +1269,8 @@ export default function App() {
   const position = useMemo(() => (ui && ui.coverage > 0.0005 ? regionName(t, ui.cx, ui.cy) : '—'), [ui, t]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100" style={{ paddingBottom: audioStatus ? '5rem' : undefined }}>
+    <div className="relative min-h-screen text-slate-100" style={{ paddingBottom: audioStatus ? '5rem' : undefined }}>
+      <Starfield />
       <a
         href="#player"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-yellow-300 focus:px-4 focus:py-2 focus:text-slate-900"
@@ -1273,13 +1278,23 @@ export default function App() {
         {t.skip}
       </a>
 
-      <header className="border-b border-slate-800 bg-gradient-to-r from-blue-950 via-slate-950 to-slate-950">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-5">
-          <div className="flex items-center gap-3">
-            <img src="/favicon.svg" alt="" className="h-10 w-10" />
+      <header className="relative isolate overflow-hidden border-b border-slate-700/60">
+        {/* Still from the selected NASA visualization, darkened so text stays readable. */}
+        <div aria-hidden="true" className="absolute inset-0 -z-10">
+          <div className="hero-backdrop absolute inset-0 opacity-60" style={{ backgroundImage: `url(${viz.poster})` }} />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/70 to-slate-950/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent" />
+          <div className="orbit absolute -right-24 -top-24 hidden h-[34rem] w-[34rem] sm:block">
+            <span className="orbit-sat" />
+          </div>
+          <div className="earth-limb absolute inset-x-0 bottom-0 h-24" />
+        </div>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 pb-4 pt-6">
+          <div className="flex items-center gap-4">
+            <img src="/favicon.svg" alt="" className="h-11 w-11" />
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{t.appName}</h1>
-              <p className="text-sm text-sky-200">{t.tagline}</p>
+              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">{t.appName}</h1>
+              <p className="eyebrow mt-1 text-sky-200/80">{t.tagline}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.listenHelp}>
@@ -1289,7 +1304,7 @@ export default function App() {
               aria-keyshortcuts="H"
               className="rounded-lg bg-yellow-300 px-5 py-3 text-base font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
             >
-              🔊 {t.listenHelp} (H)
+              {t.listenHelp} (H)
             </button>
             <button
               type="button"
@@ -1297,7 +1312,7 @@ export default function App() {
               aria-keyshortcuts="Escape"
               className="rounded-lg border-2 border-red-400 bg-red-500/15 px-4 py-3 text-base font-bold text-red-100 hover:bg-red-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ⏹ {t.stopAll} (Esc)
+              {t.stopAll} (Esc)
             </button>
           </div>
           <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600">
@@ -1317,7 +1332,9 @@ export default function App() {
             ))}
           </div>
         </div>
-        <p className="mx-auto max-w-7xl px-4 pb-5 text-slate-300">{t.intro}</p>
+        <div className="mx-auto max-w-7xl px-4 pb-10 pt-6">
+          <p className="max-w-3xl font-display text-xl leading-snug text-slate-100 sm:text-2xl lg:text-3xl">{t.intro}</p>
+        </div>
       </header>
 
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-3">
@@ -1330,7 +1347,7 @@ export default function App() {
 
           {story && (
             <div className="mb-4 rounded-xl border border-emerald-400/60 bg-emerald-950/40 p-4">
-              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-300">🎧 {t.story}</p>
+              <p className="text-sm font-semibold uppercase tracking-wide text-emerald-300">{t.story}</p>
               <p className="mt-1 text-xl font-bold text-white">{story.question[lang]}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {storyPhase === 'idle' ? (
@@ -1341,7 +1358,7 @@ export default function App() {
                     aria-keyshortcuts="Space"
                     className="rounded-lg bg-emerald-400 px-5 py-3 text-lg font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
                   >
-                    ▶ {t.storyPlay}
+                    {t.storyPlay}
                   </button>
                 ) : (
                   <>
@@ -1351,7 +1368,7 @@ export default function App() {
                       aria-keyshortcuts="Space"
                       className="rounded-lg bg-emerald-400 px-5 py-3 font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
                     >
-                      {storyPaused ? `▶ ${t.storyResume}` : `❚❚ ${t.storyPause}`}
+                      {storyPaused ? `${t.storyResume}` : `${t.storyPause}`}
                     </button>
                     <button
                       type="button"
@@ -1359,7 +1376,7 @@ export default function App() {
                       aria-keyshortcuts="N"
                       className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-3 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
                     >
-                      ⏭ {t.nextLine} (N)
+                      {t.nextLine} (N)
                     </button>
                     <button
                       type="button"
@@ -1367,7 +1384,7 @@ export default function App() {
                       aria-keyshortcuts="Escape"
                       className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-3 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
                     >
-                      ■ {t.storyStop}
+                      {t.storyStop}
                     </button>
                   </>
                 )}
@@ -1404,7 +1421,7 @@ export default function App() {
               )}
               {caption && (
                 <p className="mt-3 rounded-lg bg-black/40 p-3 text-lg leading-snug text-white">
-                  <span aria-hidden="true">🎙 </span>
+                  
                   {caption}
                 </p>
               )}
@@ -1423,14 +1440,14 @@ export default function App() {
                       onClick={() => quizRef.current?.(sd)}
                       className="flex-1 rounded-lg bg-yellow-300 px-4 py-3 text-lg font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
                     >
-                      {sd === 'left' ? `← ${t.left}` : `${t.right} →`}
+                      {sd === 'left' ? t.left : t.right}
                     </button>
                   ))}
                 </div>
               )}
               {liveLine && storyPhase === 'tour' && (
                 <p className="mt-2 text-sm text-sky-200">
-                  <span aria-hidden="true">📡 </span>
+                  
                   {liveLine}
                 </p>
               )}
@@ -1482,21 +1499,21 @@ export default function App() {
               <div className="grid grid-cols-3 gap-2">
                 <span />
                 <button type="button" aria-label={t.padUp} className={PAD_BTN} onClick={() => moveCursor(0, padBig ? -0.15 : -0.05)}>
-                  ▲
+                  <Icon name="up" />
                 </button>
                 <span />
                 <button type="button" aria-label={t.padLeft} className={PAD_BTN} onClick={() => moveCursor(padBig ? -0.15 : -0.05, 0)}>
-                  ◀
+                  <Icon name="left" />
                 </button>
                 <button type="button" aria-label={t.findMax} className={PAD_BTN} onClick={findMax}>
-                  ⌖
+                  <Icon name="target" />
                 </button>
                 <button type="button" aria-label={t.padRight} className={PAD_BTN} onClick={() => moveCursor(padBig ? 0.15 : 0.05, 0)}>
-                  ▶
+                  <Icon name="right" />
                 </button>
                 <span />
                 <button type="button" aria-label={t.padDown} className={PAD_BTN} onClick={() => moveCursor(0, padBig ? 0.15 : 0.05)}>
-                  ▼
+                  <Icon name="down" />
                 </button>
                 <span />
               </div>
@@ -1531,7 +1548,7 @@ export default function App() {
               aria-keyshortcuts={story ? 'P' : 'Space'}
               className="rounded-lg bg-yellow-300 px-6 py-3 text-lg font-extrabold text-slate-900 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
             >
-              {playing ? `❚❚ ${t.pause}` : `▶ ${story ? t.freePlay : t.play}`}
+              {playing ? t.pause : story ? t.freePlay : t.play}
             </button>
             <Toggle checked={explore} onChange={toggleExplore}>
               {t.explore} (E)
@@ -1542,7 +1559,7 @@ export default function App() {
               aria-keyshortcuts="D"
               className="rounded-lg border border-sky-500 bg-sky-500/20 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              🗣 {t.describe} (D)
+              {t.describe} (D)
             </button>
             <button
               type="button"
@@ -1550,7 +1567,7 @@ export default function App() {
               aria-keyshortcuts="F"
               className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-3 py-2 text-sm font-medium text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ⌖ {t.findMax} (F)
+              {t.findMax} (F)
             </button>
             <button
               type="button"
@@ -1558,13 +1575,13 @@ export default function App() {
               aria-keyshortcuts="R"
               className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ↺ {t.repeat} (R)
+              {t.repeat} (R)
             </button>
           </div>
 
           <details className="mt-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
-              ⚙ {t.moreOptions}
+              {t.moreOptions}
             </summary>
             <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
@@ -1633,7 +1650,7 @@ export default function App() {
                 recording ? 'border-red-400 bg-red-500/30 text-red-100' : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
               }`}
             >
-              {recording ? `■ ${t.stopRecord}` : `● ${t.record}`}
+              {recording ? t.stopRecord : t.record}
             </button>
             {recordUrl && (
               <a
@@ -1641,7 +1658,7 @@ export default function App() {
                 download={`terrabeats-${viz.id}.webm`}
                 className="rounded-lg border border-emerald-400 bg-emerald-500/20 px-3 py-2 text-sm font-medium text-emerald-100 underline focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
               >
-                ⬇ {t.download}
+                {t.download}
               </a>
             )}
             </div>
@@ -1679,25 +1696,34 @@ export default function App() {
                     onClick={() => setVizIndex(i)}
                     aria-pressed={i === vizIndex}
                     aria-keyshortcuts={String(i + 1)}
-                    className={`flex w-full items-center gap-3 rounded-xl border p-2 text-left transition focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 ${
-                      i === vizIndex ? 'border-yellow-300 bg-slate-800' : 'border-slate-700 bg-slate-900 hover:bg-slate-800'
+                    style={{ '--accent': ACCENT[v.id] }}
+                    className={`group relative flex w-full items-center gap-3 overflow-hidden rounded-xl border p-2 pl-3 text-left backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 ${
+                      i === vizIndex ? 'border-[var(--accent)] bg-slate-800' : 'border-slate-700/70 bg-slate-900/80 hover:border-slate-500 hover:bg-slate-800'
                     }`}
                   >
-                    <img src={v.poster} alt="" className="h-14 w-24 flex-none rounded object-cover" loading="lazy" />
-                    <span>
-                      <span className="block font-semibold">
-                        <span className="mr-1 font-mono text-yellow-300">{i + 1}.</span>
+                    <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1" style={{ background: ACCENT[v.id], opacity: i === vizIndex ? 1 : 0.45 }} />
+                    <img src={v.poster} alt="" className="h-16 w-28 flex-none rounded-lg object-cover ring-1 ring-white/10 transition duration-300 group-hover:scale-105" loading="lazy" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block font-display text-base font-semibold leading-tight">
+                        <span className="mr-2 font-mono text-sm" style={{ color: ACCENT[v.id] }}>{String(i + 1).padStart(2, '0')}</span>
                         {v.title[lang]}
                       </span>
-                      <span className="block text-sm text-slate-400">{v.short[lang]}</span>
+                      <span className="mt-0.5 block text-sm text-slate-400">{v.short[lang]}</span>
                     </span>
+                    {i === vizIndex && audioStatus && !audioStatus.paused && (
+                      <span aria-hidden="true" className="mr-1 flex h-5 w-6 flex-none items-end gap-0.5">
+                        {[0, 1, 2, 3].map((k) => (
+                          <span key={k} className="eq-bar h-full w-1 rounded-sm" style={{ background: ACCENT[v.id] }} />
+                        ))}
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section aria-labelledby="live" className="rounded-xl border border-slate-700 bg-slate-900 p-4">
+          <section aria-labelledby="live" className="panel">
             <h2 id="live" className="mb-3 text-lg font-bold">
               {t.liveData}
             </h2>
@@ -1721,9 +1747,9 @@ export default function App() {
         </aside>
 
         {/* ---------- Explanations ---------- */}
-        <section aria-labelledby="hear" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-2">
+        <section aria-labelledby="hear" className="panel lg:col-span-2">
           <h2 id="hear" className="mb-3 text-xl font-bold">
-            🎧 {t.legend}
+            {t.legend}
           </h2>
           <p className="mb-3 text-slate-300">{t.legendHelp}</p>
           <button
@@ -1734,7 +1760,7 @@ export default function App() {
               legendIdx !== -1 ? 'bg-red-500/30 text-red-100 border border-red-400' : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
             }`}
           >
-            {legendIdx !== -1 ? `■ ${t.legendStop} (Esc)` : `🎧 ${t.legendPlay} (G)`}
+            {legendIdx !== -1 ? `${t.legendStop} (Esc)` : `${t.legendPlay} (G)`}
           </button>
           <ol className="space-y-2">
             {LEGENDS[viz.id].map((item, k) => (
@@ -1766,9 +1792,9 @@ export default function App() {
           </p>
         </section>
 
-        <section aria-labelledby="shortcuts" className="rounded-xl border border-slate-700 bg-slate-900 p-5">
+        <section aria-labelledby="shortcuts" className="panel">
           <h2 id="shortcuts" className="mb-3 text-xl font-bold">
-            ⌨ {t.shortcuts}
+            {t.shortcuts}
           </h2>
           <dl className="grid grid-cols-[auto,1fr] gap-x-4 gap-y-1 text-sm">
             {t.shortcutList.map(([k, d]) => (
@@ -1782,9 +1808,9 @@ export default function App() {
           </dl>
         </section>
 
-        <section aria-labelledby="playlist" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-3">
+        <section aria-labelledby="playlist" className="panel lg:col-span-3">
           <h2 id="playlist" className="mb-2 text-xl font-bold">
-            🎧 {t.playlist}
+            {t.playlist}
           </h2>
           <p className="mb-4 max-w-3xl text-slate-300">{t.playlistIntro}</p>
           <div className="mb-4 flex flex-wrap gap-3">
@@ -1793,7 +1819,7 @@ export default function App() {
               onClick={playAll ? stopAll : startPlaylist}
               className="rounded-lg bg-emerald-400 px-5 py-3 font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              {playAll ? `⏹ ${t.stopPlaylist}` : `▶ ${t.playAll}`}
+              {playAll ? t.stopPlaylist : t.playAll}
             </button>
             <button
               type="button"
@@ -1801,7 +1827,7 @@ export default function App() {
               aria-keyshortcuts="H"
               className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-4 py-3 font-semibold text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              🔊 {t.episodeHelp}
+              {t.episodeHelp}
             </button>
           </div>
           <ul className="grid gap-4 lg:grid-cols-2">
@@ -1853,9 +1879,9 @@ export default function App() {
           </ul>
         </section>
 
-        <section aria-labelledby="how" className="rounded-xl border border-slate-700 bg-slate-900 p-5 lg:col-span-3">
+        <section aria-labelledby="how" className="panel lg:col-span-3">
           <h2 id="how" className="mb-3 text-xl font-bold">
-            ⚙ {t.howItWorks}
+            {t.howItWorks}
           </h2>
           <ol className="list-decimal space-y-1 pl-5 text-slate-300">
             {t.howSteps.map((s) => (
@@ -1868,7 +1894,7 @@ export default function App() {
       {audioStatus && (
         <div role="region" aria-label={t.audioStatus} className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-600 bg-slate-900/95 px-4 py-3 shadow-2xl backdrop-blur">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3">
-            <span aria-hidden="true">🔊</span>
+            
             <span className="min-w-0 flex-1 truncate font-semibold">{audioStatus.label}</span>
             {audioStatus.canPause && (
               <button
@@ -1882,7 +1908,7 @@ export default function App() {
                 }}
                 className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-2 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
               >
-                {audioStatus.paused ? `▶ ${t.storyResume}` : `❚❚ ${t.storyPause}`}
+                {audioStatus.paused ? t.storyResume : t.storyPause}
               </button>
             )}
             <button
@@ -1890,7 +1916,7 @@ export default function App() {
               onClick={stopAll}
               className="rounded-lg border-2 border-red-400 bg-red-500/15 px-4 py-2 font-bold text-red-100 hover:bg-red-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ⏹ {t.stopShort}
+              {t.stopShort}
             </button>
           </div>
         </div>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CHAPTER_TITLES } from '../data/chapters.js';
 import { storyLines } from '../data/stories.js';
 import { getActiveEpisode, setActiveEpisode } from '../audio/episodes.js';
+import Icon from './Icon.jsx';
 
 // Accessible player for a recorded episode. Designed for people who cannot see:
 //  - chapters = narrated sentences, so every jump lands at the start of a sentence
@@ -273,16 +274,16 @@ export default function EpisodePlayer({ id, story, title, poster, lang, t, src, 
           }}
           className="w-full rounded-lg border border-emerald-400 bg-emerald-500/20 px-3 py-2 text-left text-sm font-semibold text-emerald-100 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
         >
-          ↺ {t.resumeFrom(mmss(saved))}
+          {t.resumeFrom(mmss(saved))}
         </button>
       )}
 
       <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.episodeControls(title)}>
         <button type="button" className={btn} onClick={prevChapter} disabled={!chapters.length} aria-label={t.prevChapter}>
-          ⏮
+          <Icon name="prev" />
         </button>
         <button type="button" className={btn} onClick={() => seekBy(-10)} aria-label={t.back10}>
-          ⏪
+          <Icon name="back" />
         </button>
         <button
           type="button"
@@ -290,13 +291,13 @@ export default function EpisodePlayer({ id, story, title, poster, lang, t, src, 
           aria-label={playing ? t.pauseEpisode : t.playEpisode}
           className="inline-flex h-11 min-w-24 items-center justify-center rounded-lg bg-yellow-300 px-4 text-lg font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
         >
-          {playing ? '❚❚' : '▶'}
+          <Icon name={playing ? 'pause' : 'play'} className="h-6 w-6" />
         </button>
         <button type="button" className={btn} onClick={() => seekBy(10)} aria-label={t.fwd10}>
-          ⏩
+          <Icon name="fwd" />
         </button>
         <button type="button" className={btn} onClick={nextChapter} disabled={!chapters.length} aria-label={t.nextChapter}>
-          ⏭
+          <Icon name="next" />
         </button>
       </div>
 
@@ -357,7 +358,7 @@ export default function EpisodePlayer({ id, story, title, poster, lang, t, src, 
           download={`terrabeats-${id}-${lang}.${fresh ? 'webm' : 'mp3'}`}
           className="text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
         >
-          ⬇ {t.downloadEpisode}
+          {t.downloadEpisode}
         </a>
         {chaptersHref && (
           <a
@@ -365,7 +366,7 @@ export default function EpisodePlayer({ id, story, title, poster, lang, t, src, 
             download={`terrabeats-${id}-${lang}.json`}
             className="text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
           >
-            ⬇ {t.downloadChapters}
+            {t.downloadChapters}
           </a>
         )}
       </div>
