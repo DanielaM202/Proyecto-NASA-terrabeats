@@ -23,10 +23,10 @@ const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (scale, v) => scale[Math.round(clamp01(v) * (scale.length - 1))];
 const dbFrom = (v, min = -48, max = -10) => min + clamp01(v) * (max - min);
 const SILENT = -70;
-const FLASH_MIN = 22; // measured: Pacific/ISS frames show ~8-35 new pixels, active land 60-190
+export const FLASH_MIN = 22; // measured: Pacific/ISS frames show ~8-35 new pixels, active land 60-190
 // dB added per track so all five reach a similar loudness (measured before the trim:
 // forest -33, ocean -41, night lights -52, lightning -31, CO2 -33 dB vs voice -17 dB).
-const TRIM = { 'forest-height': 9, ocean: 20, 'night-lights': 24, lightning: 10, co2: 20 };
+const TRIM = { 'forest-height': 6, ocean: 12, 'night-lights': 23, lightning: 10, co2: 10 };
 const LEVEL_GATE = 0.05; // lightning level below this = no thunder
 
 export class SonificationEngine {

@@ -7,7 +7,7 @@ import EpisodePlayer from './components/EpisodePlayer.jsx';
 import { episodePlaying, getActiveEpisode, pauseActiveEpisode } from './audio/episodes.js';
 import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue, readWindow } from './analysis/features.js';
 import { lonLat, placeAt, placeLabel } from './analysis/geo.js';
-import { SonificationEngine } from './audio/engine.js';
+import { FLASH_MIN, SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 import Icon from './components/Icon.jsx';
 import Starfield from './components/Starfield.jsx';
@@ -172,6 +172,8 @@ export default function App() {
   const stopStoryRef = useRef(() => {});
   const pauseRef = useRef(() => {});
   const lastLineRef = useRef(null);
+  // Lightning in free mode: when no new flashes arrive for a while, say why it is silent.
+  const quietRef = useRef({ since: 0, told: false });
   const menuAudioRef = useRef(null);
   const voiceBusyRef = useRef(false); // one narrator at a time
   const lastSpokeRef = useRef(0);
@@ -224,7 +226,7 @@ export default function App() {
   // ---------- language ----------
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.title = `${t.appName} — ${t.tagline}`;
+    document.title = `${t.appName} · ${t.tagline}`;
     try {
       localStorage.setItem('terrabeats-lang', lang);
     } catch {
@@ -303,6 +305,8 @@ export default function App() {
       }),
     [voice, hush],
   );
+  const speakRef = useRef(speak);
+  speakRef.current = speak;
 
   // ---------- audio engine ----------
   // ---------- auditory legend ----------
@@ -430,6 +434,22 @@ export default function App() {
       const engine = engineRef.current;
       engine.update(f);
       engine.frameEvents(f);
+      const q = quietRef.current;
+      const now = performance.now();
+      if (vizRef.current.id === 'lightning' && playingRef.current && storyPhaseRef.current === 'idle') {
+        if (f.flashes.length >= FLASH_MIN || !q.since) {
+          q.since = now;
+          if (f.flashes.length >= FLASH_MIN) q.told = false;
+        } else if (!q.told && now - q.since > 4000) {
+          q.told = true;
+          const msg = STRINGS[langRef.current].noLightning;
+          setAnnouncement(msg);
+          speakRef.current?.(msg);
+        }
+      } else {
+        q.since = 0;
+        q.told = false;
+      }
     };
     const draw = () => {
       const canvas = overlayRef.current;
@@ -582,7 +602,11 @@ export default function App() {
       else if (storyPhaseRef.current !== 'idle') next = { kind: 'story', label: `${T.kinds.story}: ${title}`, canPause: true, paused: storyPausedRef.current };
       else if (legendIdxRef.current !== -1) next = { kind: 'legend', label: `${T.kinds.legend}: ${title}` };
       else if (playingRef.current) next = { kind: 'free', label: `${T.kinds.free}: ${title}` };
-      else if (menuAudioRef.current && !menuAudioRef.current.paused && !menuAudioRef.current.ended) next = { kind: 'help', label: T.kinds.help };
+      else if (menuAudioRef.current && !menuAudioRef.current.paused && !menuAudioRef.current.ended) {
+        // The same player reads the help and the track menus: name it by what it is reading.
+        const isHelp = /^help/.test(lastLineRef.current?.id || '');
+        next = isHelp ? { kind: 'help', label: T.kinds.help } : { kind: 'voice', label: T.kinds.voice };
+      }
       else if ('speechSynthesis' in window && window.speechSynthesis.speaking) next = { kind: 'voice', label: T.kinds.voice };
       setAudioStatus((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     }, 400);
@@ -1635,7 +1659,7 @@ export default function App() {
               onClick={restart}
               className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ⟲ {t.restart}
+              {t.restart}
             </button>
             <label className="flex items-center gap-2 text-sm">
               <span>{t.volume}</span>
