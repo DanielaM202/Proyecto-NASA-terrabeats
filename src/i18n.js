@@ -6,7 +6,7 @@ export const STRINGS = {
     appName: 'TerraBeats',
     tagline: 'La rocola de información de la Tierra',
     intro:
-      'Escucha cómo cambia nuestro planeta. TerraBeats analiza en tiempo real cada fotograma de visualizaciones de la NASA y lo convierte en música, para que cualquier persona —también quien no puede ver— pueda explorar la ciencia de la Tierra.',
+      'Escucha cómo cambia nuestro planeta. TerraBeats analiza en tiempo real cada fotograma de visualizaciones de la NASA y lo convierte en música, para que cualquier persona, también quien no puede ver, pueda explorar la ciencia de la Tierra.',
     skip: 'Saltar al reproductor',
     langLabel: 'Idioma',
     chooseTrack: 'Elige una pista',
@@ -196,7 +196,7 @@ export const STRINGS = {
     appName: 'TerraBeats',
     tagline: 'The Earth Information Jukebox',
     intro:
-      'Hear our planet change. TerraBeats analyzes every frame of NASA visualizations in real time and turns it into music, so anyone — including people who cannot see — can explore Earth science.',
+      'Hear our planet change. TerraBeats analyzes every frame of NASA visualizations in real time and turns it into music, so anyone, including people who cannot see, can explore Earth science.',
     skip: 'Skip to player',
     langLabel: 'Language',
     chooseTrack: 'Choose a track',

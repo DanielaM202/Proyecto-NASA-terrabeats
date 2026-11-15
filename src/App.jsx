@@ -1281,7 +1281,7 @@ export default function App() {
       <header className="relative isolate overflow-hidden border-b border-slate-700/60">
         {/* Still from the selected NASA visualization, darkened so text stays readable. */}
         <div aria-hidden="true" className="absolute inset-0 -z-10">
-          <div className="hero-backdrop absolute inset-0 opacity-60" style={{ backgroundImage: `url(${viz.poster})` }} />
+          <div key={viz.id} className="hero-backdrop absolute inset-0 opacity-60" style={{ backgroundImage: `url(${viz.poster})` }} />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/70 to-slate-950/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent" />
           <div className="orbit absolute -right-24 -top-24 hidden h-[34rem] w-[34rem] sm:block">
@@ -1289,51 +1289,69 @@ export default function App() {
           </div>
           <div className="earth-limb absolute inset-x-0 bottom-0 h-24" />
         </div>
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 pb-4 pt-6">
-          <div className="flex items-center gap-4">
-            <img src="/favicon.svg" alt="" className="h-11 w-11" />
-            <div>
-              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">{t.appName}</h1>
-              <p className="eyebrow mt-1 text-sky-200/80">{t.tagline}</p>
+        {/* Top bar: controls first (help and stop are the first things a keyboard or screen-reader user meets). */}
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5">
+          <div className="flex items-center gap-2.5" aria-hidden="true">
+            <img src="/favicon.svg" alt="" className="h-8 w-8" />
+            <span className="font-display text-lg font-semibold tracking-tight text-white/90">{t.appName}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.listenHelp}>
+              <button
+                type="button"
+                onClick={() => playClip('help')}
+                aria-keyshortcuts="H"
+                className="btn-lift rounded-lg bg-yellow-300 px-4 py-2.5 text-sm font-bold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
+              >
+                {t.listenHelp} (H)
+              </button>
+              <button
+                type="button"
+                onClick={stopAll}
+                aria-keyshortcuts="Escape"
+                className="btn-lift rounded-lg border border-red-400/80 bg-red-500/10 px-4 py-2.5 text-sm font-semibold text-red-100 hover:bg-red-500/25 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+              >
+                {t.stopAll} (Esc)
+              </button>
+            </div>
+            <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600/80">
+              {['es', 'en'].map((l) => (
+                <button
+                  key={l}
+                  type="button"
+                  lang={l}
+                  aria-pressed={lang === l}
+                  onClick={() => setLang(l)}
+                  className={`px-3.5 py-2.5 text-sm font-semibold transition focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 ${
+                    lang === l ? 'bg-yellow-300 text-slate-900' : 'bg-slate-900/70 text-slate-200 hover:bg-slate-800'
+                  }`}
+                >
+                  {l === 'es' ? 'Español' : 'English'}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.listenHelp}>
-            <button
-              type="button"
-              onClick={() => playClip('help')}
-              aria-keyshortcuts="H"
-              className="rounded-lg bg-yellow-300 px-5 py-3 text-base font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
-            >
-              {t.listenHelp} (H)
-            </button>
-            <button
-              type="button"
-              onClick={stopAll}
-              aria-keyshortcuts="Escape"
-              className="rounded-lg border-2 border-red-400 bg-red-500/15 px-4 py-3 text-base font-bold text-red-100 hover:bg-red-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-            >
-              {t.stopAll} (Esc)
-            </button>
-          </div>
-          <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600">
-            {['es', 'en'].map((l) => (
-              <button
-                key={l}
-                type="button"
-                lang={l}
-                aria-pressed={lang === l}
-                onClick={() => setLang(l)}
-                className={`px-4 py-2 text-sm font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 ${
-                  lang === l ? 'bg-yellow-300 text-slate-900' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
-                }`}
-              >
-                {l === 'es' ? 'Español' : 'English'}
-              </button>
-            ))}
-          </div>
         </div>
-        <div className="mx-auto max-w-7xl px-4 pb-10 pt-6">
-          <p className="max-w-3xl font-display text-xl leading-snug text-slate-100 sm:text-2xl lg:text-3xl">{t.intro}</p>
+        <div className="mx-auto max-w-7xl px-4 pb-14 pt-14 sm:pt-20">
+          <p className="hero-in eyebrow text-sky-200/80" style={{ '--d': '0s' }}>
+            {t.tagline}
+          </p>
+          <h1 className="hero-in hero-title mt-3 font-display text-6xl font-semibold leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl" style={{ '--d': '0.08s' }}>
+            {t.appName}
+          </h1>
+          <p className="hero-in mt-6 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg" style={{ '--d': '0.18s' }}>
+            {t.intro}
+          </p>
+          <ul className="hero-in mt-7 flex flex-wrap gap-2" style={{ '--d': '0.28s' }} aria-label={lang === 'es' ? 'Resumen' : 'Summary'}>
+            {(lang === 'es'
+              ? ['5 pistas con datos de la NASA', 'Español e inglés', 'Pensada para escuchar']
+              : ['5 tracks from NASA data', 'English and Spanish', 'Made to be heard']
+            ).map((c) => (
+              <li key={c} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-slate-200 backdrop-blur-sm">
+                {c}
+              </li>
+            ))}
+          </ul>
         </div>
       </header>
 

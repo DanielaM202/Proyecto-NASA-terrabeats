@@ -69,6 +69,41 @@
   50% { transform: scaleY(1); }
 }
 
+/* Hero title: soft light-to-blue gradient on the lettering. */
+.hero-title {
+  background: linear-gradient(180deg, #ffffff 30%, #9fc4ff 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Staggered entrance of the hero lines (set --d per element). */
+.hero-in {
+  animation: rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0s);
+}
+/* The backdrop fades in again whenever the selected track changes. */
+.hero-backdrop {
+  animation: drift 40s ease-in-out infinite alternate, fadein 0.9s ease both;
+}
+@keyframes fadein {
+  from { opacity: 0; }
+}
+/* Buttons lift slightly on hover and press down on click. */
+.btn-lift {
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -8px rgba(242, 193, 78, 0.5);
+}
+.btn-lift:active {
+  transform: translateY(0) scale(0.98);
+}
+/* Panels appear one after another instead of all at once. */
+main > section:nth-of-type(2) { animation-delay: 0.1s; }
+main > section:nth-of-type(3) { animation-delay: 0.16s; }
+main > section:nth-of-type(4) { animation-delay: 0.22s; }
+
 /* Orbit ring with a small satellite (decorative, top right of the header). */
 .orbit {
   border-radius: 9999px;
@@ -117,6 +152,7 @@ main > aside { animation-delay: 0.08s; }
 
 @media (prefers-reduced-motion: reduce) {
   .orbit,
+  .hero-in,
   main > section,
   main > aside {
     animation: none;
@@ -124,6 +160,10 @@ main > aside { animation-delay: 0.08s; }
   .hero-backdrop,
   .eq-bar {
     animation: none;
+  }
+  .btn-lift:hover,
+  .btn-lift:active {
+    transform: none;
   }
   html {
     scroll-behavior: auto;
