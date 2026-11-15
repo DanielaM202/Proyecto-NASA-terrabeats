@@ -33,11 +33,11 @@ Narrated facts come from NASA's SVS page of each visualization. Values are deriv
 
 ## Narration
 
-The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with Windows voices:
+The script lives in [`src/data/stories.js`](src/data/stories.js). Audio files are in `public/narration/<lang>/<id>.mp3` and can be replaced one by one (see [`docs/GRABACION.md`](docs/GRABACION.md)). To regenerate them with the open Kokoro voice (see [`docs/VOZ.md`](docs/VOZ.md)):
 
 ```
-powershell -ExecutionPolicy Bypass -File scripts/build-narration.ps1 -Ffmpeg C:\ruta\a\ffmpeg.exe
-utafmpeg.exe
+.venv\Scripts\python scripts/build-narration-kokoro.py --ffmpeg C:\ruta\a\ffmpeg.exe --models C:\modelos\kokoro --es-voice ef_dora --en-voice af_heart
+node scripts/check-narration-timing.mjs C:\ruta\a\ffmpeg.exe
 ```
 
 ## Run
@@ -64,9 +64,11 @@ src/
 public/media/              web-sized NASA SVS videos + posters
 ```
 
-## Credits
+## Credits and license
 
 Visualizations: NASA/Goddard Space Flight Center Scientific Visualization Studio. NASA does not endorse this project.
+
+Our code and documentation are licensed under the **Apache License 2.0** ([`LICENSE`](LICENSE), [`NOTICE`](NOTICE)). Every third-party resource and its license is listed in [`docs/CREDITOS.md`](docs/CREDITOS.md). The NASA visualizations are not covered by that license.
 
 ## Equipo
 Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas y José Rodriguez. NASA Space Apps Challenge 2026, sede Cajamarca.

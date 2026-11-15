@@ -3,10 +3,11 @@
 
 > **Language:** American English  
 > **Challenge:** The Earth Information Jukebox  
-> **Team:** Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas, José Rodriguez (Cajamarca, Peru)  
-> **Live App:** https://terrabeats.vercel.app  
-> **Repo:** https://github.com/DanielaM202/Proyecto-NASA-terrabeats  
-> **Demo Video (30s):** https://youtu.be/YOUR_DEMO_VIDEO_ID  
+> **Location:** Cajamarca, Peru  
+> **Team:** Daniela Miranda, Liliam Gil, Diego Quiliche, Rodrigo Vargas, and José Rodriguez (Cajamarca).  
+> **Live Demo:** https://terrabeats.vercel.app  
+> **Repository:** https://github.com/DanielaM202/Proyecto-NASA-terrabeats  
+> **Project Demo (30s Video):** https://youtu.be/YOUR_DEMO_VIDEO_ID  
 
 ---
 
@@ -15,7 +16,7 @@
 
 ---
 
-## Field 2: Summary (50–200 Words)
+## Field 2: High-Level Project Summary (50–200 Words)
 NASA's Earth Information Center (EIC) showcases our changing planet through breathtaking satellite imagery, yet over 2.2 billion people worldwide living with visual impairments cannot access this visual data. TerraBeats is an accessible, bilingual (English/Spanish) web jukebox that transforms Earth Information Center visualizations into interactive, real-time soundscapes—turning silent Earth science into an immersive musical experience. 
 
 Running entirely in the browser with zero pre-recorded audio tracks, TerraBeats analyzes video frames in real time using client-side computer vision (HTML5 Canvas) at 30 fps, extracting color signatures, spatial density, and motion. It translates physical Earth measurements—forest canopy height from GEDI, sea surface temperature, lightning activity, urban night lights, and atmospheric carbon dioxide—into dynamic musical synthesizers via Tone.js and the Web Audio API. 
@@ -87,6 +88,7 @@ TerraBeats translates silent video feeds of NASA Earth visualizations into real-
 3. **Active Engagement & Cognitive Agency:** Listeners test their comprehension via interactive quizzes evaluated in real time from video pixels, explore coordinates with the keyboard, and consult audio legends.
 4. **Zero-Friction Client-Side Execution:** Runs in modern browsers without software installation, high-end GPUs, account registration, or cloud server costs.
 5. **Replicable Open-Science Framework:** Researchers and science museums can sonify any new NASA SVS visualization simply by providing a video, color bar LUT, and JSON cue sheet.
+6. **Downloadable Curated Playlist & Offline Support:** Each story exists as a downloadable 2-minute audio episode in English and Spanish with chapter navigation, transcripts, and offline PWA caching.
 
 ---
 
@@ -104,7 +106,7 @@ We developed an impact verification protocol. After listening to a 2-minute soni
 #### Institutional Scalability:
 - **Museums & Science Exhibitions:** Drop-in audio guide for interactive museum kiosks (Smithsonian, planetariums, NASA EIC).
 - **Inclusive Classrooms:** Accessible tool for STEM educators to integrate blind and low-vision students directly into climate coursework.
-- **Global Innovation from Peru:** Engineered by a team in Cajamarca, Peru, demonstrating how accessible space technology can originate from emerging regions.
+- **Global Innovation from Peru:** Engineered by a team in Cajamarca, Peru, demonstrating how accessible space technology can originate from emerging regions and work offline under low-bandwidth constraints.
 
 ---
 
@@ -121,8 +123,9 @@ We developed an impact verification protocol. After listening to a 2-minute soni
 | **Speech & Voice** | Web Speech API | Native | Client-side speech synthesis for quiz feedback and spatial labels. |
 | **Haptics** | Web Vibration API | Native | Physical vibration pulses on mobile lightning strikes. |
 | **Iconography** | Lucide React | v1.73.0 | Accessible SVG UI icons with semantic ARIA labels. |
+| **Fonts** | Inter, Fraunces, JetBrains Mono | SIL OFL 1.1 | Self-hosted typography for readability and offline capability. |
 | **Video Prep** | FFmpeg | v6.0+ | Video transcoding to web-optimized MP4 (H.264). |
-| **Speech Models** | Python & Edge TTS | v3.11 | Batch generation of static neural voice cues (`es-PE` and `en-US`). |
+| **Speech Models** | Kokoro TTS & Edge TTS | Open weights | Local generation of neural voice cues without third-party data transmission. |
 | **Geo Data** | Natural Earth | 1:50m Polygons | Vector GeoJSON for ray-casting marine basin identification. |
 | **IDE & QA** | Visual Studio Code, Oxlint | v1.92.0 | Code authoring, linting, memory and latency profiling. |
 | **Hosting & CI/CD** | Git, GitHub, Vercel Edge | Cloud | Public version control and automated continuous deployment. |
@@ -145,7 +148,7 @@ We developed an impact verification protocol. After listening to a 2-minute soni
 1. **Scientific Integrity vs. Raw Data:** We honestly acknowledge reading rendered video pixels rather than raw NetCDF/HDF5 sensor data. We never invent arbitrary numbers; the only units vocalized are meters (GEDI) and degrees Celsius (ECCO2), derived strictly from official SVS color bars. Relative datasets ($\text{CO}_2$ and lightning) use comparative acoustic indicators ("higher on the right").
 2. **Universal Accessibility & Screen Reader Quirks:** Full keyboard navigation (`Space`, `1–5`, `E`, `D`, `F`, `H`, `L`, `Esc`); dedicated on-screen mobile D-Pad to avoid TalkBack/VoiceOver finger drag interception; strict single-voice rule preventing audio overlapping.
 3. **Musicality vs. Auditory Fatigue:** Constrained all frequencies to pentatonic/modal scales, added spatial stereo depth, and placed a brickwall limiter at $-2\text{ dBFS}$ with soft-knee glue compression to guarantee pleasant listening through consumer headphones.
-4. **Low Bandwidth & Digital Inclusion:** Engineered in Cajamarca, Peru, where internet can be intermittent; compressed videos to 0.4–4.6 MB and kept sound synthesis 100% client-side for offline readiness.
+4. **Low Bandwidth & Digital Inclusion:** Engineered in Cajamarca, Peru, where internet can be intermittent; compressed videos to 0.4–4.6 MB, self-hosted all fonts and assets, added Service Worker caching, and kept sound synthesis 100% client-side for offline readiness.
 5. **Bilingual Parity:** English and Spanish interfaces, narrations, legends, and help systems were authored with equal scientific rigor and cultural nuance.
 
 ---
@@ -153,7 +156,7 @@ We developed an impact verification protocol. After listening to a 2-minute soni
 ## Field 4: Use of Super Intelligence (SI) Declaration
 AI tools were utilized strictly in accordance with NASA Space Apps Challenge guidelines:
 1. **Code and Documentation:** We used LLM assistants (Claude by Anthropic) to assist in refactoring React components, optimizing canvas pixel processing routines, and drafting bilingual technical documentation. All algorithmic logic, color calibration pipelines, and audio mappings were supervised, tested, and validated by our team.
-2. **Audio / Voice Narration:** Static educational narration voiceovers were generated using neural text-to-speech models (Microsoft Edge TTS: es-PE Camila and en-US Jenny via the open-source edge-tts package). These files are hosted locally as pre-rendered, lightweight audio cues. Dynamic quiz evaluations and live descriptions are synthesized natively by the browser via the Web Speech API.
+2. **Narrator Voice:** Scripted narration is AI text-to-speech generated with **Kokoro** (open model, Apache 2.0 weights run locally) and **Edge TTS**. No sensitive text or user data was sent to third-party services. The narration files are static MP3s: the app does not call any cloud speech service at runtime. Quiz answers, live remarks, and coordinate readouts use the native browser Web Speech API.
 3. **Zero AI-Generated Images, Videos, or Music:** No generative AI tools were used for media creation. All visual assets are authentic scientific visualizations from NASA SVS, and 100% of the sonification is generated live by custom Tone.js algorithmic code directly from video pixels.
 
 ---
@@ -183,3 +186,8 @@ AI tools were utilized strictly in accordance with NASA Space Apps Challenge gui
 | **Lucide Icons** | `https://lucide.dev/` | Accessible SVG UI iconography |
 | **Vercel Edge Platform** | `https://vercel.com/` | Production cloud hosting & edge CDN delivery |
 | **GitHub Repository** | `https://github.com/DanielaM202/Proyecto-NASA-terrabeats` | Public open-source code hosting & documentation |
+
+---
+
+## License and Credits
+Our code and documentation are released under the **Apache License 2.0** (`LICENSE`). Every third-party resource, with its license, is listed in `docs/CREDITOS.md`: React, Tone.js, and Vite (MIT), Lucide (ISC), Inter, Fraunces, and JetBrains Mono (SIL OFL 1.1, self-hosted), Natural Earth marine polygons (public domain), and the NASA SVS visualizations (credited, not relicensed).

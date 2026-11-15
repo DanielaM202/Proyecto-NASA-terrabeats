@@ -1,7 +1,7 @@
-// Real geography for the ocean map: which sea or ocean is at a longitude/latitude.
-// Data: Natural Earth 1:50m marine polygons (public domain), simplified to 0.1°.
+// Which sea or ocean is at a longitude/latitude (ocean map).
+// Natural Earth 1:50m marine polygons (public domain), simplified to 0.1 degrees.
 // Seas, bays and gulfs come before the big oceans, so a point in the Black Sea is
-// "Black Sea" and not "Pacific Ocean" (the previous version used rough boxes).
+// "Black Sea" and not "Pacific Ocean".
 import MARINE from '../data/marine.json';
 
 const BOXES = MARINE.map((f) => {
@@ -41,6 +41,16 @@ export function placeAt(lon, lat) {
 
 /** Longitude / latitude of a point of the equirectangular ocean map (x, y in 0..1). */
 export const lonLat = (x, y) => ({ lon: x * 360 - 180, lat: 90 - y * 180 });
+export const xyOf = (lon, lat) => ({ x: (lon + 180) / 360, y: (90 - lat) / 180 });
+
+// "Mi región": points of the ocean map, near Peru, that the explore cursor can jump to.
+// The temperature said at each one is read from the frame, so it is always the data's.
+export const REGIONS = [
+  { lon: -82, lat: -5, es: 'Costa norte del Perú', en: 'Northern coast of Peru' },
+  { lon: -79, lat: -12, es: 'Costa central del Perú', en: 'Central coast of Peru' },
+  { lon: -75.5, lat: -17, es: 'Costa sur del Perú', en: 'Southern coast of Peru' },
+  { lon: -120, lat: 0, es: 'Pacífico ecuatorial, lejos de la costa', en: 'Equatorial Pacific, far from the coast' },
+];
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 

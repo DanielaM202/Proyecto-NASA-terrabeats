@@ -1,5 +1,4 @@
-// Bilingual UI (Spanish / English). Judges evaluate in English, so every
-// visible or spoken string exists in both languages.
+// Bilingual UI (Spanish / English): every visible or spoken string exists in both languages.
 
 export const STRINGS = {
   es: {
@@ -9,6 +8,19 @@ export const STRINGS = {
       'Escucha cómo cambia nuestro planeta. TerraBeats analiza en tiempo real cada fotograma de visualizaciones de la NASA y lo convierte en música, para que cualquier persona, también quien no puede ver, pueda explorar la ciencia de la Tierra.',
     skip: 'Saltar al reproductor',
     langLabel: 'Idioma',
+    view: {
+      button: 'Ver mejor',
+      title: 'Ajustes visuales',
+      contrast: 'Alto contraste',
+      text: 'Tamaño del texto',
+      textNormal: 'Normal',
+      textLarge: 'Grande',
+      textXlarge: 'Muy grande',
+      motion: 'Sin movimiento ni fondo animado',
+      reset: 'Restablecer',
+      close: 'Cerrar',
+      hint: 'Se recuerdan en este dispositivo.',
+    },
     chooseTrack: 'Elige una pista',
     nowPlaying: 'Sonando',
     play: 'Reproducir',
@@ -21,6 +33,25 @@ export const STRINGS = {
     exploreHelp:
       'Modo explorar: pasa el puntero o usa las flechas sobre la imagen. Cada punto suena según su valor. Mayús + flechas = pasos grandes. En el móvil, usa la cruceta o arrastra el dedo.',
     describe: 'Describir ahora',
+    offline: {
+      title: 'Usar sin conexión',
+      text: 'Guarda en este dispositivo las voces, los videos de la NASA y los episodios (unos 55 MB) para usar TerraBeats sin internet, por ejemplo en el campo o con mala señal. Conviene hacerlo con wifi.',
+      save: 'Guardar para usar sin conexión',
+      saving: (d, t) => `Guardando ${d} de ${t} archivos`,
+      ready: 'Listo: ya puedes usar TerraBeats sin internet.',
+      clear: 'Borrar lo guardado',
+      error: 'No se pudo guardar todo. Revisa la conexión y vuelve a intentarlo.',
+    },
+    region: { button: 'Mi región', only: 'Mi región funciona en la pista de Océanos: salta a lugares frente a la costa de Perú.' },
+    compare: {
+      button: 'Marcar momento',
+      title: 'Comparar dos momentos',
+      a: 'Momento A',
+      b: 'Momento B',
+      second: 'segundo',
+      goto: 'Ir al',
+      clear: 'Borrar marcas',
+    },
     quizHint: 'Responde con la flecha izquierda o derecha (o los botones).',
     left: 'Izquierda',
     right: 'Derecha',
@@ -42,6 +73,7 @@ export const STRINGS = {
     listenHelp: 'Escuchar ayuda',
     stopAll: 'Detener todo el audio',
     allStopped: 'Todo el audio detenido.',
+    noLightning: 'Por ahora no hay rayos nuevos en la imagen: por eso hay silencio. Los golpes volverán cuando aparezcan tormentas.',
     playAll: 'Reproducir toda la playlist',
     stopPlaylist: 'Detener la playlist',
     playlistStart: 'Empieza la playlist: los cinco episodios, uno tras otro.',
@@ -135,6 +167,8 @@ export const STRINGS = {
       ['Flechas', 'Mover el cursor en modo explorar'],
       ['F', 'Ir al valor más alto de la imagen'],
       ['R', 'Repetir la última frase del narrador'],
+      ['M', 'Marcar un momento; otra vez M lo compara con el anterior'],
+      ['X', 'En Océanos: saltar a lugares frente a la costa de Perú'],
       ['N', 'Saltar a la siguiente frase de la historia'],
       ['H', 'Escuchar la ayuda (dentro de un episodio: la ayuda de los episodios)'],
       ['D', 'Describir lo que suena ahora'],
@@ -200,6 +234,19 @@ export const STRINGS = {
       'Hear our planet change. TerraBeats analyzes every frame of NASA visualizations in real time and turns it into music, so anyone, including people who cannot see, can explore Earth science.',
     skip: 'Skip to player',
     langLabel: 'Language',
+    view: {
+      button: 'Display',
+      title: 'Display settings',
+      contrast: 'High contrast',
+      text: 'Text size',
+      textNormal: 'Normal',
+      textLarge: 'Large',
+      textXlarge: 'Extra large',
+      motion: 'No motion or animated background',
+      reset: 'Reset',
+      close: 'Close',
+      hint: 'Remembered on this device.',
+    },
     chooseTrack: 'Choose a track',
     nowPlaying: 'Now playing',
     play: 'Play',
@@ -212,6 +259,25 @@ export const STRINGS = {
     exploreHelp:
       'Explore mode: move the pointer or use the arrow keys over the image. Each point sounds according to its value. Shift + arrows = big steps. On a phone, use the pad or drag your finger.',
     describe: 'Describe now',
+    offline: {
+      title: 'Use offline',
+      text: 'Save the voices, the NASA videos and the episodes on this device (about 55 MB) to use TerraBeats without internet, for example in the field or with a weak signal. Best done on wifi.',
+      save: 'Save to use offline',
+      saving: (d, t) => `Saving ${d} of ${t} files`,
+      ready: 'Done: you can now use TerraBeats without internet.',
+      clear: 'Delete saved files',
+      error: 'Could not save everything. Check your connection and try again.',
+    },
+    region: { button: 'My region', only: 'My region works on the Oceans track: it jumps to places off the coast of Peru.' },
+    compare: {
+      button: 'Mark moment',
+      title: 'Compare two moments',
+      a: 'Moment A',
+      b: 'Moment B',
+      second: 'second',
+      goto: 'Go to',
+      clear: 'Clear marks',
+    },
     quizHint: 'Answer with the left or right arrow key (or the buttons).',
     left: 'Left',
     right: 'Right',
@@ -232,6 +298,7 @@ export const STRINGS = {
     listenHelp: 'Listen to help',
     stopAll: 'Stop all audio',
     allStopped: 'All audio stopped.',
+    noLightning: 'No new lightning in the image right now: that is why it is silent. The hits will return when storms appear.',
     playAll: 'Play the whole playlist',
     stopPlaylist: 'Stop the playlist',
     playlistStart: 'The playlist starts: all five episodes, one after another.',
@@ -325,6 +392,8 @@ export const STRINGS = {
       ['Arrows', 'Move the cursor in explore mode'],
       ['F', 'Jump to the highest value in the image'],
       ['R', 'Repeat the narrator’s last sentence'],
+      ['M', 'Mark a moment; press M again to compare it with the previous one'],
+      ['X', 'On Oceans: jump to places off the coast of Peru'],
       ['N', 'Skip to the next sentence of the story'],
       ['H', 'Hear the help (inside an episode: the episode help)'],
       ['D', 'Describe what is playing now'],
@@ -414,7 +483,6 @@ export function regionName(t, x, y) {
   return t.regions[third(y)][third(x)];
 }
 
-// ---------------------------------------------------------------------------
 // Live remarks: short sentences generated from the data of the current frame,
 // spoken between the scripted lines so the story reacts to what is on screen.
 const SIDES = {

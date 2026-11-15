@@ -1,4 +1,7 @@
-"""Generates the narration MP3 files with Microsoft Edge neural voices (package edge-tts).
+"""NOT USED FOR THE SUBMISSION: the project narration is made with Kokoro (scripts/build-narration-kokoro.py)
+because the challenge terms require non-NASA materials to be free or open source.
+
+Generates the narration MP3 files with Microsoft Edge neural voices (package edge-tts).
 
 These are the most natural free voices we found. Read this before using it:
   * It is NOT an official API: it uses the service behind Edge's "Read aloud". There are

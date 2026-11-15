@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import Glyph from './Glyph.jsx';
 
-// "Mission control" strip under the hero: UTC clock, active track and its NASA source.
-// The clock owns its own state so only this small component re-renders each second.
+// Strip under the hero: UTC clock, active track and its NASA source.
+// The clock keeps its own state so only this component re-renders each second.
 function Clock() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {

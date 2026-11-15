@@ -1,4 +1,4 @@
-# Generates the narration audio of the sound stories with the Windows voices
+# Legacy: generates the narration with the Windows voices (the project now uses build-narration-edge.py)
 # (es: Microsoft Helena, en: Microsoft Zira) into public/narration/<lang>/<id>.mp3
 #
 # Usage (from the project folder):

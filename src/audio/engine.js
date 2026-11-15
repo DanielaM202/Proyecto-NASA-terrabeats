@@ -1,10 +1,8 @@
 import * as Tone from 'tone';
 import { COLUMNS } from '../analysis/features.js';
 
-// Three layers of meaning per track:
-//  1. auditory icons  – sounds recognisable without explanation (wind, birds, waves, thunder…)
-//  2. data layer      – musical parameters driven by the measurement (pitch = metres, etc.)
-//  3. narration       – handled by the UI (speech), see App.jsx
+// Each track combines recognisable sounds (wind, birds, waves, thunder) with musical
+// parameters driven by the data (pitch = metres, etc.). Narration is handled by the UI.
 // Every note is snapped to a musical scale so the result stays pleasant.
 
 const SCALES = {
@@ -23,10 +21,10 @@ const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 const pick = (scale, v) => scale[Math.round(clamp01(v) * (scale.length - 1))];
 const dbFrom = (v, min = -48, max = -10) => min + clamp01(v) * (max - min);
 const SILENT = -70;
-const FLASH_MIN = 22; // measured: Pacific/ISS frames show ~8-35 new pixels, active land 60-190
+export const FLASH_MIN = 22; // measured: Pacific/ISS frames show ~8-35 new pixels, active land 60-190
 // dB added per track so all five reach a similar loudness (measured before the trim:
 // forest -33, ocean -41, night lights -52, lightning -31, CO2 -33 dB vs voice -17 dB).
-const TRIM = { 'forest-height': 9, ocean: 20, 'night-lights': 24, lightning: 10, co2: 20 };
+const TRIM = { 'forest-height': 6, ocean: 12, 'night-lights': 23, lightning: 10, co2: 10 };
 const LEVEL_GATE = 0.05; // lightning level below this = no thunder
 
 export class SonificationEngine {
@@ -133,12 +131,10 @@ export class SonificationEngine {
     return { inst: instrument, pan: p };
   }
 
-  // =====================================================================
-  // FOREST HEIGHT (GEDI) — three sounds only, each with one meaning:
+  // FOREST HEIGHT (GEDI): three sounds, each with one meaning:
   //   plucked note = canopy height in metres (0–50 m, low → high)
   //   birds        = forest taller than 30 m in that slice
   //   waves        = ocean in view
-  // =====================================================================
   buildForest() {
     const scale = SCALES['forest-height'];
     const note = (m) => pick(scale, m / 50);
@@ -219,13 +215,11 @@ export class SonificationEngine {
     };
   }
 
-  // =====================================================================
-  // OCEAN (ECCO2 currents coloured by temperature) — three sounds:
+  // OCEAN (ECCO2 currents coloured by temperature): three sounds:
   //   mallet note = water temperature of one latitude band (0–32 °C, low → high)
   //   ice chime   = polar water (≤ 5 °C)
   //   flowing water = how much the currents are moving
   // The playhead sweeps from the North Pole to the South Pole.
-  // =====================================================================
   buildOcean() {
     const scale = SCALES.ocean;
     const note = (celsius) => pick(scale, celsius / 32);
@@ -292,9 +286,7 @@ export class SonificationEngine {
     };
   }
 
-  // =====================================================================
   // NIGHT LIGHTS: chimes along the map, chord with total light
-  // =====================================================================
   buildNightLights() {
     const scale = SCALES['night-lights'];
     const chimes = this.panned(
@@ -379,9 +371,7 @@ export class SonificationEngine {
     };
   }
 
-  // =====================================================================
   // LIGHTNING: each new flash is a percussive hit
-  // =====================================================================
   buildLightning() {
     const drops = this.panned(
       new Tone.PolySynth(Tone.Synth, {
@@ -464,9 +454,7 @@ export class SonificationEngine {
     this.onFlash?.(flashes.length);
   }
 
-  // =====================================================================
   // CO2: consonant chord that becomes dissonant, heartbeat tempo
-  // =====================================================================
   buildCO2() {
     const scale = SCALES.co2;
     const filter = this.track(new Tone.Filter(400, 'lowpass').connect(this.reverb));

@@ -6,21 +6,19 @@ import { PLAYLIST } from './data/playlist.js';
 import EpisodePlayer from './components/EpisodePlayer.jsx';
 import { episodePlaying, getActiveEpisode, pauseActiveEpisode } from './audio/episodes.js';
 import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue, readWindow } from './analysis/features.js';
-import { lonLat, placeAt, placeLabel } from './analysis/geo.js';
-import { SonificationEngine } from './audio/engine.js';
+import { REGIONS, lonLat, placeAt, placeLabel, xyOf } from './analysis/geo.js';
+import { FLASH_MIN, SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 import Icon from './components/Icon.jsx';
 import Starfield from './components/Starfield.jsx';
 import Glyph from './components/Glyph.jsx';
 import Telemetry from './components/Telemetry.jsx';
 import ScrollFx from './components/ScrollFx.jsx';
+import ViewOptions from './components/ViewOptions.jsx';
+import OfflinePack from './components/OfflinePack.jsx';
+import { WINDOW, average, compareStrings, compareText, summarize } from './analysis/compare.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
-// Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
-// The narration files use these Microsoft neural voices (scripts/build-narration-edge.py);
-// when the browser has the same voice, the live sentences are spoken by it too.
-const NARRATOR = { es: 'camila', en: 'jenny' };
-
 // Most natural voice of the browser for a language: Edge "Natural" neural voices first,
 // then other online voices, preferring Latin American Spanish for our audience.
 function pickVoice(lang, wanted) {
@@ -34,7 +32,6 @@ function pickVoice(lang, wanted) {
     const n = v.name.toLowerCase();
     const l = v.lang.toLowerCase();
     let s = 0;
-    if (NARRATOR[lang] && n.includes(NARRATOR[lang])) s += 60; // the same person who narrates the stories
     if (n.includes('natural')) s += 100;
     if (n.includes('online')) s += 40;
     if (n.includes('google')) s += 30;
@@ -47,6 +44,7 @@ function pickVoice(lang, wanted) {
   return voices.sort((a, b) => score(b) - score(a))[0];
 }
 
+// Team tools (recording episodes, console hooks): only in development or with ?equipo in the address.
 const TEAM_MODE = import.meta.env.DEV || new URLSearchParams(window.location.search).has('equipo');
 const PLAY_ORDER = VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => v.id);
 const requestEpisode = (id, fromStart = false) => window.dispatchEvent(new CustomEvent('terrabeats:episode', { detail: { id, fromStart } }));
@@ -126,8 +124,8 @@ export default function App() {
   const [autoNarrate, setAutoNarrate] = useState(false);
   const [voice, setVoice] = useState(true);
   const [haptics, setHaptics] = useState(true);
-  const [padBig, setPadBig] = useState(false); // exploration pad: big steps
-  const [playAll, setPlayAll] = useState(false); // playing the whole playlist
+  const [padBig, setPadBig] = useState(false);
+  const [playAll, setPlayAll] = useState(false);
   const [audioStatus, setAudioStatus] = useState(null); // what is playing right now (status bar)
   const [voiceName, setVoiceName] = useState(() => {
     try {
@@ -172,6 +170,12 @@ export default function App() {
   const stopStoryRef = useRef(() => {});
   const pauseRef = useRef(() => {});
   const lastLineRef = useRef(null);
+  // Lightning in free mode: when no new flashes arrive for a while, say why it is silent.
+  const quietRef = useRef({ since: 0, told: false });
+  // Compare two moments: summaries of the last analysed frames, and the marked moments.
+  const ringRef = useRef([]);
+  const marksRef = useRef([]);
+  const [marks, setMarks] = useState([]);
   const menuAudioRef = useRef(null);
   const voiceBusyRef = useRef(false); // one narrator at a time
   const lastSpokeRef = useRef(0);
@@ -182,6 +186,7 @@ export default function App() {
   const legendIdxRef = useRef(-1);
   const startedOnceRef = useRef(false);
   const exploreSpeakTimer = useRef(null);
+  const regionIdxRef = useRef(-1);
   const sampleCanvasRef = useRef(null);
   const voiceNameRef = useRef('');
   const quizBoxRef = useRef(null);
@@ -221,10 +226,10 @@ export default function App() {
     [],
   );
 
-  // ---------- language ----------
+  // language
   useEffect(() => {
     document.documentElement.lang = lang;
-    document.title = `${t.appName} — ${t.tagline}`;
+    document.title = `${t.appName} · ${t.tagline}`;
     try {
       localStorage.setItem('terrabeats-lang', lang);
     } catch {
@@ -272,9 +277,7 @@ export default function App() {
         voiceBusyRef.current = true;
         lastSpokeRef.current = performance.now();
         const u = new SpeechSynthesisUtterance(text);
-        // Use the voice chosen by the person, or the most natural one installed
-        // (Edge ships neural "Natural" voices); if none matches the language, the
-        // default voice is used rather than staying silent.
+        // The chosen voice, or the most natural one installed; otherwise the default.
         const match = pickVoice(langRef.current, voiceNameRef.current);
         if (match) {
           u.voice = match;
@@ -303,9 +306,10 @@ export default function App() {
       }),
     [voice, hush],
   );
+  const speakRef = useRef(speak);
+  speakRef.current = speak;
 
-  // ---------- audio engine ----------
-  // ---------- auditory legend ----------
+  // auditory legend
   const [legendIdx, setLegendIdx] = useState(-1);
   legendIdxRef.current = legendIdx;
   const legendRunRef = useRef(0);
@@ -380,6 +384,7 @@ export default function App() {
     stopStoryRef.current();
     if (playingRef.current) pauseRef.current();
     const engine = engineRef.current;
+    ringRef.current = [];
     if (engine.ready) engine.setViz(viz.id);
     // Audio menu (needs a previous user gesture so the browser allows sound).
     if (interactedRef.current) {
@@ -410,7 +415,7 @@ export default function App() {
     if (videoRef.current) videoRef.current.playbackRate = speed;
   }, [speed]);
 
-  // ---------- analysis loop (computer vision → features → sound) ----------
+  // analysis loop (computer vision → features → sound)
   useEffect(() => {
     let raf;
     let lastUi = 0;
@@ -427,9 +432,30 @@ export default function App() {
       if (v.currentTime < 0.15) f.flashes = [];
       prevMaskRef.current = f.mask;
       featuresRef.current = f;
+      if (playingRef.current) {
+        const ring = ringRef.current;
+        ring.push(summarize(f));
+        if (ring.length > WINDOW) ring.shift();
+      }
       const engine = engineRef.current;
       engine.update(f);
       engine.frameEvents(f);
+      const q = quietRef.current;
+      const now = performance.now();
+      if (vizRef.current.id === 'lightning' && playingRef.current && storyPhaseRef.current === 'idle') {
+        if (f.flashes.length >= FLASH_MIN || !q.since) {
+          q.since = now;
+          if (f.flashes.length >= FLASH_MIN) q.told = false;
+        } else if (!q.told && now - q.since > 4000 && now - lastSpokeRef.current > 6000) {
+          q.told = true;
+          const msg = STRINGS[langRef.current].noLightning;
+          setAnnouncement(msg);
+          speakRef.current?.(msg);
+        }
+      } else {
+        q.since = 0;
+        q.told = false;
+      }
     };
     const draw = () => {
       const canvas = overlayRef.current;
@@ -495,7 +521,7 @@ export default function App() {
     };
   }, []);
 
-  // ---------- narration ----------
+  // narration
   const describeNow = useCallback(() => {
     const text = describe(t, vizRef.current, featuresRef.current);
     setAnnouncement(text);
@@ -514,7 +540,7 @@ export default function App() {
       setAnnouncement(text);
       await speak(text);
     };
-    setLegendIdx(-2); // intro
+    setLegendIdx(-2);
     await say(STRINGS[langRef.current].legendIntro(viz.title[langRef.current]));
     for (let k = 0; k < items.length; k++) {
       if (!live()) return;
@@ -533,7 +559,7 @@ export default function App() {
 
   const toggleLegend = useCallback(() => (legendIdx !== -1 ? stopLegend() : playLegend()), [legendIdx, stopLegend, playLegend]);
 
-  // ---------- guided sound story ----------
+  // guided sound story
   // Pre-rendered narration (public/narration/<lang>/<id>.mp3) + engine demos +
   // cues synced to the video time. Falls back to speech synthesis if a file fails.
   const [storyPhase, setStoryPhase] = useState('idle'); // idle | intro | tour | outro
@@ -582,7 +608,11 @@ export default function App() {
       else if (storyPhaseRef.current !== 'idle') next = { kind: 'story', label: `${T.kinds.story}: ${title}`, canPause: true, paused: storyPausedRef.current };
       else if (legendIdxRef.current !== -1) next = { kind: 'legend', label: `${T.kinds.legend}: ${title}` };
       else if (playingRef.current) next = { kind: 'free', label: `${T.kinds.free}: ${title}` };
-      else if (menuAudioRef.current && !menuAudioRef.current.paused && !menuAudioRef.current.ended) next = { kind: 'help', label: T.kinds.help };
+      else if (menuAudioRef.current && !menuAudioRef.current.paused && !menuAudioRef.current.ended) {
+        // The same player reads the help and the track menus: name it by what it is reading.
+        const isHelp = /^help/.test(lastLineRef.current?.id || '');
+        next = isHelp ? { kind: 'help', label: T.kinds.help } : { kind: 'voice', label: T.kinds.voice };
+      }
       else if ('speechSynthesis' in window && window.speechSynthesis.speaking) next = { kind: 'voice', label: T.kinds.voice };
       setAudioStatus((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     }, 400);
@@ -619,7 +649,6 @@ export default function App() {
         const text = line[L];
         lastLineRef.current = line;
         setCaption(text);
-        // Single narrator: cut anything still talking.
         hush();
         voiceBusyRef.current = true;
         const audio = new Audio(`/narration/${L}/${line.id}.mp3`);
@@ -838,7 +867,10 @@ export default function App() {
       if (blob) {
         const key = `${vizRef.current.id}-${langRef.current}`;
         const data = { url: URL.createObjectURL(blob), marks: episodeMarksRef.current || [], duration: +((performance.now() - recStartRef.current) / 1000).toFixed(2) };
-        setEpisodes((e) => ({ ...e, [key]: data }));
+        setEpisodes((e) => {
+          if (e[key]) URL.revokeObjectURL(e[key].url);
+          return { ...e, [key]: data };
+        });
       }
       episodeMarksRef.current = null;
       setStoryPhase('idle');
@@ -881,7 +913,6 @@ export default function App() {
     setAnnouncement(STRINGS[langRef.current].allStopped);
   }, [stopLegend, stopStory, hush, pause]);
 
-  // "Play the whole playlist": the five episodes one after another.
   const startPlaylist = () => {
     stopLegend();
     stopStory();
@@ -936,7 +967,7 @@ export default function App() {
     if (!storyPausedRef.current) {
       setStoryPaused(true);
       narrRef.current?.pause();
-      if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // a live remark in progress
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
       if (storyPhaseRef.current === 'tour') {
         v?.pause();
         engineRef.current.stop();
@@ -959,7 +990,7 @@ export default function App() {
     return () => clearInterval(id);
   }, [autoNarrate, playing, describeNow]);
 
-  // ---------- explore mode ----------
+  // explore mode
   // Reads the window of the video frame around (x, y) at the video's own resolution.
   const readAround = useCallback((x, y) => {
     const v = videoRef.current;
@@ -1089,7 +1120,29 @@ export default function App() {
     }
   }, [ensureEngine, t]);
 
-  // ---------- recording ----------
+  // "My region": the explore cursor jumps to places off the coast of Peru (ocean map only).
+  const goRegion = useCallback(async () => {
+    const L = langRef.current;
+    if (vizRef.current.id !== 'ocean') {
+      const text = STRINGS[L].region.only;
+      setAnnouncement(text);
+      if (storyPhaseRef.current === 'idle') speak(text);
+      return;
+    }
+    if (storyPhaseRef.current !== 'idle') return;
+    if (!exploreRef.current) await toggleExplore();
+    regionIdxRef.current = (regionIdxRef.current + 1) % REGIONS.length;
+    const r = REGIONS[regionIdxRef.current];
+    const { x, y } = xyOf(r.lon, r.lat);
+    const res = await probe(x, y, true);
+    clearTimeout(exploreSpeakTimer.current);
+    const text = `${r[L]}. ${res?.text ?? ''}`;
+    lastProbeRef.current.text = text;
+    setProbeText(text);
+    speak(text);
+  }, [probe, speak, toggleExplore]);
+
+  // recording
   const toggleRecord = async () => {
     const engine = await ensureEngine();
     if (!recording) {
@@ -1105,7 +1158,6 @@ export default function App() {
     }
   };
 
-  // Jump the explore cursor to the strongest value of the current frame.
   const findMax = useCallback(async () => {
     const img = imgRef.current;
     if (!img) return;
@@ -1159,6 +1211,53 @@ export default function App() {
     a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(line[L]));
   }, [speak, hush]);
 
+  // Compare two moments (free mode): the first M marks A, the second marks B and speaks the difference.
+  const markMoment = useCallback(() => {
+    const L = langRef.current;
+    const T = compareStrings(L);
+    const say = (text) => {
+      setAnnouncement(text);
+      speak(text);
+    };
+    const v = videoRef.current;
+    const id = vizRef.current.id;
+    if (storyPhaseRef.current !== 'idle') {
+      setAnnouncement(T.needFree); // speaking would cut the narrator
+      return;
+    }
+    if (!playingRef.current || !v || ringRef.current.length < 5) {
+      say(T.needFree);
+      return;
+    }
+    const entry = { viz: id, t: Math.round(v.currentTime), sum: average(ringRef.current) };
+    const mine = marksRef.current.filter((m) => m.viz === id);
+    const next = mine.length === 1 ? [mine[0], entry] : [entry];
+    marksRef.current = next;
+    setMarks(next);
+    engineRef.current?.playProbe(next.length === 1 ? 0.25 : 0.75, 0);
+    say(next.length === 1 ? T.markedA(entry.t) : compareText(L, id, next[0], next[1]));
+  }, [speak]);
+
+  const gotoMark = useCallback(
+    (i) => {
+      const m = marksRef.current.filter((x) => x.viz === vizRef.current.id)[i];
+      const v = videoRef.current;
+      if (!m || !v) return;
+      v.currentTime = m.t;
+      const text = compareStrings(langRef.current).goto(i ? 'B' : 'A', m.t);
+      setAnnouncement(text);
+      speak(text);
+    },
+    [speak],
+  );
+
+  const clearMarks = useCallback(() => {
+    marksRef.current = [];
+    setMarks([]);
+    const text = compareStrings(langRef.current).cleared;
+    setAnnouncement(text);
+  }, []);
+
   // Plays a stand-alone narration clip (welcome, help) on the single narrator.
   const playClip = useCallback(
     (id) => {
@@ -1186,6 +1285,29 @@ export default function App() {
     [hush, speak, toggleStoryPause],
   );
 
+  // Choosing the track that is already selected says its menu again (a new track does it by itself).
+  const selectTrack = useCallback(
+    (i) => {
+      if (i !== VISUALIZATIONS.indexOf(vizRef.current)) {
+        setVizIndex(i);
+        return;
+      }
+      const menu = STORIES[vizRef.current.id]?.menu;
+      if (!menu) return;
+      stopLegend();
+      stopStoryRef.current();
+      if (playingRef.current) pauseRef.current();
+      hush();
+      const L = langRef.current;
+      lastLineRef.current = menu;
+      setAnnouncement(menu[L]);
+      const a = new Audio(`/narration/${L}/${menu.id}.mp3`);
+      menuAudioRef.current = a;
+      a.play().catch((err) => err?.name !== 'AbortError' && menuAudioRef.current === a && speak(menu[L]));
+    },
+    [hush, speak, stopLegend],
+  );
+
   useEffect(() => {
     const mark = (e) => {
       if (interactedRef.current) return;
@@ -1206,7 +1328,7 @@ export default function App() {
     };
   }, [playClip]);
 
-  // ---------- keyboard shortcuts ----------
+  // keyboard shortcuts
   useEffect(() => {
     const onKey = (e) => {
       if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1237,13 +1359,12 @@ export default function App() {
         stopStory();
         togglePlay();
       } else if (/^[1-9]$/.test(e.key) && Number(e.key) <= VISUALIZATIONS.length) {
-        setVizIndex(Number(e.key) - 1);
+        selectTrack(Number(e.key) - 1);
       } else if (e.key === 'e' || e.key === 'E') {
         toggleExplore();
       } else if (e.key === 'd' || e.key === 'D') {
         describeNow();
       } else if (e.key === 'n' || e.key === 'N') {
-        // Skip the sentence being narrated: the story moves on to the next step.
         if (storyPhaseRef.current !== 'idle') hushRef.current();
       } else if (e.key === 'h' || e.key === 'H') {
         playClip('help');
@@ -1251,6 +1372,10 @@ export default function App() {
         findMax();
       } else if (e.key === 'r' || e.key === 'R') {
         repeatLast();
+      } else if (e.key === 'm' || e.key === 'M') {
+        markMoment();
+      } else if (e.key === 'x' || e.key === 'X') {
+        goRegion();
       } else if (e.key === 'g' || e.key === 'G') {
         toggleLegend();
       } else if (e.key === 'Escape') {
@@ -1261,7 +1386,7 @@ export default function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, playClip, stopAll]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, markMoment, goRegion, playClip, selectTrack, stopAll]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -1307,7 +1432,7 @@ export default function App() {
           </div>
           <div className="earth-limb absolute inset-x-0 bottom-0 h-24" />
         </div>
-        {/* Top bar: controls first (help and stop are the first things a keyboard or screen-reader user meets). */}
+        {/* Top bar: help and stop come first for keyboard and screen-reader users. */}
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 pt-5">
           <div className="flex items-center gap-2.5" aria-hidden="true">
             <img src="/favicon.svg" alt="" className="h-8 w-8" />
@@ -1338,6 +1463,7 @@ export default function App() {
                 </span>
               </button>
             </div>
+            <ViewOptions t={t} />
             <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600/80">
               {['es', 'en'].map((l) => (
                 <button
@@ -1381,7 +1507,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-3">
-        {/* ---------- Player ---------- */}
+        {/* Player */}
         <section id="player" aria-labelledby="now-playing" className="lg:col-span-2" tabIndex={-1}>
           <h2 id="now-playing" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
             <Glyph name="player" className="h-5 w-5 flex-none text-sky-300" />
@@ -1572,7 +1698,6 @@ export default function App() {
             </div>
           )}
 
-          {/* Column profile: what the playhead is reading */}
           <div className="mt-2 flex h-10 items-end gap-0.5" aria-hidden="true">
             {Array.from({ length: COLUMNS }, (_, i) => (
               <div
@@ -1583,7 +1708,6 @@ export default function App() {
             ))}
           </div>
 
-          {/* Controls */}
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -1623,7 +1747,44 @@ export default function App() {
             >
               {t.repeat} (R)
             </button>
+            <button
+              type="button"
+              onClick={markMoment}
+              aria-keyshortcuts="M"
+              className="rounded-lg border border-emerald-400/70 bg-emerald-400/10 px-3 py-2 text-sm font-medium text-emerald-100 hover:bg-emerald-400/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              {t.compare.button} (M)
+            </button>
+            {viz.id === 'ocean' && (
+              <button
+                type="button"
+                onClick={goRegion}
+                aria-keyshortcuts="X"
+                className="rounded-lg border border-sky-400/70 bg-sky-400/10 px-3 py-2 text-sm font-medium text-sky-100 hover:bg-sky-400/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+              >
+                {t.region.button} (X)
+              </button>
+            )}
           </div>
+          {marks.some((m) => m.viz === viz.id) && (
+            <div role="group" aria-label={t.compare.title} className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-slate-700 bg-slate-900/60 p-3 text-sm">
+              {marks
+                .filter((m) => m.viz === viz.id)
+                .map((m, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => gotoMark(i)}
+                    className="rounded-lg border border-emerald-400/60 px-3 py-1.5 font-medium text-emerald-100 hover:bg-emerald-400/15 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                  >
+                    {t.compare.goto} {i ? 'B' : 'A'}: {t.compare.second} {m.t}
+                  </button>
+                ))}
+              <button type="button" onClick={clearMarks} className="text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
+                {t.compare.clear}
+              </button>
+            </div>
+          )}
 
           <details className="mt-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300">
@@ -1635,7 +1796,7 @@ export default function App() {
               onClick={restart}
               className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
             >
-              ⟲ {t.restart}
+              {t.restart}
             </button>
             <label className="flex items-center gap-2 text-sm">
               <span>{t.volume}</span>
@@ -1728,7 +1889,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* ---------- Track list + live data ---------- */}
+        {/* Track list + live data */}
         <aside className="space-y-6">
           <section aria-labelledby="tracks">
             <h2 id="tracks" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
@@ -1740,7 +1901,7 @@ export default function App() {
                 <li key={v.id}>
                   <button
                     type="button"
-                    onClick={() => setVizIndex(i)}
+                    onClick={() => selectTrack(i)}
                     aria-pressed={i === vizIndex}
                     aria-keyshortcuts={String(i + 1)}
                     style={{ '--accent': ACCENT[v.id] }}
@@ -1761,7 +1922,7 @@ export default function App() {
                         {DATA_TAG[v.id]}
                       </span>
                     </span>
-                    {i === vizIndex && audioStatus && !audioStatus.paused && (
+                    {i === vizIndex && audioStatus && !audioStatus.paused && ['story', 'free', 'legend'].includes(audioStatus.kind) && (
                       <span aria-hidden="true" className="mr-1 flex h-5 w-6 flex-none items-end gap-0.5">
                         {[0, 1, 2, 3].map((k) => (
                           <span key={k} className="eq-bar h-full w-1 rounded-sm" style={{ background: ACCENT[v.id] }} />
@@ -1798,7 +1959,7 @@ export default function App() {
           </section>
         </aside>
 
-        {/* ---------- Explanations ---------- */}
+        {/* Explanations */}
         <section aria-labelledby="hear" className="panel lg:col-span-2">
           <h2 id="hear" className="flex items-center gap-2.5 mb-3 text-xl font-bold">
             <Glyph name="legend" className="h-5 w-5 flex-none text-emerald-300" />
@@ -1933,6 +2094,8 @@ export default function App() {
             })}
           </ul>
         </section>
+
+        <OfflinePack t={t} />
 
         <section aria-labelledby="how" className="panel lg:col-span-3">
           <h2 id="how" className="flex items-center gap-2.5 mb-3 text-xl font-bold">

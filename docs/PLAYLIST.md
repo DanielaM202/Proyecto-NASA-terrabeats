@@ -29,3 +29,6 @@ Y `src/data/playlist.js` indica qué idiomas tiene cada pista (`files`).
 
 ## Grabar un episodio suelto desde la web
 **Ya no hay ningún botón de grabar en la página.** Los episodios se graban con `scripts/record-episodes.js`, que usa una función interna (`window.__terrabeatsRecordEpisode(id)`) disponible solo con `npm run dev` o añadiendo `?equipo` a la dirección. Esa función reproduce la historia y deja el episodio en la misma página, con capítulos y un enlace de descarga (WebM) más otro para los capítulos (JSON). Sirve para probar; para guardarlo en el proyecto, usar el procedimiento anterior.
+
+## Después de cambiar audios o videos
+Sube el número de `PACK_VERSION` en `src/data/packVersion.js`. Así los dispositivos que guardaron la copia sin conexión descartan los archivos viejos y reciben los nuevos; si no, seguirían oyendo la versión anterior.

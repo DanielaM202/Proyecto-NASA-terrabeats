@@ -7,17 +7,16 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-        display: ['Fraunces', 'Georgia', 'Times New Roman', 'serif'],
-        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['"Fraunces Variable"', 'Fraunces', 'Georgia', 'Times New Roman', 'serif'],
+        mono: ['"JetBrains Mono Variable"', '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
-      // One restrained palette (see docs/DESIGN.md): a deep blue-black "observatory" base
-      // and a single warm accent. Overriding these tokens restyles every existing class.
+      // Dark blue base and one warm accent (see docs/DESIGN.md). Overriding these tokens restyles every class.
       colors: {
-        slate: {
-          50: '#f4f6fa', 100: '#e6ebf4', 200: '#cbd4e3', 300: '#aab6ca', 400: '#8b99b1',
-          500: '#66758f', 600: '#44526b', 700: '#26324a', 800: '#161f31', 900: '#0d1422', 950: '#060a12',
-        },
+        // Channels live in CSS variables (src/index.css) so the "Ver mejor" panel can switch to high contrast.
+        slate: Object.fromEntries(
+          [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((n) => [n, `rgb(var(--slate-${n}) / <alpha-value>)`]),
+        ),
         yellow: { 200: '#f7dc94', 300: '#f2c14e', 400: '#e5ab2c' },
       },
     },

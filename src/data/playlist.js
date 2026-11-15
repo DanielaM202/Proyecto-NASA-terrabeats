@@ -1,7 +1,5 @@
-// Curated playlist: one audio episode per story (narration + live sonification),
-// recorded from the app in "episode mode". The challenge accepts "a curated
-// collection of original, generated audio files accompanied by an explanation of
-// the creative process" — this is that collection, inside the jukebox.
+// One audio episode per story (narration + live sonification), recorded from the app
+// in episode mode (see docs/PLAYLIST.md).
 //
 // files: languages with a pre-recorded MP3 in public/playlist/<id>-<lang>.mp3
 

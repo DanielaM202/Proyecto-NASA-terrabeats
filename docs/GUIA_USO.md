@@ -28,6 +28,12 @@
 
 > **Una sola voz a la vez.** Nunca suenan dos voces a la vez: la ayuda, la bienvenida, la historia y los episodios se pausan unos a otros.
 
+### Ver mejor (baja visión)
+El botón **Ver mejor** de la cabecera abre un panel con **alto contraste**, **tamaño del texto** (normal, grande, muy grande) y **sin movimiento ni fondo animado**. Las elecciones se recuerdan en el dispositivo y no cambian el audio. El botón **Restablecer** deja todo como estaba.
+
+### Usar sin conexión
+Al final de la página, el panel **Usar sin conexión** guarda en el dispositivo la página, las voces, los videos de la NASA y los episodios (unos 52 MB). Después TerraBeats funciona sin internet, también al instalarlo como aplicación desde el navegador. Conviene hacerlo con wifi. **Borrar lo guardado** libera el espacio.
+
 ### Barra de estado del audio
 Abajo de la pantalla aparece, **solo mientras algo suena**, una barra con *qué está sonando* (historia, episodio, leyenda, modo libre, ayuda o voz), un botón para **pausar** y otro para **detener**. Se lee del reproductor real, así que no puede quedar desactualizada: si algo suena, la barra lo muestra.
 
@@ -51,6 +57,8 @@ Abajo de la pantalla aparece, **solo mientras algo suena**, una barra con *qué 
 | Describir ahora | D | La voz describe lo que muestran los datos en este momento |
 | Buscar el valor más alto | F | Lleva el cursor al punto más alto de la imagen y lo dice |
 | Repetir la última frase | R | Repite lo último que dijo el narrador |
+| Mi región | X | Solo en Océanos: el cursor salta a lugares frente a la costa de Perú (norte, centro y sur, y el Pacífico ecuatorial) y la voz dice el lugar y la temperatura del agua que muestran los datos. Cada pulsación pasa al siguiente lugar |
+| Marcar momento | M | En modo libre: la primera vez marca el momento A, la segunda marca el B y la voz dice **qué cambió** entre los dos (más o menos bosque alto, agua más cálida, más o menos luz, actividad de rayos, concentración de CO₂). Los botones "Ir a A" y "Ir a B" devuelven el video a cada momento para oírlos de nuevo. Una tercera pulsación empieza otra comparación |
 
 ### Más opciones (panel plegable)
 | Control | Qué hace |

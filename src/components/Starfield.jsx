@@ -1,9 +1,7 @@
 import { useEffect, useRef } from 'react';
 
-// Decorative night-sky background: slowly drifting, twinkling stars and an occasional
-// shooting star. It is purely visual (aria-hidden), costs little (about 140 points), pauses
-// when the tab is hidden and draws a single still frame when the user prefers reduced motion.
-// It never touches the audio engine.
+// Decorative night sky: twinkling, slowly drifting stars and an occasional shooting star.
+// Pauses when the tab is hidden and draws one still frame with prefers-reduced-motion.
 export default function Starfield() {
   const ref = useRef(null);
 
@@ -12,6 +10,8 @@ export default function Starfield() {
     if (!canvas) return undefined;
     const ctx = canvas.getContext('2d');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const root = document.documentElement;
+    const still = () => reduce.matches || root.dataset.motion === 'off' || root.dataset.contrast === 'high';
     let w = 0;
     let h = 0;
     let raf = 0;
@@ -40,22 +40,22 @@ export default function Starfield() {
 
     const draw = (now) => {
       ctx.clearRect(0, 0, w, h);
-      const still = reduce.matches;
+      const isStill = still();
       for (const s of stars) {
-        if (!still) {
+        if (!isStill) {
           s.x -= 0.012 * s.depth * 16 * 0.06;
           s.y += 0.004 * s.depth;
           if (s.x < -2) s.x = w + 2;
           if (s.y > h + 2) s.y = -2;
         }
-        const tw = still ? 0.7 : 0.55 + 0.45 * Math.sin(now / 1000 * s.speed + s.phase);
+        const tw = isStill ? 0.7 : 0.55 + 0.45 * Math.sin(now / 1000 * s.speed + s.phase);
         ctx.globalAlpha = (0.45 + 0.55 * s.depth) * tw;
         ctx.fillStyle = s.warm ? '#ffe1a8' : '#cfe0ff';
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fill();
       }
-      if (!still) {
+      if (!isStill) {
         if (!shooting && now > nextShot) {
           shooting = { x: Math.random() * w * 0.7 + w * 0.2, y: Math.random() * h * 0.35, life: 0 };
           nextShot = now + 9000 + Math.random() * 9000;
@@ -87,21 +87,26 @@ export default function Starfield() {
     };
     const start = () => {
       cancelAnimationFrame(raf);
-      if (reduce.matches || document.hidden) draw(performance.now());
+      if (still() || document.hidden) draw(performance.now());
       else raf = requestAnimationFrame(loop);
     };
 
-    resize();
-    start();
-    window.addEventListener('resize', () => {
+    const onResize = () => {
       resize();
       start();
-    });
+    };
+    resize();
+    start();
+    window.addEventListener('resize', onResize);
     document.addEventListener('visibilitychange', start);
-    reduce.addEventListener?.('change', start);
+    reduce.addEventListener('change', start);
+    window.addEventListener('terrabeats:view', start);
     return () => {
       cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
       document.removeEventListener('visibilitychange', start);
+      reduce.removeEventListener('change', start);
+      window.removeEventListener('terrabeats:view', start);
     };
   }, []);
 
