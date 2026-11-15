@@ -13,6 +13,7 @@ import Icon from './components/Icon.jsx';
 import Starfield from './components/Starfield.jsx';
 import Glyph from './components/Glyph.jsx';
 import Telemetry from './components/Telemetry.jsx';
+import ScrollFx from './components/ScrollFx.jsx';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
 // Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
@@ -1282,6 +1283,7 @@ export default function App() {
   return (
     <div className="relative min-h-screen text-slate-100" style={{ paddingBottom: audioStatus ? '5rem' : undefined }}>
       <Starfield />
+      <ScrollFx label={lang === 'es' ? 'Volver arriba' : 'Back to top'} />
       <a
         href="#player"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-yellow-300 focus:px-4 focus:py-2 focus:text-slate-900"
@@ -1292,11 +1294,16 @@ export default function App() {
       <header className="relative isolate overflow-hidden border-b border-slate-700/60">
         {/* Still from the selected NASA visualization, darkened so text stays readable. */}
         <div aria-hidden="true" className="absolute inset-0 -z-10">
-          <div key={viz.id} className="hero-backdrop absolute inset-0 opacity-60" style={{ backgroundImage: `url(${viz.poster})` }} />
+          <div key={viz.id} className="hero-backdrop parallax absolute inset-0 opacity-60" style={{ backgroundImage: `url(${viz.poster})` }} />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-950/50 via-slate-950/70 to-slate-950/20" />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/50 to-transparent" />
-          <div className="orbit absolute -right-24 -top-24 hidden h-[34rem] w-[34rem] sm:block">
-            <span className="orbit-sat" />
+          <div className="orbit-tilt absolute -right-40 top-6 hidden h-[40rem] w-[40rem] sm:block">
+            <div className="orbit">
+              <span className="orbit-sat" />
+            </div>
+            <div className="orbit orbit-inner">
+              <span className="orbit-sat orbit-sat-b" />
+            </div>
           </div>
           <div className="earth-limb absolute inset-x-0 bottom-0 h-24" />
         </div>
@@ -1493,7 +1500,7 @@ export default function App() {
             </div>
           )}
 
-          <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: viz.aspect }}>
+          <div className="hud relative overflow-hidden rounded-xl border border-slate-700 bg-black" style={{ aspectRatio: viz.aspect, '--accent': ACCENT[viz.id] }}>
             <video
               ref={videoRef}
               key={viz.id}

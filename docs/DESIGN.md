@@ -19,6 +19,10 @@
 | Portada | Fotograma real de la visualización activa de la NASA, oscurecido, con un leve desplazamiento lento, un anillo orbital con un satélite y un resplandor atmosférico en el borde |
 | Fondo | Cielo nocturno animado (`Starfield.jsx`: estrellas que titilan, una estrella fugaz cada 9-18 s) y un tenue resplandor de nebulosa; se detiene al ocultar la pestaña y queda estático con movimiento reducido |
 | Movimiento | Entrada suave de los paneles, tarjetas que se elevan al pasar el cursor y un ecualizador en la pista que suena |
+| Órbitas | Dos órbitas elípticas inclinadas en la portada, con un satélite dorado y otro celeste que giran en sentidos opuestos |
+| Detalles de página | Barra de progreso de lectura arriba, botón de volver arriba, brillo suave que sigue al cursor en los paneles, paneles que aparecen al llegar a ellos y movimiento más lento del fondo al desplazarse (`ScrollFx.jsx`) |
+| Visor | Esquinas tipo visor, del color de la pista, alrededor del video de la NASA |
+| Telemetría | Franja con reloj UTC, pista activa, instrumento y enlace a la fuente SVS (`Telemetry.jsx`) |
 | Iconos | Solo los del reproductor (SVG propios, `aria-hidden`); el botón siempre tiene nombre accesible |
 
 ## Dónde está
