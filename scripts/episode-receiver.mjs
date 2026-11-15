@@ -6,7 +6,7 @@
 //   node scripts/episode-receiver.mjs C:\path\to\ffmpeg.exe
 // then paste scripts/record-episodes.js in the browser console (see that file).
 //
-// It listens on 127.0.0.1 only and only accepts requests from http://localhost:5173.
+// It listens on 127.0.0.1 only and only accepts requests from http://localhost:5173 or http://localhost:4173.
 import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -27,7 +27,9 @@ fs.mkdirSync(outDir, { recursive: true });
 
 http
   .createServer((req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
+    // The dev server (5173) or the production preview (4173), only on this computer.
+    const origin = req.headers.origin;
+    if (origin === 'http://localhost:5173' || origin === 'http://localhost:4173') res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Access-Control-Allow-Private-Network', 'true');
