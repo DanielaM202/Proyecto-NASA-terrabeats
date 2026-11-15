@@ -13,7 +13,14 @@ TerraBeats no depende de NVDA: la narración es audio propio y los valores se di
 | **Flechas en la pregunta** | Mismo problema | La pregunta recibe el foco y también es `role="application"`; además hay dos botones |
 | **Dos voces a la vez** | NVDA leería los textos mientras suena nuestra voz | Con "Voz integrada" encendida, las regiones de texto vivo se silencian para NVDA. Si la persona prefiere NVDA, apaga "Voz integrada" y los textos pasan a NVDA |
 | **Orientación** | Necesita encabezados y regiones | La página tiene `header`, `main`, `footer`, encabezados por sección, enlace "Saltar al reproductor" y botones con nombre y estado (`aria-pressed`) |
+| **Reproductor de episodios** | Una barra de posición mal etiquetada dice "slider 43" y no sirve de nada; una que se actualiza cada segundo hace que NVDA hable sin parar | Los botones son nativos y tienen nombre ("Capítulo siguiente"). La barra usa `aria-valuetext` con el tiempo y el capítulo en palabras y **se congela mientras tiene el foco**, para que NVDA no repita cada segundo. Los capítulos son frases, así que cada salto cae al inicio de una frase. Las teclas del episodio solo actúan dentro del reproductor |
+| **Dos voces a la vez** | Al pulsar play en un episodio como primera acción, sonaba también la bienvenida; al pausar el episodio, la bienvenida seguía (parecía que no se podía pausar) | Corregido: la ayuda, la bienvenida, la historia y los episodios se pausan unos a otros, y la bienvenida no se activa si la primera acción es un episodio. **Esc** o el botón "Detener todo el audio" lo detiene todo |
 | **Primer contacto** | No sabe qué hay en la página | El foco inicial cae en "Escuchar la historia" y suena la bienvenida |
+
+### En el móvil (TalkBack en Android, VoiceOver en iPhone)
+- Con un lector táctil activo, arrastrar un dedo **mueve el foco del lector, no llega a la página**. Por eso el modo explorar tiene una **cruceta de botones** (▲ ◀ ▶ ▼, ⌖ y "Pasos grandes"): se navega con deslizamientos del lector y cada botón dice el valor en voz alta.
+- La vibración solo funciona en Android con Chrome; en iPhone no existe esa función del navegador y la cruceta con voz es la alternativa.
+- Los botones de los auriculares y la pantalla de bloqueo controlan los episodios de la Playlist (capítulo anterior/siguiente).
 
 ## 2. Riesgos conocidos (a confirmar en la prueba)
 1. NVDA puede **hablar encima de la narración** al leer el nombre del botón que recibe el foco. Es breve, pero hay que oírlo.
@@ -35,6 +42,18 @@ Instalar NVDA (gratis, nvaccess.org) y abrir la web publicada en Chrome o Edge. 
 | 7 | Pedir la ayuda hablada | | |
 | 8 | Cambiar el idioma a inglés | | |
 | 9 | Con "Voz integrada" apagada: ¿NVDA lee los valores al explorar? | | |
+| 10 | En un episodio de la Playlist: reproducir, pausar y saltar al capítulo siguiente con los botones | | |
+| 11 | Mover la barra de posición con las flechas: ¿NVDA dice el tiempo y el capítulo sin hablar encima del audio? | | |
+| 12 | Cambiar la velocidad a 1,5× y a 2×: ¿se entiende bien la narración? | | |
+| 13 | Abrir "Capítulos y transcripción" y saltar a un capítulo desde la lista | | |
+| 14 | **En el móvil con TalkBack o VoiceOver:** activar el modo explorar y recorrer la imagen solo con la cruceta | | |
+| 16 | Con un episodio sonando, pulsar el botón "Escuchar ayuda": ¿el episodio se pausa y solo se oye la ayuda? ¿Y Esc detiene todo? | | |
+| 17 | Dentro de un episodio, pulsar H: ¿se entiende la ayuda de los episodios? | | |
+| 19 | Pausar la historia a mitad de una frase y de un sonido de ejemplo: ¿se silencia todo al instante y no entra ninguna frase hasta continuar? | | |
+| 20 | En una pregunta: ¿se entiende que hay que usar la flecha izquierda o derecha? | | |
+| 21 | Modo explorar en Océanos: ¿el nombre del mar y la temperatura coinciden con el color que señalas? | | |
+| 18 | "Reproducir toda la playlist": ¿pasa sola de un episodio a otro? | | |
+| 15 | Escuchar la leyenda (G): ¿se entiende el "Por qué" después de cada sonido? | | |
 
 Anotar además: momentos en que hablaron dos voces, textos que NVDA leyó mal y cualquier punto donde la persona se perdió.
 

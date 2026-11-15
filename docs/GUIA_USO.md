@@ -20,12 +20,26 @@
 | 5 | CO₂ (DYAMOND) | ¿De dónde sale el CO₂ y cómo se mueve? | Acorde tranquilo → tenso · latido que se acelera |
 
 ## Botones y teclas
+### Cabecera (lo primero que encuentra quien navega con teclado o lector)
+| Botón | Tecla | Qué hace |
+|---|---|---|
+| 🔊 **Escuchar ayuda** | H | Una voz lee **todos los atajos de teclado**. Pulsar H otra vez la detiene. Si hay un episodio o una historia sonando, los pausa para que se entienda |
+| ⏹ **Detener todo el audio** | Esc | Detiene historia, leyenda, voces, música y episodios, todo a la vez. Es el botón de emergencia si algo suena mal |
+
+> **Una sola voz a la vez.** Nunca suenan dos voces a la vez: la ayuda, la bienvenida, la historia y los episodios se pausan unos a otros.
+
+### Barra de estado del audio
+Abajo de la pantalla aparece, **solo mientras algo suena**, una barra con *qué está sonando* (historia, episodio, leyenda, modo libre, ayuda o voz), un botón para **pausar** y otro para **detener**. Se lee del reproductor real, así que no puede quedar desactualizada: si algo suena, la barra lo muestra.
+
 ### Historia
 | Botón | Tecla | Qué hace |
 |---|---|---|
 | Escuchar la historia | Espacio | Empieza la historia guiada de la pista |
 | Pausar / Continuar historia | Espacio | Pausa o reanuda voz, video y música |
-| Detener historia | Esc | La termina y vuelve al inicio |
+| Detener historia | Esc | La termina y vuelve al inicio (Esc detiene además todo el audio) |
+
+> **Pausar** la historia silencia al instante la voz, la música y cualquier sonido de ejemplo, y no empieza ninguna frase nueva hasta que continúes.
+| Siguiente frase | N | Salta la frase que se está narrando y sigue con lo siguiente |
 | ← Izquierda / Derecha → | ← → | Responde la pregunta |
 
 ### Fila principal (debajo del video)
@@ -33,10 +47,10 @@
 |---|---|---|
 | Modo libre | P | Reproduce el video con su sonificación, sin narración |
 | Modo explorar | E | Activa un cursor sobre la imagen: flechas o ratón. Cada punto suena y la voz dice su valor. Mayús + flechas = pasos grandes. Un golpe grave avisa del borde |
+| Cruceta de exploración | (botones) | Aparece al activar el modo explorar. **Pensada para el móvil** y para quien no usa teclado: ▲ ◀ ▶ ▼ mueven el cursor y la voz dice el valor; el botón del centro (⌖) salta al valor más alto; "Pasos grandes" cruza la imagen más rápido. En pantalla táctil también se puede arrastrar el dedo sobre la imagen (mientras exploras, la página no se desplaza) |
 | Describir ahora | D | La voz describe lo que muestran los datos en este momento |
 | Buscar el valor más alto | F | Lleva el cursor al punto más alto de la imagen y lo dice |
 | Repetir la última frase | R | Repite lo último que dijo el narrador |
-| Ayuda hablada | H | Explica todos los atajos. Si hay una historia sonando, la pausa |
 
 ### Más opciones (panel plegable)
 | Control | Qué hace |
@@ -46,6 +60,7 @@
 | Velocidad | Velocidad del video en modo libre (0,5× a 2×) |
 | Narración automática | En modo libre, describe los datos cada 9 segundos |
 | Voz integrada | Enciende o apaga la voz del navegador. Apágala si usas lector de pantalla, para que no hablen dos voces |
+| Voz | Elige la voz del navegador para las respuestas, los comentarios en vivo y los valores del modo explorar. "Automática" escoge la más natural instalada (en Edge, las voces "Natural") |
 | Vibración (móvil) | El teléfono vibra con los rayos y con el valor al explorar |
 | Grabar audio | Graba la música generada y permite descargarla |
 
@@ -53,13 +68,33 @@
 | Control | Tecla | Qué hace |
 |---|---|---|
 | Español / English | L | Cambia el idioma al instante, también a mitad de historia |
-| Escuchar la leyenda | G | Reproduce solo la leyenda de sonidos de la pista |
+| Escuchar la leyenda | G | Reproduce la leyenda de sonidos de la pista: cada sonido, luego se oye, y después dice **por qué** lo elegimos |
 | Lista de pistas | 1–5 | Cambia de pista: detiene todo lo anterior y anuncia la nueva |
 
 ## Playlist (episodios sonoros)
-- Cada pista tiene un **episodio de audio** de unos dos minutos (narración y sonificación juntas), en español e inglés, con su **proceso creativo** explicado.
-- **Reproducir / Descargar episodio:** se escucha en la página o se descarga en MP3 para oírlo sin pantalla o compartirlo.
-- **Grabar episodio ahora:** reproduce la historia completa sin pausas para preguntas y graba voz y música juntas. Al terminar aparece el enlace de descarga (formato WebM).
+Cada pista tiene un **episodio de audio**: la historia completa (voz y sonidos), en español e inglés, con su **proceso creativo** explicado. Es una grabación, así que tiene un reproductor propio pensado para quien no ve:
+
+| Control | Tecla (dentro del episodio) | Qué hace |
+|---|---|---|
+| ⏮ Capítulo anterior | Re Pág (en la barra) | Vuelve al inicio de la frase actual; si ya pasaron 3 s, a la frase anterior |
+| ⏪ Retroceder 10 s | | Retrocede 10 segundos |
+| ▶ / ❚❚ Reproducir | Espacio o K | Reproduce o pausa |
+| ⏩ Adelantar 10 s | | Adelanta 10 segundos |
+| ⏭ Capítulo siguiente | Av Pág (en la barra) | Salta al inicio de la frase siguiente |
+| Barra de posición | ← → | Mueve 5 s. Dice la posición en palabras: *"1 minuto 23 segundos de 2 minutos 40. Capítulo 4 de 15: La selva del Congo"* |
+| Velocidad (0,75× a 2×) | < y > | Cambia la velocidad sin cambiar el tono. Se recuerda para todos los episodios |
+| Capítulos y texto de la narración | | Lista de todas las frases con su hora y título; pulsar una salta ahí. Es también el texto completo del audio |
+| Continuar desde m:ss | | Aparece si dejaste el episodio a medias |
+| Descargar episodio | | MP3 para oír sin conexión o compartir (por ejemplo por WhatsApp) |
+
+- **Capítulos = frases narradas.** Saltar a un capítulo siempre cae al inicio de una frase, nunca a mitad de una palabra. Por eso es mejor para quien no ve que saltar por segundos.
+- **En el móvil**, los botones de los auriculares y la pantalla de bloqueo funcionan: *siguiente / anterior* = capítulo, *adelantar / retroceder* = 10 s.
+- **Preguntas:** la voz dice cómo responder ("flecha izquierda o flecha derecha"), y los botones de la pantalla hacen lo mismo.
+- **Reproducir toda la playlist:** botón verde sobre los episodios. Suenan los cinco uno tras otro, sin tocar nada. Una pausa manual o Esc lo detiene.
+- **Ayuda de los episodios:** botón amarillo, o la tecla **H dentro de un episodio**: lee las teclas del reproductor.
+- **Capítulos y texto de la narración:** lista de todas las frases que dice la voz, cada una con su hora. Pulsar una salta directo a ese punto, y también sirve para **leer** el audio (por ejemplo con braille o si alguien no puede oír bien).
+- Solo suena un episodio a la vez; al reproducir uno se detiene la historia en vivo y cualquier voz.
+- **Grabar episodio (herramienta del equipo):** no aparece en la página pública para no confundir. Solo se ve en desarrollo (`npm run dev`) o añadiendo `?equipo` a la dirección. Reproduce la historia completa sin pausas y graba voz y música con sus capítulos. Ver [PLAYLIST.md](PLAYLIST.md).
 
 ## Paneles informativos
 - **Barras bajo el video:** lo que "lee" el cabezal en cada franja de la imagen.

@@ -197,18 +197,73 @@ function extractOcean(img, prevLum) {
   };
 }
 
-/** Ocean and hemisphere name for a point of the equirectangular map (x, y in 0..1). */
-export function oceanRegion(x, y) {
-  const lon = x * 360 - 180;
-  const lat = 90 - y * 180;
-  let ocean;
-  if (lat > 66) ocean = 'arctic';
-  else if (lat < -55) ocean = 'southern';
-  else if ((lon >= 20 && lon < 120 && lat < 30) || (lon >= 120 && lon < 147 && lat < -10)) ocean = 'indian';
-  else if ((lon >= -70 && lon < 20) || (lon >= -100 && lon < -70 && lat > 8 && lat < 32)) ocean = 'atlantic';
-  else ocean = 'pacific';
-  const band = ocean === 'arctic' || ocean === 'southern' ? '' : Math.abs(lat) < 10 ? 'equatorial' : lat > 0 ? 'north' : 'south';
-  return { ocean, band, lat, lon };
+/**
+ * Explore mode, ocean map: reads the area around the cursor from a full-resolution
+ * frame. The map is drawn with thin flow lines separated by dark gaps, so a single
+ * pixel is often a gap ("land" by mistake). We take the median temperature of the
+ * coloured pixels of a small window, widening it when needed, and only say "land"
+ * when the window is mostly grey.
+ */
+function readOceanWindow(win, cx, cy) {
+  const { data, width: w, height: h } = win;
+  const read = (half) => {
+    const temps = [];
+    let grey = 0;
+    let total = 0;
+    for (let y = Math.max(0, cy - half); y <= Math.min(h - 1, cy + half); y++) {
+      for (let x = Math.max(0, cx - half); x <= Math.min(w - 1, cx + half); x++) {
+        const i = (y * w + x) * 4;
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        total++;
+        const T = seaTemp(r, g, b);
+        if (T >= 0) temps.push(T);
+        else if (Math.max(r, g, b) >= 35) grey++; // grey and bright enough: land
+      }
+    }
+    return { temps, grey, total };
+  };
+  const median = (t) => t.slice().sort((p, q) => p - q)[t.length >> 1];
+  let a = read(5);
+  if (a.temps.length >= a.total * 0.15) return { value: median(a.temps) / 32, kind: null };
+  a = read(20);
+  if (a.temps.length >= 8) return { value: median(a.temps) / 32, kind: null };
+  if (a.grey > a.total * 0.4) return { value: 0, kind: 'land' };
+  return { value: 0, kind: 'nodata' };
+}
+
+/**
+ * Explore mode: the value under the cursor, read from a window of the frame at the
+ * video's own resolution (win = ImageData, (cx, cy) = cursor inside it).
+ */
+export function readWindow(vizId, win, cx, cy) {
+  if (vizId === 'ocean') return readOceanWindow(win, cx, cy);
+  const { data, width: w, height: h } = win;
+  const sparse = vizId === 'night-lights' || vizId === 'lightning'; // points of light: any hit counts
+  const R = sparse ? 4 : 3;
+  let n = 0, sig = 0, sum = 0, max = 0, gain = 0, loss = 0, sea = 0;
+  for (let y = Math.max(0, cy - R); y <= Math.min(h - 1, cy + R); y++) {
+    for (let x = Math.max(0, cx - R); x <= Math.min(w - 1, cx + R); x++) {
+      const i = (y * w + x) * 4;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      n++;
+      if (vizId === 'forest-height' && isOcean(r, g, b)) sea++;
+      if (vizId === 'night-lights') {
+        if (isGain(r, g, b)) gain++;
+        else if (isLoss(r, g, b)) loss++;
+      }
+      const v = CLASSIFIERS[vizId](r, g, b);
+      if (v > 0) {
+        sig++;
+        sum += v;
+        if (v > max) max = v;
+      }
+    }
+  }
+  let kind = null;
+  if (vizId === 'night-lights' && gain + loss >= 2) kind = gain >= loss ? 'gain' : 'loss';
+  const enough = sparse ? sig >= 1 : sig >= Math.max(2, n * 0.15);
+  if (!kind && !enough && vizId === 'forest-height' && sea > n * 0.4) kind = 'ocean';
+  return { value: enough ? (sparse ? max : sum / sig) : 0, kind };
 }
 
 const inMask = (masks, x, y) => masks.some((m) => x >= m[0] && y >= m[1] && x <= m[2] && y <= m[3]);

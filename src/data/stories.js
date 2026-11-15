@@ -80,8 +80,8 @@ export const STORIES = {
         id: 'forest-quiz',
         t: 24.6,
         quiz: { metric: 'high', measure: { es: 'del bosque alto visible', en: 'the tall forest in view' } },
-        es: 'Pregunta. Escucha los pájaros. ¿Se ve más bosque alto a la izquierda, en Sudamérica, o a la derecha, en África?',
-        en: 'Question. Listen to the birds. Is there more tall forest in view on the left, in South America, or on the right, in Africa?',
+        es: 'Pregunta. Escucha los pájaros. ¿Se ve más bosque alto a la izquierda, en Sudamérica, o a la derecha, en África? Responde con la flecha izquierda o la flecha derecha.',
+        en: 'Question. Listen to the birds. Is there more tall forest in view on the left, in South America, or on the right, in Africa? Answer with the left arrow or the right arrow.',
       },
       {
         id: 'forest-cue-amazon',
@@ -190,8 +190,8 @@ export const STORIES = {
         id: 'ocean-quiz',
         t: 23,
         quiz: { metric: 'hotCols', measure: { es: 'del agua de más de veintinueve grados', en: 'the water above twenty-nine degrees' } },
-        es: 'Pregunta. ¿Dónde está el agua más caliente: a la izquierda, del Pacífico central al Atlántico, o a la derecha, de África al oeste del Pacífico?',
-        en: 'Question. Where is the hottest water: on the left, from the central Pacific to the Atlantic, or on the right, from Africa to the western Pacific?',
+        es: 'Pregunta. ¿Dónde está el agua más caliente: a la izquierda, del Pacífico central al Atlántico, o a la derecha, de África al oeste del Pacífico? Responde con la flecha izquierda o la flecha derecha.',
+        en: 'Question. Where is the hottest water: on the left, from the central Pacific to the Atlantic, or on the right, from Africa to the western Pacific? Answer with the left arrow or the right arrow.',
       },
       {
         id: 'ocean-cue-currents',
@@ -390,8 +390,8 @@ export const STORIES = {
         id: 'light-quiz',
         t: 60.5,
         quiz: { metric: 'columns', keepPlaying: true, measure: { es: 'de la actividad de rayos visible', en: 'the lightning activity in view' } },
-        es: 'Pregunta. Escucha los golpes. ¿Hay más rayos a la izquierda o a la derecha de la imagen?',
-        en: 'Question. Listen to the hits. Is there more lightning on the left or on the right of the image?',
+        es: 'Pregunta. Escucha los golpes. ¿Hay más rayos a la izquierda o a la derecha de la imagen? Responde con la flecha izquierda o la flecha derecha.',
+        en: 'Question. Listen to the hits. Is there more lightning on the left or on the right of the image? Answer with the left arrow or the right arrow.',
       },
       {
         id: 'light-cue-samerica',
@@ -470,8 +470,8 @@ export const STORIES = {
         id: 'co2-quiz',
         t: 17.6,
         quiz: { metric: 'columns', measure: { es: 'de las zonas coloreadas de dióxido de carbono', en: 'the coloured carbon dioxide areas' } },
-        es: 'Pregunta. Escucha la tensión. ¿Dónde se ve más dióxido de carbono, a la izquierda o a la derecha de la imagen?',
-        en: 'Question. Listen to the tension. Where do you find more carbon dioxide, on the left or on the right of the image?',
+        es: 'Pregunta. Escucha la tensión. ¿Dónde se ve más dióxido de carbono, a la izquierda o a la derecha de la imagen? Responde con la flecha izquierda o la flecha derecha.',
+        en: 'Question. Listen to the tension. Where do you find more carbon dioxide, on the left or on the right of the image? Answer with the left arrow or the right arrow.',
       },
       {
         id: 'co2-cue-fires',
@@ -512,8 +512,13 @@ export const EXTRA_LINES = [
   },
   {
     id: 'help',
-    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener. Uno a cinco: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. Al final puedes explorar la imagen con las flechas: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. L cambia el idioma. Si usas un lector de pantalla como NVDA, todos los controles son botones: recórrelos con Tabulador y actívalos con Enter, o activa el modo foco para usar las teclas.',
-    en: 'Help. Space: listen to or pause the story. Escape: stop. One to five: change story. In the questions, answer with the left or right arrow. At the end you can explore the image with the arrow keys: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. L changes the language. If you use a screen reader such as NVDA, every control is a button: move with Tab and activate with Enter, or switch to focus mode to use the keys.',
+    es: 'Ayuda. Espacio: escuchar o pausar la historia. Escape: detener todo el audio. Uno a cinco: cambiar de historia. En las preguntas, responde con flecha izquierda o derecha. N salta a la siguiente frase. Al final puedes explorar la imagen con las flechas, o con la cruceta de botones en el móvil: cada punto suena y te dice su valor. F te lleva al valor más alto. R repite la última frase. D describe lo que suena ahora. G escucha la leyenda de sonidos. L cambia el idioma. Más abajo está la playlist de episodios de audio: dentro de un episodio, pulsa H para escuchar sus teclas. Si usas un lector de pantalla como NVDA, todos los controles son botones: recórrelos con Tabulador y actívalos con Enter, o activa el modo foco para usar las teclas. Pulsa H de nuevo para detener esta ayuda.',
+    en: 'Help. Space: listen to or pause the story. Escape: stop all audio. One to five: change story. In the questions, answer with the left or right arrow. N skips to the next sentence. At the end you can explore the image with the arrow keys, or with the pad of buttons on a phone: each point sounds and tells you its value. F takes you to the highest value. R repeats the last sentence. D describes what is playing now. G plays the sound legend. L changes the language. Further down is the playlist of audio episodes: inside an episode, press H to hear its keys. If you use a screen reader such as NVDA, every control is a button: move with Tab and activate with Enter, or switch to focus mode to use the keys. Press H again to stop this help.',
+  },
+  {
+    id: 'help-episode',
+    es: 'Ayuda de los episodios. Espacio o K: reproducir o pausar. En la barra de posición, las flechas izquierda y derecha mueven cinco segundos, y Re Pág y Av Pág cambian de capítulo. Los botones de capítulo anterior y siguiente hacen lo mismo. Menor que y mayor que cambian la velocidad. Escape detiene todo el audio. H vuelve a empezar o detiene esta ayuda.',
+    en: 'Episode help. Space or K: play or pause. On the position bar, the left and right arrows move five seconds, and Page Up and Page Down change chapter. The previous and next chapter buttons do the same. Less-than and greater-than change the speed. Escape stops all audio. H starts or stops this help.',
   },
 ];
 

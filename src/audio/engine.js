@@ -53,6 +53,9 @@ export class SonificationEngine {
     this.dry = new Tone.Volume(0).connect(this.duck);
     this.recorder = new Tone.Recorder();
     this.limiter.connect(this.recorder);
+    // Output level meter: tells whether anything is really audible (used by tests).
+    this.meter = new Tone.Meter({ smoothing: 0.6 });
+    this.limiter.connect(this.meter);
     // Narration bus: pre-rendered voice clips are routed here so a recording
     // captures voice and music together (not affected by the music volume).
     this.voiceBus = new Tone.Gain(1).connect(this.limiter);
@@ -564,6 +567,53 @@ export class SonificationEngine {
     this.silence?.();
     clearTimeout(this.stopTimer);
     this.stopTimer = setTimeout(() => !this.playing && this.stopSources(), 800);
+  }
+
+  /** Output level in dB (very low when silent). */
+  level() {
+    return this.meter ? this.meter.getValue() : -Infinity;
+  }
+
+  /**
+   * Hard stop: nothing may keep sounding, whatever started it (story, legend demo,
+   * free play). Releases every note, stops every continuous source and the timers of
+   * the current track. With flushReverb, the reverb tail is cut too.
+   */
+  silenceAll({ flushReverb = false } = {}) {
+    if (!this.ready) return;
+    clearTimeout(this.demoTimer);
+    clearTimeout(this.stopTimer);
+    this.timers.forEach(clearTimeout);
+    this.timers = [];
+    this.playing = false;
+    try {
+      this.transport.pause();
+    } catch {
+      /* transport not running */
+    }
+    for (const n of this.nodes) {
+      try {
+        if (typeof n.releaseAll === 'function') n.releaseAll();
+        else if (typeof n.triggerRelease === 'function') n.triggerRelease();
+      } catch {
+        /* not an instrument */
+      }
+    }
+    try {
+      this.probe.triggerRelease();
+    } catch {
+      /* idle */
+    }
+    this.stopSources();
+    this.silence?.();
+    this.setDucked(false);
+    if (flushReverb && this.level() > -60) {
+      // Mute the reverb return while its tail decays, then bring it back.
+      this.reverb.wet.cancelScheduledValues(Tone.now());
+      this.reverb.wet.value = 0;
+      clearTimeout(this.reverbTimer);
+      this.reverbTimer = setTimeout(() => this.reverb.wet.rampTo(0.32, 0.3), 5600);
+    }
   }
 
   /** Auditory legend: plays one isolated sound. Resolves after its duration. */

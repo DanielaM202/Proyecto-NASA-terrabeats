@@ -3,11 +3,45 @@ import { VISUALIZATIONS } from './data/visualizations.js';
 import { LEGENDS, WHY } from './data/legends.js';
 import { EXTRA_LINES, STORIES } from './data/stories.js';
 import { PLAYLIST } from './data/playlist.js';
-import { analysisSize, COLUMNS, extractFeatures, oceanRegion, pixelKind, pixelValue } from './analysis/features.js';
+import EpisodePlayer from './components/EpisodePlayer.jsx';
+import { episodePlaying, getActiveEpisode, pauseActiveEpisode } from './audio/episodes.js';
+import { analysisSize, COLUMNS, extractFeatures, pixelKind, pixelValue, readWindow } from './analysis/features.js';
+import { lonLat, placeAt, placeLabel } from './analysis/geo.js';
 import { SonificationEngine } from './audio/engine.js';
 import { STRINGS, describe, levelIndex, levelValue, liveRemark, regionName } from './i18n.js';
 
 const SPEEDS = [0.5, 1, 1.5, 2];
+// Recording a new playlist episode is a team tool: shown in development or with ?equipo in the address.
+// Most natural voice of the browser for a language: Edge "Natural" neural voices first,
+// then other online voices, preferring Latin American Spanish for our audience.
+function pickVoice(lang, wanted) {
+  if (!('speechSynthesis' in window)) return undefined;
+  const voices = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(lang));
+  if (wanted) {
+    const exact = voices.find((v) => v.name === wanted);
+    if (exact) return exact;
+  }
+  const score = (v) => {
+    const n = v.name.toLowerCase();
+    const l = v.lang.toLowerCase();
+    let s = 0;
+    if (n.includes('natural')) s += 100;
+    if (n.includes('online')) s += 40;
+    if (n.includes('google')) s += 30;
+    if (!v.localService) s += 10;
+    if (l === 'es-pe') s += 8;
+    else if (/^es-(mx|us|co|ar|cl)/.test(l)) s += 6;
+    else if (l === 'es-es') s += 2;
+    return s;
+  };
+  return voices.sort((a, b) => score(b) - score(a))[0];
+}
+
+const TEAM_MODE = import.meta.env.DEV || new URLSearchParams(window.location.search).has('equipo');
+const PLAY_ORDER = VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => v.id);
+const requestEpisode = (id, fromStart = false) => window.dispatchEvent(new CustomEvent('terrabeats:episode', { detail: { id, fromStart } }));
+const PAD_BTN =
+  'inline-flex h-14 w-14 items-center justify-center rounded-xl border border-slate-500 bg-slate-800 text-2xl hover:bg-slate-700 active:bg-yellow-300 active:text-slate-950 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300';
 const STORY_RATE = 0.6; // video speed during the guided story, so narration fits each region
 
 function initialLang() {
@@ -71,6 +105,25 @@ export default function App() {
   const [autoNarrate, setAutoNarrate] = useState(false);
   const [voice, setVoice] = useState(true);
   const [haptics, setHaptics] = useState(true);
+  const [padBig, setPadBig] = useState(false); // exploration pad: big steps
+  const [playAll, setPlayAll] = useState(false); // playing the whole playlist
+  const [audioStatus, setAudioStatus] = useState(null); // what is playing right now (status bar)
+  const [voiceName, setVoiceName] = useState(() => {
+    try {
+      return localStorage.getItem('terrabeats-voice') || '';
+    } catch {
+      return '';
+    }
+  });
+  const [voiceList, setVoiceList] = useState([]); // browser voices, filled when the browser reports them
+  const [rate, setRate] = useState(() => {
+    try {
+      const r = Number(localStorage.getItem('terrabeats-rate'));
+      return r >= 0.5 && r <= 3 ? r : 1;
+    } catch {
+      return 1;
+    }
+  });
   const [recording, setRecording] = useState(false);
   const [recordUrl, setRecordUrl] = useState(null);
   const [ui, setUi] = useState(null); // throttled features for the UI
@@ -104,20 +157,35 @@ export default function App() {
   const quizRef = useRef(null); // resolver while a question waits for an answer
   const pendingVoiceRef = useRef(null); // resolves the line currently being spoken
   const hushRef = useRef(() => {});
+  const playAllRef = useRef(false);
+  const legendIdxRef = useRef(-1);
   const startedOnceRef = useRef(false);
   const exploreSpeakTimer = useRef(null);
+  const sampleCanvasRef = useRef(null);
+  const voiceNameRef = useRef('');
   const quizBoxRef = useRef(null);
   const episodeRef = useRef(false);
+  const episodeMarksRef = useRef(null); // chapter marks: when each narrated sentence starts
+  const recStartRef = useRef(0);
   const startStoryRef = useRef(() => {}); // recording a playlist episode (story without pauses)
   const interactedRef = useRef(false);
 
   vizRef.current = viz;
+  voiceNameRef.current = voiceName;
   langRef.current = lang;
   playingRef.current = playing;
   hapticsRef.current = haptics;
   exploreRef.current = explore;
 
   if (!engineRef.current) engineRef.current = new SonificationEngine();
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('terrabeats-rate', String(rate));
+    } catch {
+      /* storage unavailable */
+    }
+  }, [rate]);
 
   // Stop every sound if this component goes away (also on hot reload in dev).
   useEffect(
@@ -160,6 +228,12 @@ export default function App() {
     pending?.();
     voiceBusyRef.current = false;
     engineRef.current.setDucked(false);
+    // An episode that is playing is silenced too, and "play the whole playlist" ends.
+    if (episodePlaying()) {
+      playAllRef.current = false;
+      setPlayAll(false);
+      pauseActiveEpisode();
+    }
   }, []);
   hushRef.current = hush;
 
@@ -177,9 +251,10 @@ export default function App() {
         voiceBusyRef.current = true;
         lastSpokeRef.current = performance.now();
         const u = new SpeechSynthesisUtterance(text);
-        // Pick an installed voice for the language; if none exists, use the
-        // default voice rather than staying silent.
-        const match = window.speechSynthesis.getVoices().find((vo) => vo.lang.toLowerCase().startsWith(langRef.current));
+        // Use the voice chosen by the person, or the most natural one installed
+        // (Edge ships neural "Natural" voices); if none matches the language, the
+        // default voice is used rather than staying silent.
+        const match = pickVoice(langRef.current, voiceNameRef.current);
         if (match) {
           u.voice = match;
           u.lang = match.lang;
@@ -211,12 +286,14 @@ export default function App() {
   // ---------- audio engine ----------
   // ---------- auditory legend ----------
   const [legendIdx, setLegendIdx] = useState(-1);
+  legendIdxRef.current = legendIdx;
   const legendRunRef = useRef(0);
 
   const stopLegend = useCallback(() => {
     legendRunRef.current++;
     setLegendIdx(-1);
     hushRef.current();
+    engineRef.current.silenceAll();
   }, []);
 
   const ensureEngine = useCallback(async () => {
@@ -235,18 +312,29 @@ export default function App() {
     if (engineRef.current.ready) engineRef.current.setVolume(volume);
   }, [volume]);
 
+  // Every play() has a ticket; a pause or stop invalidates it, so a play() that was still
+  // waiting for the video (or the audio engine) never starts the music after the person stopped.
+  const playTicketRef = useRef(0);
   const play = useCallback(async () => {
+    const ticket = ++playTicketRef.current;
+    pauseActiveEpisode();
     const engine = await ensureEngine();
+    if (ticket !== playTicketRef.current) return;
     try {
       await videoRef.current?.play();
     } catch {
       /* video will start when loaded */
+    }
+    if (ticket !== playTicketRef.current) {
+      videoRef.current?.pause();
+      return;
     }
     engine.start();
     setPlaying(true);
   }, [ensureEngine]);
 
   const pause = useCallback(() => {
+    playTicketRef.current++;
     videoRef.current?.pause();
     engineRef.current.stop();
     stepRef.current = -1;
@@ -413,6 +501,9 @@ export default function App() {
       await say(items[k][langRef.current]);
       if (!live()) return;
       await engine.demo(items[k].key);
+      // The reason for the artistic choice, said after the sound has been heard.
+      const why = WHY[viz.id]?.[items[k].key]?.[langRef.current];
+      if (why && live()) await say(`${STRINGS[langRef.current].why}: ${why}`);
     }
     if (!live()) return;
     setLegendIdx(-1);
@@ -429,8 +520,67 @@ export default function App() {
   const [caption, setCaption] = useState('');
   const [quiz, setQuiz] = useState(null); // active question (for the on-screen buttons)
   const [liveLine, setLiveLine] = useState('');
-  const [episodeFor, setEpisodeFor] = useState(null); // track id being recorded as an episode
-  const [episodes, setEpisodes] = useState({}); // `${id}-${lang}` → blob URL of a fresh recording
+  const [, setEpisodeFor] = useState(null); // track id being recorded as an episode
+  const [episodes, setEpisodes] = useState({}); // `${id}-${lang}` → { url, marks, duration } of a fresh recording
+
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return undefined;
+    const load = () => setVoiceList(window.speechSynthesis.getVoices().map((v) => ({ name: v.name, lang: v.lang })));
+    load();
+    window.speechSynthesis.addEventListener('voiceschanged', load);
+    return () => window.speechSynthesis.removeEventListener('voiceschanged', load);
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem('terrabeats-voice', voiceName);
+    } catch {
+      /* storage unavailable */
+    }
+  }, [voiceName]);
+
+  // Team tooling (no button on the page): scripts/record-episodes.js asks for an episode to be recorded here.
+  useEffect(() => {
+    if (!TEAM_MODE) return undefined;
+    window.__terrabeatsRecordEpisode = (id) => {
+      setVizIndex(VISUALIZATIONS.findIndex((x) => x.id === id));
+      setTimeout(() => startStoryRef.current({ episode: true }), 600); // after the track switch
+    };
+    return () => {
+      delete window.__terrabeatsRecordEpisode;
+    };
+  }, []);
+
+  // Status bar: what is really playing (read from the real players, so it cannot go stale).
+  useEffect(() => {
+    const id = setInterval(() => {
+      const L = langRef.current;
+      const T = STRINGS[L];
+      const title = vizRef.current.title[L];
+      let next = null;
+      if (episodePlaying()) next = { kind: 'episode', label: `${T.kinds.episode}: ${getActiveEpisode()?.dataset.title || ''}`, canPause: true };
+      else if (storyPhaseRef.current !== 'idle') next = { kind: 'story', label: `${T.kinds.story}: ${title}`, canPause: true, paused: storyPausedRef.current };
+      else if (legendIdxRef.current !== -1) next = { kind: 'legend', label: `${T.kinds.legend}: ${title}` };
+      else if (playingRef.current) next = { kind: 'free', label: `${T.kinds.free}: ${title}` };
+      else if (menuAudioRef.current && !menuAudioRef.current.paused && !menuAudioRef.current.ended) next = { kind: 'help', label: T.kinds.help };
+      else if ('speechSynthesis' in window && window.speechSynthesis.speaking) next = { kind: 'voice', label: T.kinds.voice };
+      setAudioStatus((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+    }, 400);
+    return () => clearInterval(id);
+  }, []);
+
+  // Team tooling and tests: the audio engine is reachable from the console (development only).
+  useEffect(() => {
+    if (!TEAM_MODE) return undefined;
+    window.__terrabeats = { engine: engineRef.current };
+    return () => {
+      delete window.__terrabeats;
+    };
+  }, []);
+
+  // Dev convenience: scripts/record-episodes.js reads the fresh recordings from here.
+  useEffect(() => {
+    window.__terrabeatsEpisodes = episodes;
+  }, [episodes]);
   const storyRunRef = useRef(0);
   const narrRef = useRef(null);
   const storyPausedRef = useRef(false);
@@ -454,6 +604,14 @@ export default function App() {
         const audio = new Audio(`/narration/${L}/${line.id}.mp3`);
         engine.attachMedia(audio);
         narrRef.current = audio;
+        audio.addEventListener(
+          'playing',
+          () => {
+            const marks = episodeMarksRef.current;
+            if (marks) marks.push({ id: line.id, t: +((performance.now() - recStartRef.current) / 1000).toFixed(2) });
+          },
+          { once: true },
+        );
         let finished = false;
         const done = () => {
           if (finished) return;
@@ -496,9 +654,11 @@ export default function App() {
     storyRunRef.current++;
     quizRef.current?.(null);
     hush();
+    engineRef.current.silenceAll();
     if (episodeRef.current) {
       episodeRef.current = false;
       engineRef.current.stopRecording(); // unfinished episode: discard
+      episodeMarksRef.current = null;
       setEpisodeFor(null);
     }
     quizRef.current = null;
@@ -530,6 +690,11 @@ export default function App() {
     const episode = opts?.episode === true;
     const run = ++storyRunRef.current;
     const live = () => run === storyRunRef.current;
+    // A narrated line never starts while the story is paused.
+    const sayLine = async (line) => {
+      await waitFor(() => !storyPausedRef.current, run);
+      if (live()) await playLine(line, run);
+    };
     if (playingRef.current) pause();
     setExplore(false);
     cursorRef.current.visible = false;
@@ -542,6 +707,8 @@ export default function App() {
       setEpisodeFor(vizRef.current.id);
       if (engine.isRecording) await engine.stopRecording();
       engine.startRecording();
+      episodeMarksRef.current = [];
+      recStartRef.current = performance.now();
     }
     const v = videoRef.current;
     v.loop = false;
@@ -552,7 +719,7 @@ export default function App() {
     setStoryPhase('intro');
     for (const step of story.intro) {
       if (!live()) return;
-      await playLine(step, run);
+      await sayLine(step);
       await waitFor(() => !storyPausedRef.current, run);
       if (step.demo && live()) await engine.demo(step.demo);
     }
@@ -587,7 +754,7 @@ export default function App() {
       nextCueT = story.cues[k + 1]?.t ?? Infinity;
       if (cue.quiz && episode) continue;
       if (!cue.quiz) {
-        await playLine(cue, run);
+        await sayLine(cue);
         continue;
       }
       // Interactive question: the image freezes but its sound keeps playing,
@@ -602,10 +769,10 @@ export default function App() {
           resolve(a);
         };
       });
-      await Promise.race([playLine(cue, run), answerP]);
+      await Promise.race([sayLine(cue), answerP]);
       if (!live()) break;
       if (answered) hush();
-      else setCaption(`${cue[langRef.current]} — ${STRINGS[langRef.current].quizHint}`);
+      else setCaption(cue[langRef.current]);
       const ans = await Promise.race([answerP, new Promise((resolve) => setTimeout(() => resolve(null), 12000))]);
       quizRef.current = null;
       setQuiz(null);
@@ -638,7 +805,7 @@ export default function App() {
     v.currentTime = story.exploreAt;
     for (const step of story.outro) {
       if (!live()) return;
-      await playLine(step, run);
+      await sayLine(step);
       await waitFor(() => !storyPausedRef.current, run);
     }
     if (!live()) return;
@@ -649,8 +816,10 @@ export default function App() {
       setEpisodeFor(null);
       if (blob) {
         const key = `${vizRef.current.id}-${langRef.current}`;
-        setEpisodes((e) => ({ ...e, [key]: URL.createObjectURL(blob) }));
+        const data = { url: URL.createObjectURL(blob), marks: episodeMarksRef.current || [], duration: +((performance.now() - recStartRef.current) / 1000).toFixed(2) };
+        setEpisodes((e) => ({ ...e, [key]: data }));
       }
+      episodeMarksRef.current = null;
       setStoryPhase('idle');
       setCaption('');
       restoreVideo();
@@ -669,6 +838,55 @@ export default function App() {
   useEffect(() => {
     if (quiz) quizBoxRef.current?.focus();
   }, [quiz]);
+
+  // An episode is a recording: nothing else may talk or play while it does.
+  const beforeEpisode = useCallback(() => {
+    stopLegend();
+    stopStory();
+    pause(); // also cancels a free mode that is still starting
+    hush();
+  }, [stopLegend, stopStory, pause, hush]);
+
+  // Esc and the "Stop all audio" button: story, legend, voices, music and episodes.
+  const stopAll = useCallback(() => {
+    playAllRef.current = false;
+    setPlayAll(false);
+    stopLegend();
+    stopStory();
+    hush();
+    pauseActiveEpisode();
+    pause(); // always: it also cancels a free mode that is still starting
+    engineRef.current.silenceAll({ flushReverb: true });
+    setAnnouncement(STRINGS[langRef.current].allStopped);
+  }, [stopLegend, stopStory, hush, pause]);
+
+  // "Play the whole playlist": the five episodes one after another.
+  const startPlaylist = () => {
+    stopLegend();
+    stopStory();
+    playAllRef.current = true;
+    setPlayAll(true);
+    setAnnouncement(t.playlistStart);
+    requestEpisode(PLAY_ORDER[0], true);
+  };
+  const onEpisodeEnded = useCallback(
+    (id) => {
+      if (!playAllRef.current) return;
+      const next = PLAY_ORDER[PLAY_ORDER.indexOf(id) + 1];
+      if (next) {
+        setTimeout(() => playAllRef.current && requestEpisode(next, true), 900);
+      } else {
+        playAllRef.current = false;
+        setPlayAll(false);
+        setAnnouncement(STRINGS[langRef.current].playlistEnd);
+      }
+    },
+    [],
+  );
+  const onEpisodeUserPause = useCallback(() => {
+    playAllRef.current = false;
+    setPlayAll(false);
+  }, []);
 
   // Language switch while something is being narrated: replay the same line in
   // the new language (the story keeps going from where it was).
@@ -697,9 +915,12 @@ export default function App() {
     if (!storyPausedRef.current) {
       setStoryPaused(true);
       narrRef.current?.pause();
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // a live remark in progress
       if (storyPhaseRef.current === 'tour') {
         v?.pause();
         engineRef.current.stop();
+      } else {
+        engineRef.current.silenceAll(); // an example sound of the legend part
       }
     } else {
       setStoryPaused(false);
@@ -718,30 +939,61 @@ export default function App() {
   }, [autoNarrate, playing, describeNow]);
 
   // ---------- explore mode ----------
+  // Reads the window of the video frame around (x, y) at the video's own resolution.
+  const readAround = useCallback((x, y) => {
+    const v = videoRef.current;
+    if (!v || v.readyState < 2 || !v.videoWidth) return null;
+    const W = v.videoWidth;
+    const H = v.videoHeight;
+    const half = 20;
+    const cx = Math.min(W - 1, Math.floor(x * W));
+    const cy = Math.min(H - 1, Math.floor(y * H));
+    const x0 = Math.max(0, cx - half);
+    const y0 = Math.max(0, cy - half);
+    const w = Math.min(W, cx + half + 1) - x0;
+    const h = Math.min(H, cy + half + 1) - y0;
+    const c = (sampleCanvasRef.current ||= document.createElement('canvas'));
+    if (c.width !== w || c.height !== h) {
+      c.width = w;
+      c.height = h;
+    }
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.drawImage(v, x0, y0, w, h, 0, 0, w, h);
+    return { win: g.getImageData(0, 0, w, h), cx: cx - x0, cy: cy - y0 };
+  }, []);
+
   const probe = useCallback(
     async (x, y, force = false) => {
       cursorRef.current = { x, y, visible: true };
-      const img = imgRef.current;
-      if (!img) return;
       const now = performance.now();
-      if (!force && now - lastProbeRef.current.t < 70) return;
+      if (!force && now - lastProbeRef.current.t < 70) return null;
       lastProbeRef.current.t = now;
-      const px = Math.min(img.width - 1, Math.floor(x * img.width));
-      const py = Math.min(img.height - 1, Math.floor(y * img.height));
-      const i = (py * img.width + px) * 4;
-      const [r, g, b] = [img.data[i], img.data[i + 1], img.data[i + 2]];
       const id = vizRef.current.id;
-      const value = pixelValue(id, r, g, b);
-      const kind = pixelKind(id, r, g, b);
+      let value = 0;
+      let kind = null;
+      const around = readAround(x, y);
+      if (around) {
+        ({ value, kind } = readWindow(id, around.win, around.cx, around.cy));
+      } else if (imgRef.current) {
+        // Video not ready: fall back to the small analysis image.
+        const img = imgRef.current;
+        const px = Math.min(img.width - 1, Math.floor(x * img.width));
+        const py = Math.min(img.height - 1, Math.floor(y * img.height));
+        const i = (py * img.width + px) * 4;
+        value = pixelValue(id, img.data[i], img.data[i + 1], img.data[i + 2]);
+        kind = pixelKind(id, img.data[i], img.data[i + 1], img.data[i + 2]);
+      } else {
+        return null;
+      }
       const engine = await ensureEngine();
-      engine.playProbe(value, x * 2 - 1, kind);
+      engine.playProbe(value, x * 2 - 1, kind === 'nodata' ? 'land' : kind);
       if (hapticsRef.current && navigator.vibrate && value > 0) navigator.vibrate(Math.round(10 + value * 50));
       let text;
       if (id === 'ocean') {
         // Real geography: the map is equirectangular, so x/y are longitude/latitude.
-        const o = oceanRegion(x, y);
-        const place = `${t.probe.oceans[o.ocean]}${o.band ? ` ${t.probe.bands[o.band]}` : ''}`;
-        text = kind === 'land' ? t.probe.land : t.probe.sea(place, Math.round(value * 32));
+        const { lon, lat } = lonLat(x, y);
+        const place = placeLabel(placeAt(lon, lat), langRef.current, t.probe.bands);
+        text = kind === 'land' ? t.probe.land : kind === 'nodata' ? t.probe.nodata(place) : t.probe.sea(place, Math.round(value * 32));
       } else {
         const what = kind
           ? t.probe[kind]
@@ -749,7 +1001,7 @@ export default function App() {
             ? t.probe.none
             : id === 'forest-height'
               ? t.probe.forest(Math.round(value * 50))
-              : `${t.probe.value} ${t.levels[levelIndex(value)]}`;
+              : `${t.probe.value} ${t.levelsM[levelIndex(value)]}`;
         text = `${regionName(t, x, y)}: ${what}`;
       }
       if (text !== lastProbeRef.current.text) {
@@ -761,8 +1013,25 @@ export default function App() {
           if (exploreRef.current && storyPhaseRef.current === 'idle') speak(text);
         }, 650);
       }
+      return { value, kind, text };
     },
-    [ensureEngine, t, speak],
+    [ensureEngine, t, speak, readAround],
+  );
+
+  // Move the explore cursor (keyboard arrows and the on-screen pad share this).
+  const moveCursor = useCallback(
+    (dx, dy) => {
+      const c = cursorRef.current;
+      const nx = Math.min(0.999, Math.max(0, c.x + dx));
+      const ny = Math.min(0.999, Math.max(0, c.y + dy));
+      if (nx === c.x && ny === c.y) {
+        engineRef.current.playEdge();
+        setProbeText(t.edge);
+        return;
+      }
+      probe(nx, ny, true);
+    },
+    [probe, t],
   );
 
   const onPointer = (e) => {
@@ -780,14 +1049,7 @@ export default function App() {
       e.preventDefault();
       e.stopPropagation();
       const [dx, dy] = moves[e.key];
-      const nx = Math.min(0.999, Math.max(0, c.x + dx));
-      const ny = Math.min(0.999, Math.max(0, c.y + dy));
-      if (nx === c.x && ny === c.y) {
-        engineRef.current.playEdge();
-        setProbeText(t.edge);
-        return;
-      }
-      probe(nx, ny, true);
+      moveCursor(dx, dy);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       probe(c.x, c.y, true);
@@ -850,16 +1112,10 @@ export default function App() {
       }
     }
     if (!exploreRef.current) setExplore(true);
-    await probe(bx, by, true);
-    let text;
-    if (id === 'ocean') {
-      const o = oceanRegion(bx, by);
-      const place = `${t.probe.oceans[o.ocean]}${o.band ? ` ${t.probe.bands[o.band]}` : ''}`;
-      text = t.foundMax(t.probe.sea(place, Math.round(best * 32)));
-    } else {
-      const what = id === 'forest-height' ? t.probe.forest(Math.round(best * 50)) : `${t.probe.value} ${t.levels[levelIndex(best)]}`;
-      text = `${t.foundMax(what)} (${regionName(t, bx, by)})`;
-    }
+    // Same reading as moving the cursor there: the spoken value always matches what is under it.
+    const r = await probe(bx, by, true);
+    if (!r) return;
+    const text = t.foundMax(r.text);
     setProbeText(text);
     setAnnouncement(text);
     clearTimeout(exploreSpeakTimer.current);
@@ -887,6 +1143,11 @@ export default function App() {
     (id) => {
       const line = EXTRA_LINES.find((l) => l.id === id);
       if (!line) return;
+      // Pressing H again while the help is talking stops it.
+      if ((id === 'help' || id === 'help-episode') && lastLineRef.current?.id === id && menuAudioRef.current && !menuAudioRef.current.paused) {
+        menuAudioRef.current.pause();
+        return;
+      }
       if (storyPhaseRef.current !== 'idle') {
         // During a story: pause it (Space resumes) instead of skipping its line.
         if (!storyPausedRef.current) toggleStoryPause();
@@ -905,13 +1166,14 @@ export default function App() {
   );
 
   useEffect(() => {
-    const mark = () => {
+    const mark = (e) => {
       if (interactedRef.current) return;
       interactedRef.current = true;
       // First contact: welcome a person who may not see the screen, unless the
-      // same key/click already started something.
+      // same key/click already started something (a story, a playlist episode...).
+      if (e?.target?.closest?.('section[aria-labelledby="playlist"]')) return;
       setTimeout(() => {
-        if (storyPhaseRef.current === 'idle' && !playingRef.current && !voiceBusyRef.current && !menuPlaying()) playClip('welcome');
+        if (storyPhaseRef.current === 'idle' && !playingRef.current && !voiceBusyRef.current && !menuPlaying() && !episodePlaying()) playClip('welcome');
       }, 350);
     };
     const menuPlaying = () => menuAudioRef.current && !menuAudioRef.current.paused;
@@ -932,6 +1194,16 @@ export default function App() {
         quizRef.current(e.key === 'ArrowLeft' ? 'left' : 'right');
         return;
       }
+      if (e.target.closest?.('[data-episode-player]')) {
+        // The player handles its own keys; help and "stop everything" still work inside it.
+        if (e.key === 'h' || e.key === 'H') {
+          e.preventDefault();
+          playClip('help-episode');
+        } else if (e.key === 'Escape') {
+          stopAll();
+        }
+        return;
+      }
       const tag = e.target.tagName;
       if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
       if (e.key === ' ' || e.code === 'Space') {
@@ -949,6 +1221,9 @@ export default function App() {
         toggleExplore();
       } else if (e.key === 'd' || e.key === 'D') {
         describeNow();
+      } else if (e.key === 'n' || e.key === 'N') {
+        // Skip the sentence being narrated: the story moves on to the next step.
+        if (storyPhaseRef.current !== 'idle') hushRef.current();
       } else if (e.key === 'h' || e.key === 'H') {
         playClip('help');
       } else if (e.key === 'f' || e.key === 'F') {
@@ -958,15 +1233,14 @@ export default function App() {
       } else if (e.key === 'g' || e.key === 'G') {
         toggleLegend();
       } else if (e.key === 'Escape') {
-        stopLegend();
-        stopStory();
+        stopAll();
       } else if (e.key === 'l' || e.key === 'L') {
         setLang((l) => (l === 'es' ? 'en' : 'es'));
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, playClip]);
+  }, [togglePlay, toggleExplore, describeNow, toggleLegend, stopLegend, stopStory, startStory, toggleStoryPause, findMax, repeatLast, playClip, stopAll]);
 
   // Announce track changes for screen readers.
   const firstRender = useRef(true);
@@ -986,7 +1260,7 @@ export default function App() {
   const position = useMemo(() => (ui && ui.coverage > 0.0005 ? regionName(t, ui.cx, ui.cy) : '—'), [ui, t]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-950 text-slate-100" style={{ paddingBottom: audioStatus ? '5rem' : undefined }}>
       <a
         href="#player"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-yellow-300 focus:px-4 focus:py-2 focus:text-slate-900"
@@ -1002,6 +1276,24 @@ export default function App() {
               <h1 className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{t.appName}</h1>
               <p className="text-sm text-sky-200">{t.tagline}</p>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.listenHelp}>
+            <button
+              type="button"
+              onClick={() => playClip('help')}
+              aria-keyshortcuts="H"
+              className="rounded-lg bg-yellow-300 px-5 py-3 text-base font-extrabold text-slate-950 hover:bg-yellow-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-400"
+            >
+              🔊 {t.listenHelp} (H)
+            </button>
+            <button
+              type="button"
+              onClick={stopAll}
+              aria-keyshortcuts="Escape"
+              className="rounded-lg border-2 border-red-400 bg-red-500/15 px-4 py-3 text-base font-bold text-red-100 hover:bg-red-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ⏹ {t.stopAll} (Esc)
+            </button>
           </div>
           <div role="group" aria-label={t.langLabel} className="flex overflow-hidden rounded-lg border border-slate-600">
             {['es', 'en'].map((l) => (
@@ -1055,6 +1347,14 @@ export default function App() {
                       className="rounded-lg bg-emerald-400 px-5 py-3 font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
                     >
                       {storyPaused ? `▶ ${t.storyResume}` : `❚❚ ${t.storyPause}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => hush()}
+                      aria-keyshortcuts="N"
+                      className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-3 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+                    >
+                      ⏭ {t.nextLine} (N)
                     </button>
                     <button
                       type="button"
@@ -1155,11 +1455,14 @@ export default function App() {
               aria-label={explore ? t.exploreHelp : undefined}
               aria-hidden={explore ? undefined : true}
               onPointerMove={onPointer}
-              onPointerDown={onPointer}
+              onPointerDown={(e) => {
+                if (explore) e.currentTarget.setPointerCapture?.(e.pointerId); // keep following the finger
+                onPointer(e);
+              }}
               onPointerLeave={() => (cursorRef.current.visible = explore && cursorRef.current.visible)}
               onKeyDown={onExploreKey}
               className={`absolute inset-0 h-full w-full focus:outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-yellow-300 ${
-                explore ? 'cursor-crosshair' : ''
+                explore ? 'cursor-crosshair touch-none' : ''
               }`}
             />
             {!playing && !explore && (
@@ -1168,6 +1471,38 @@ export default function App() {
               </div>
             )}
           </div>
+
+          {explore && (
+            <div role="group" aria-label={t.pad} className="mt-3 flex flex-wrap items-center gap-4 rounded-xl border border-yellow-300/40 bg-slate-900/70 p-3">
+              <div className="grid grid-cols-3 gap-2">
+                <span />
+                <button type="button" aria-label={t.padUp} className={PAD_BTN} onClick={() => moveCursor(0, padBig ? -0.15 : -0.05)}>
+                  ▲
+                </button>
+                <span />
+                <button type="button" aria-label={t.padLeft} className={PAD_BTN} onClick={() => moveCursor(padBig ? -0.15 : -0.05, 0)}>
+                  ◀
+                </button>
+                <button type="button" aria-label={t.findMax} className={PAD_BTN} onClick={findMax}>
+                  ⌖
+                </button>
+                <button type="button" aria-label={t.padRight} className={PAD_BTN} onClick={() => moveCursor(padBig ? 0.15 : 0.05, 0)}>
+                  ▶
+                </button>
+                <span />
+                <button type="button" aria-label={t.padDown} className={PAD_BTN} onClick={() => moveCursor(0, padBig ? 0.15 : 0.05)}>
+                  ▼
+                </button>
+                <span />
+              </div>
+              <div className="flex max-w-sm flex-col gap-2 text-sm">
+                <Toggle checked={padBig} onChange={setPadBig}>
+                  {t.padBig}
+                </Toggle>
+                <p className="text-slate-300">{t.padHelp}</p>
+              </div>
+            </div>
+          )}
 
           {/* Column profile: what the playhead is reading */}
           <div className="mt-2 flex h-10 items-end gap-0.5" aria-hidden="true">
@@ -1220,14 +1555,6 @@ export default function App() {
             >
               ↺ {t.repeat} (R)
             </button>
-            <button
-              type="button"
-              onClick={() => playClip('help')}
-              aria-keyshortcuts="H"
-              className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-            >
-              ? {t.help} (H)
-            </button>
           </div>
 
           <details className="mt-3 rounded-lg border border-slate-700 bg-slate-900/60 p-3">
@@ -1274,6 +1601,23 @@ export default function App() {
             <Toggle checked={voice} onChange={setVoice}>
               {t.voice}
             </Toggle>
+            <label className="flex items-center gap-2 text-sm">
+              <span>{t.voicePick}</span>
+              <select
+                value={voiceName}
+                onChange={(e) => setVoiceName(e.target.value)}
+                className="max-w-[16rem] rounded border border-slate-600 bg-slate-800 px-2 py-1"
+              >
+                <option value="">{t.voiceAuto}</option>
+                {voiceList
+                  .filter((v) => v.lang.toLowerCase().startsWith(lang))
+                  .map((v) => (
+                    <option key={v.name} value={v.name}>
+                      {v.name}
+                    </option>
+                  ))}
+              </select>
+            </label>
             <Toggle checked={haptics} onChange={setHaptics}>
               {t.haptics}
             </Toggle>
@@ -1438,51 +1782,66 @@ export default function App() {
             🎧 {t.playlist}
           </h2>
           <p className="mb-4 max-w-3xl text-slate-300">{t.playlistIntro}</p>
-          <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mb-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={playAll ? stopAll : startPlaylist}
+              className="rounded-lg bg-emerald-400 px-5 py-3 font-extrabold text-slate-950 hover:bg-emerald-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              {playAll ? `⏹ ${t.stopPlaylist}` : `▶ ${t.playAll}`}
+            </button>
+            <button
+              type="button"
+              onClick={() => playClip('help-episode')}
+              aria-keyshortcuts="H"
+              className="rounded-lg border border-yellow-300/70 bg-yellow-300/10 px-4 py-3 font-semibold text-yellow-100 hover:bg-yellow-300/20 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              🔊 {t.episodeHelp}
+            </button>
+          </div>
+          <ul className="grid gap-4 lg:grid-cols-2">
             {VISUALIZATIONS.filter((v) => PLAYLIST[v.id]).map((v) => {
               const p = PLAYLIST[v.id];
               const fresh = episodes[`${v.id}-${lang}`];
               const file = p.files?.includes(lang) ? `/playlist/${v.id}-${lang}.mp3` : null;
-              const src = fresh || file;
-              const busy = episodeFor === v.id;
+              const src = fresh?.url || file;
               return (
-                <li key={v.id} className="flex flex-col rounded-xl border border-slate-700 bg-slate-950/60 p-3">
-                  <img src={v.poster} alt="" className="h-28 w-full rounded object-cover" loading="lazy" />
-                  <h3 className="mt-2 font-bold">{v.title[lang]}</h3>
-                  <p className="text-sm text-emerald-200">{STORIES[v.id].question[lang]}</p>
-                  <p className="mt-2 flex-1 text-sm text-slate-300">
-                    <span className="font-semibold text-slate-200">{t.process}: </span>
-                    {p.process[lang]}
-                  </p>
-                  {src ? (
-                    <>
-                      <audio controls preload="none" src={src} className="mt-3 w-full" aria-label={`${t.episode}: ${v.title[lang]}`} />
-                      <a
-                        href={src}
-                        download={`terrabeats-${v.id}-${lang}.${fresh ? 'webm' : 'mp3'}`}
-                        className="mt-2 text-sm text-sky-300 underline hover:text-sky-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
-                      >
-                        ⬇ {t.downloadEpisode}
-                      </a>
-                    </>
-                  ) : (
-                    <p className="mt-3 text-sm text-slate-400">{t.noEpisode}</p>
-                  )}
-                  <button
-                    type="button"
-                    disabled={!!episodeFor}
-                    onClick={() => {
-                      setVizIndex(VISUALIZATIONS.findIndex((x) => x.id === v.id));
-                      // start once the track has switched (instruments and video are rebuilt)
-                      setTimeout(() => startStoryRef.current({ episode: true }), 600);
-                      document.getElementById('player')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className={`mt-3 rounded-lg border px-3 py-2 text-sm font-medium focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300 disabled:opacity-50 ${
-                      busy ? 'border-red-400 bg-red-500/30 text-red-100' : 'border-slate-600 bg-slate-800 hover:bg-slate-700'
-                    }`}
-                  >
-                    {busy ? `● ${t.recordingEpisode}` : `● ${t.recordEpisode}`}
-                  </button>
+                <li key={v.id}>
+                  <article aria-labelledby={`ep-${v.id}`} className="flex h-full flex-col rounded-xl border border-slate-700 bg-slate-950/60 p-4">
+                    <div className="flex gap-3">
+                      <img src={v.poster} alt="" className="h-20 w-32 flex-none rounded object-cover" loading="lazy" />
+                      <div>
+                        <h3 id={`ep-${v.id}`} className="font-bold">
+                          {v.title[lang]}
+                        </h3>
+                        <p className="text-sm text-emerald-200">{STORIES[v.id].question[lang]}</p>
+                      </div>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-300">
+                      <span className="font-semibold text-slate-200">{t.process}: </span>
+                      {p.process[lang]}
+                    </p>
+                    {src ? (
+                      <EpisodePlayer
+                        key={`${v.id}-${lang}-${src}`}
+                        id={v.id}
+                        story={STORIES[v.id]}
+                        title={v.title[lang]}
+                        poster={v.poster}
+                        lang={lang}
+                        t={t}
+                        src={src}
+                        fresh={fresh}
+                        rate={rate}
+                        onRate={setRate}
+                        onBeforePlay={beforeEpisode}
+                        onEnded={onEpisodeEnded}
+                        onUserPause={onEpisodeUserPause}
+                      />
+                    ) : (
+                      <p className="mt-3 text-sm text-slate-400">{t.noEpisode}</p>
+                    )}
+                  </article>
                 </li>
               );
             })}
@@ -1500,6 +1859,37 @@ export default function App() {
           </ol>
         </section>
       </main>
+
+      {audioStatus && (
+        <div role="region" aria-label={t.audioStatus} className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-600 bg-slate-900/95 px-4 py-3 shadow-2xl backdrop-blur">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3">
+            <span aria-hidden="true">🔊</span>
+            <span className="min-w-0 flex-1 truncate font-semibold">{audioStatus.label}</span>
+            {audioStatus.canPause && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (audioStatus.kind === 'story') toggleStoryPause();
+                  else {
+                    getActiveEpisode()?.pause();
+                    onEpisodeUserPause();
+                  }
+                }}
+                className="rounded-lg border border-slate-500 bg-slate-800 px-4 py-2 font-semibold hover:bg-slate-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+              >
+                {audioStatus.paused ? `▶ ${t.storyResume}` : `❚❚ ${t.storyPause}`}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={stopAll}
+              className="rounded-lg border-2 border-red-400 bg-red-500/15 px-4 py-2 font-bold text-red-100 hover:bg-red-500/30 focus:outline-none focus-visible:ring-4 focus-visible:ring-yellow-300"
+            >
+              ⏹ {t.stopShort}
+            </button>
+          </div>
+        </div>
+      )}
 
       <footer className="border-t border-slate-800 px-4 py-6 text-center text-sm text-slate-400">
         <p>{t.footer}</p>

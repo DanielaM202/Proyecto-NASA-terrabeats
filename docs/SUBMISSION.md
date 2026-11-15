@@ -45,14 +45,18 @@ Every story follows the same structure:
 
 ### Curated playlist (the challenge's alternative deliverable)
 
-Each story also exists as a **downloadable audio episode** of about two minutes, in English and Spanish: narration and live sonification recorded together, with no screen needed. Each episode is shown with a short explanation of its creative process. People can play them offline or share them, for example on WhatsApp, with someone who cannot see. Anyone can record a fresh episode from the app ("Record episode now"): it plays the full story in episode mode, without pauses for questions, and captures voice and music together.
+Each story also exists as a **downloadable audio episode** of about two minutes, in English and Spanish: narration and live sonification recorded together, with no screen needed. Each episode is shown with a short explanation of its creative process and comes with an accessible player: **chapters** (every narrated sentence, so a jump always lands at the start of a sentence), the **full transcript**, speed from 0.75× to 2× (listeners who use screen readers are used to fast speech), a position bar that announces time and chapter in words, headphone and lock-screen controls, and "resume where you stopped". People can play them offline or share them, for example on WhatsApp, with someone who cannot see. Anyone can record a fresh episode from the app ("Record episode now"): it plays the full story in episode mode, without pauses for questions, and captures voice and music together.
 
 ### Designed for people who cannot see
 
+- **Spoken help is the first control of the page** ("Listen to help", key H): a voice reads every keyboard shortcut. Inside a playlist episode, H reads that player's keys. **"Stop all audio" (Esc)** silences everything at once. Only one voice speaks at a time: help, welcome, story and episodes pause each other.
+- **Play the whole playlist** with one button: the five episodes play one after another, hands-free.
 - Everything works with the keyboard: Space, Esc, 1–5, arrows, H (spoken help), F (jump to the highest value), R (repeat the last sentence), D (describe now), L (language).
 - A spoken welcome on first contact and a spoken menu when changing track.
 - One narrator at a time: voices never overlap, and the music ducks under the voice.
 - On the ocean map, which is a true latitude/longitude map, explore mode names the real place: "North Pacific Ocean: about 15 degrees".
+- The audio legend says what each sound is, plays it, and then says **why** we chose it, so the artistic reasoning is part of the audio experience, not only text.
+- On phones, explore mode has a **pad of large buttons** (up, down, left, right, jump to highest value, big steps) that move the cursor and speak the value. This works with TalkBack and VoiceOver, which intercept finger drags. Sighted touch users can also drag a finger over the image (the page does not scroll while exploring).
 - Explore mode speaks each value aloud, so it works without a screen reader; it is also compatible with screen readers. A low bump marks the edge of the image, and the phone vibrates with the value.
 - Switching language changes the voice immediately, mid-story.
 

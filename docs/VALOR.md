@@ -25,9 +25,12 @@ Lo que hace que tenga sentido:
 
 ## 4. Pensado para quien no ve
 - **Bienvenida hablada** en la primera interacción y **ayuda con H**: nadie necesita ver la pantalla para orientarse.
+- **Ayuda hablada siempre a mano:** el botón "Escuchar ayuda" (H) es lo primero de la página y lee todos los atajos; dentro de un episodio, H lee las teclas del reproductor. "Detener todo el audio" (Esc) lo apaga todo.
 - **Un solo narrador:** nunca hablan dos voces a la vez. Pedir la ayuda (H) durante una historia la pausa en vez de saltarla.
 - **Pregunta interactiva** en Bosques, Rayos y CO₂ (← / →): la persona escucha y decide, y la respuesta se calcula **con los datos de ese fotograma**.
 - **Comentarios en vivo** generados con los datos del momento (*"¡Ráfaga de 64 rayos a tu derecha!"*).
+- **El porqué, hablado:** la leyenda dice cada sonido, lo hace sonar y explica por qué lo elegimos (*"Un rayo es un instante: por eso es percusión"*). Las decisiones artísticas no quedan solo en texto.
+- **Cruceta de exploración para el móvil:** botones grandes que mueven el cursor y dicen el valor; no dependen del teclado ni de arrastrar el dedo, que un lector táctil intercepta.
 - **Explorar con voz:** al detener el cursor, una voz dice el valor (*"centro: bosque de unos 32 metros"*), aunque no haya lector de pantalla.
 - **Todo se maneja con teclado:** Espacio, Esc, 1–5, H, E, F, R, G, D y L.
 - **Menú sonoro:** al cambiar de pista, una voz dice cuál es y qué pregunta responde.
@@ -35,7 +38,7 @@ Lo que hace que tenga sentido:
 - **Además es compatible con lectores** (NVDA, TalkBack): etiquetas, regiones vivas y navegación con teclado.
 - **Exploración:** cada punto suena y dice su valor, *"bosque de unos 32 metros"*. Un golpe grave avisa del borde de la imagen y el móvil **vibra** según el valor.
 - **Bilingüe**, español e inglés, con la voz en ambos idiomas.
-- **Playlist de episodios descargables:** cada historia en MP3, para escuchar sin pantalla o mandar por WhatsApp a quien no ve.
+- **Playlist de episodios descargables:** cada historia en MP3, para escuchar sin pantalla o mandar por WhatsApp a quien no ve. Con **capítulos** (cada frase narrada: los saltos caen siempre al inicio de una frase), transcripción completa, velocidad hasta 2×, botones de auriculares y "continuar donde lo dejaste".
 
 ## 5. Cómo sabremos que funciona (prueba de impacto)
 Pedimos a una persona con los ojos vendados, o mejor, a una persona ciega, que escuche una historia y responda:
